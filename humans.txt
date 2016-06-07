@@ -1,0 +1,9 @@
+# humanstxt.org/
+
+# TEAM
+
+	Mouaad Aallam
+
+# TECHNOLOGY
+
+	HTML5, CSS3, JS, JEKYLL
