@@ -33,7 +33,7 @@ POST_TITLE="${@:2:$(($#-1))}"
 POST_NAME="$(echo ${@:2:$(($#-1))} | sed -e 's/ /-/g' | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")"
 CURRENT_DATE="$(date +'%Y-%m-%d')"
 TIME=$(date +"%T")
-FILE_NAME="${CURRENT_DATE}-${POST_NAME}.markdown"
+FILE_NAME="${CURRENT_DATE}-${POST_NAME}.md"
 # ----------------------------------------------------------------
 
 
@@ -46,7 +46,7 @@ POSTPATH="${BINPATH}/_posts"
 DIST_FOLDER="$POSTPATH"
 
 # Set your blog URL
-BLOG_URL="https://koppl.in/indigo"
+BLOG_URL="http://aallam.com"
 
 # Set your assets URL
 ASSETS_URL="assets/images/"
@@ -113,9 +113,8 @@ echo "---"
 echo "title: \"${POST_TITLE}\""
 echo "layout: post"
 echo "date: ${CURRENT_DATE} ${TIME}"
-echo "image: '/assets/images/'"
 echo "description:"
-echo "tags:"
+echo "tag:"
 echo "blog: true"
 echo "jemoji:"
 echo "---"
