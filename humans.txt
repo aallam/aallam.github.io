@@ -1,9 +1,13 @@
 # humanstxt.org/
 
-# TEAM
+/* TEAM */
 
 	Mouaad Aallam
+	Site: http://aallam.com
+	Location: Paris, France.
 
-# TECHNOLOGY
-
-	HTML5, CSS3, JS, JEKYLL
+/* SITE */
+	Language: English
+	Technology: HTML5, CSS3, JS, JEKYLL
+	Tools: GitHub Pages
+	IDE: vim, gimp
