@@ -24,7 +24,14 @@ At the beginning, I used [Openshift][5] (here is [quickstart][6]), but again I w
 Finally I decided to use a VPS, so I used [Amazon Web Service][7] to do this ! First, I [setup an EC2][8] Instance (Ubuntu) with an [Elastic IP][9] (free tier with a [billing alarm][10]), Next, I connected using SSH then I [setup the ZNC Bouncer][11].<br />
 The last thing to take care of was the security group of the EC2 instance from the management console , so I added the ZNC port as TCP inbound port and the IRC servers default port 6697 as TCP outbound port.
 
-After all this, the bouncer was ready and now I am able to [connect][12] to as many IRC servers as I want without losing my session, and get connected with multiple devices and I can edit specific configs (like increasing the log buffer) for every channel or server from the web interface (http://Instance_IP:znc_port) or from the [line command][13] on the IRC client.
+After all this, the bouncer was ready and now I am able to [connect][12] to as many IRC servers as I want without losing my session, and get connected with multiple devices and I can edit specific configs (like increasing the log buffer) for every channel or server from the web interface (`http://<elastic_IP>:<znc_port>`) or from the [line command][13] on the IRC client.
+
+To access the control panel from my domain, I've [added a subdomain][15] that points to the IP address of my EC2 server from my domain control pannel. I've checked if this with the command: `$ host <sub.domain.tld>`<br />
+Now to access the control panel I simply go to `https//<sub.domain.tld>:<znc_port>`. 
+
+By default `/whois` shows the default AWS's hostname. To change this I've requested a [reverse DNS][16] record. I got a respond from amazon next day saying that my request has been configured. I've checked this with the command: `$ host <elastic_IP>`<br />
+I reconnected the ZNC to the IRC server: `/msg *status connect`<br />
+And now `/whois` show my new hostname correctly !
 
 Cheers,<br />
 Mouaad
@@ -43,3 +50,5 @@ Mouaad
 [12]: http://wiki.znc.in/HexChat
 [13]: http://wiki.znc.in/Using_commands
 [14]: http://wiki.znc.in/images/4/4f/Overview_network_scheme.png
+[15]: https://uk.godaddy.com/help/add-a-subdomain-that-points-to-an-ip-address-4080
+[16]: http://aws.amazon.com/fr/ec2/faqs/#Can_I_configure_the_reverse_DNS_record_for_my_Elastic_IP_address
