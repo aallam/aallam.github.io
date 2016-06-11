@@ -24,7 +24,7 @@ I enjoy contributing to FOSS and I am working with Debian as a part of Google Su
 
 #### Site credits
 * Theme : A fork of [indigo](https://github.com/sergiokopplin/indigo)
-* Tools : Jeyll, GitHub Pages
+* Tools : Jekyll, GitHub Pages
 
 <a href="{{ site.url }}/assets/files/MouaadAallam.vcard">
  <img src="{{ site.url }}/assets/images/MouaadAallamQR.png" style="width: inherit;" alt="vCard" /></a>
