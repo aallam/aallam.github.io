@@ -3,6 +3,8 @@ node_modules
 _site
 .sass-cache
 .npm-debug.log
+npm-debug.log
+tmp/
 
 *~
 #*#
