@@ -6,6 +6,7 @@ description:
 tag:
 - Debian
 - Ubuntu
+- GSOC
 blog: true
 ---
 
