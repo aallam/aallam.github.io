@@ -44,7 +44,7 @@ layout: compress
 
     {% include icons.html %}
 
-    {% include analytics-google.html %}
-
+    {% if site.analytics-google %}{% include analytics-google.html %}{% endif %}    
+    {% if site.analytics-piwik %}{% include analytics-piwik.html %}{% endif %}
 </body>
 </html>
