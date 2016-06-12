@@ -11,6 +11,11 @@ blog: true
 
 In order to develop and package for Debian, a testing environment is required, that's why I've setup a Debian [chroot][3] environment in my computer (Ubuntu) using Debootstrap.
 
+<div class="text-center">
+<img src="{{ site.url }}/assets/images/blog/chroot-debian.png" alt="Chroot using Debootstrap Simplified Diagram">
+<figcaption class="caption">Chroot using Debootstrap Simplified Diagram</figcaption>
+</div>
+
 To do this  I've run the following commands:
 {% highlight bash %}
 $ sudo apt-get install schroot dchroot debootstrap
