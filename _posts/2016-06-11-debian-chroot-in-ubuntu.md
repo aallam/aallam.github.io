@@ -24,7 +24,7 @@ $ sudo debootstrap sid /sid-root http://httpredir.debian.org/debian/
 {% endhighlight %}
 Then I appended to the file `/etc/fstab` the following lines:
 {% highlight text %}
-/home/mouaad      /sid-root/home/mouaad         none    bind            0       0
+/home             /sid-root/home                none    bind            0       0
 /opt              /sid-root/opt                 none    bind            0       0
 /tmp              /sid-root/tmp                 none    bind            0       0
 /dev              /sid-root/dev                 none    bind            0       0
