@@ -26,7 +26,6 @@ Then I appended to the file `/etc/fstab` the following lines:
 {% highlight text %}
 /home/mouaad      /sid-root/home/mouaad         none    bind            0       0
 /opt              /sid-root/opt                 none    bind            0       0
-/export           /sid-root/export		none    bind            0       0
 /tmp              /sid-root/tmp                 none    bind            0       0
 /dev              /sid-root/dev                 none    bind            0       0
 proc-chroot       /sid-root/proc                proc    defaults        0       0
