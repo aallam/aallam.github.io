@@ -27,7 +27,7 @@ The last thing to take care of was the security group of the EC2 instance from t
 After all this, the bouncer was ready and now I am able to [connect][12] to as many IRC servers as I want without losing my session, and get connected with multiple devices and I can edit specific configs (like increasing the log buffer) for every channel or server from the web interface (`http://<elastic_IP>:<znc_port>`) or from the [line command][13] on the IRC client.
 
 To access the control panel from my domain, I've [added a subdomain][15] that points to the IP address of my EC2 server from my domain control pannel. I've checked if this with the command: `$ host <sub.domain.tld>`<br />
-Now to access the control panel I simply go to `https//<sub.domain.tld>:<znc_port>`. 
+Now to access the control panel I simply go to `https://<sub.domain.tld>:<znc_port>`. 
 
 By default `/whois` shows the default AWS's hostname. To change this I've requested a [reverse DNS][16] record. I got a respond from amazon next day saying that my request has been configured. I've checked this with the command: `$ host <elastic_IP>`<br />
 I reconnected the ZNC to the IRC server: `/msg *status connect`<br />
