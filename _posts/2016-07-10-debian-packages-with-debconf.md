@@ -1,5 +1,5 @@
 ---
-title: "Debconf into Debian Packages"
+title: "Debian Packages with Debconf"
 layout: post
 date: 2016-07-10 03:09
 description:
@@ -10,13 +10,13 @@ blog: true
 jemoji:
 ---
 
-As part of my GSoC project, I had to find a way to ask users questions and install the packages depending on the given answers, my specific case was to ask the user to select an entry from multiple choices, to achieve this, I used debconf.
+As part of my GSoC project, I had to find a way to ask users questions and install the packages depending on their given answers, my specific case was to ask the users to select an entry from multiple choices and download an archive from the chosen one, to achieve this, I used debconf.
 
 So what is debconf ?
 
 > Debconf is a backend database, with a frontend that talks to it and presents an interface to the user. There can be many different types of frontends, from plain text to a web frontend. The frontend also talks to a special config script in the control section of a Debian package, and it can talk to postinst scripts and other scripts as well, all using a special protocol. These scripts tell the frontend what values they need from the database, and the frontend asks the user questions to get those values if they aren't set.
 
-Even better, we can make sure that the users get the questions in their own languages; and the perfect way to do this ? `po-debconf` !
+Even better, we can make sure that the users get the questions in their own languages by using `po-debconf`.
 
 <div class="text-center" markdown="1">
 ![Debconf Frontend][5]
@@ -29,7 +29,7 @@ Even better, we can make sure that the users get the questions in their own lang
 $ apt install debconf po-debconf
 {% endhighlight %} 
 
-* Create `debian/templates` file, an underscore before a field name indicates that the field is translatable. Example:
+* Create `debian/templates` file. An underscore before a field name indicates that this field is translatable. Example:
 
 {% highlight control %}
 Template: packagename/something
@@ -40,7 +40,7 @@ _Description: A short description here
  A longer description here about the quastion.
 {% endhighlight %}
 
-* Create debian/config file, `packagename/somthing` is the same as in `debian/templates`:
+* Create debian/config file (`packagename/somthing` is the same as in `debian/templates`):
 
 {% highlight sh %}
 #!/bin/sh
@@ -83,7 +83,7 @@ Depends: debconf,
 {% endhighlight %}
 
 
-* Get and use the result (in `debian/postinit` for example with the variable `$RET`):
+* Get and use the result  (in `debian/postinit` for example with the variable `$RET`):
 
 {% highlight sh %}
 #!/bin/sh
