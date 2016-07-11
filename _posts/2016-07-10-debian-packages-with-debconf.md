@@ -22,7 +22,7 @@ Even better, we can make sure that the users get the questions in their own lang
 ![Debconf Frontend][5]
 </div>
 
-###Steps:
+### Steps:
 
 * Install `debconf` and `po-debconf`:
 {% highlight bash %}
@@ -147,12 +147,12 @@ exit 0
 
 * We can add the entry `packagename.postrm.debhelper` to `.gitignore`.
 
-###Examples:
+### Examples:
 
 * [Google Android M2 Repository Installer][1]
 * [Google Android SDK Docs Installer][2] 
 
-###Sources
+### Sources
 
 * [The debconf programmer's tutorial][3]
 * [The package po-debconf manuel][4]
