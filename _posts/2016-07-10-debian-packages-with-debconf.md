@@ -145,7 +145,7 @@ esac
 exit 0
 {% endhighlight %}
 
-* We can add the entry `packagename.postrm.debhelper` to `.gitignore`.
+* Finaly, We can add the entry `packagename.postrm.debhelper` to `.gitignore`.
 
 ### Examples:
 
@@ -155,7 +155,10 @@ exit 0
 ### Sources
 
 * [The debconf programmer's tutorial][3]
-* [The package po-debconf manuel][4]
+* [The package po-debconf manual][4]
+
+Cheers, <br />
+_Mouaad_
 
 [1]: https://github.com/Aallam/debian_google-android-m2repository-installer
 [2]: https://github.com/Aallam/debian_google-android-sdk-docs-installer
