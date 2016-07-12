@@ -19,7 +19,7 @@ So what is debconf ?
 Even better, we can make sure that the users get the questions in their own languages by using `po-debconf`.
 
 <div class="text-center" markdown="1">
-![Debconf Frontend][5]
+![Debconf Frontend][6]
 </div>
 
 ### Steps:
@@ -154,14 +154,16 @@ exit 0
 
 ### Sources
 
-* [The debconf programmer's tutorial][3]
-* [The package po-debconf manual][4]
+* [Configuration management][3]
+* [The debconf programmer's tutorial][4]
+* [The package po-debconf manual][5]
 
 Cheers, <br />
 _Mouaad_
 
 [1]: https://github.com/Aallam/debian_google-android-m2repository-installer
 [2]: https://github.com/Aallam/debian_google-android-sdk-docs-installer
-[3]: http://www.fifi.org/doc/debconf-doc/tutorial.html
-[4]: http://manpages.ubuntu.com/manpages/wily/man7/po-debconf.7.html
-[5]: {{ site.url }}/assets/images/blog/debconf.png
+[3]: https://www.debian.org/doc/packaging-manuals/debconf_specification.html
+[4]: http://www.fifi.org/doc/debconf-doc/tutorial.html
+[5]: http://manpages.ubuntu.com/manpages/wily/man7/po-debconf.7.html
+[6]: {{ site.url }}/assets/images/blog/debconf.png
