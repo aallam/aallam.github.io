@@ -1,0 +1,74 @@
+==================================================================
+https://keybase.io/mouaad
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of http://aallam.com
+  * I am mouaad (https://keybase.io/mouaad) on keybase.
+  * I have a public key with fingerprint 369F 867F 6A06 5383 61AC  B36E 5825 9B81 10A2 422B
+
+To do so, I am signing this object:
+
+{
+    "body": {
+        "key": {
+            "eldest_kid": "0101a146ce8f0958f275668dea0143be8116d47feafd32ac4cdf8c482ea6b71555500a",
+            "fingerprint": "369f867f6a06538361acb36e58259b8110a2422b",
+            "host": "keybase.io",
+            "key_id": "58259b8110a2422b",
+            "kid": "0101a146ce8f0958f275668dea0143be8116d47feafd32ac4cdf8c482ea6b71555500a",
+            "uid": "d7213f369372d8836e63a5071a31ce19",
+            "username": "mouaad"
+        },
+        "service": {
+            "hostname": "aallam.com",
+            "protocol": "http:"
+        },
+        "type": "web_service_binding",
+        "version": 1
+    },
+    "ctime": 1471629366,
+    "expire_in": 157680000,
+    "prev": "eb41fd43a66e461c197ebc481d2572d2e37396f187c9ed3ba1a4dddb9a5e1adc",
+    "seqno": 9,
+    "tag": "signature"
+}
+
+which yields the signature:
+
+-----BEGIN PGP MESSAGE-----
+Version: Keybase OpenPGP v2.0.56
+Comment: https://keybase.io/crypto
+
+yMNCAnicrVJrTBRXGF1cKfJYBOwDkxJgEFuVwNyZ2ZnZVdvGutpqsBoRCpJu78zc
+wWHZnWUf2IWwCIoClpZSAQUbHsbahkdqE2pTflSEUpJW7QpoLKkp2iwIS0Ss1Cxt
+6Syx//qz35+b+91zzj3nyzeoUavCgt5ObimP6ti2KeiH/nqnKuvSG3QJxsmCC9OX
+YCa0fKACAdkdRpMkYHoMBziAgKJ5xIq4TsuKBKOlaVZAEAcUySEWAFqgGBFBUSAJ
+yFO8ILI8xRII0hwDtErhOMRSMFGy5CGb1SZZHIosSetElmZEGuK0lmRJGkCeI2mk
+ZQmtjlNEcUhQBMEpxEOyPcBQzHHQjlIlWekpF+Oyvf/A/8++nctyAkMAUlRckwwh
+sIpfRJNQizMAkoBHQBcA2pHNAs1IQZtlJ4QCVpqCKb0iiUeBsQZyPH2HsKAAmlN5
+2azwrDbZIfNygdI/5HBY9QGaw2UN4A4jzvhUwchJFkEZoUIoQja7JFswPVCQvEMK
+SAKKATShI2k6BUPvWSUbMkoBhJahWVypwDeoSJFEHAVEgSIhTSOKBjzQMYhTcgOB
+0CrRCEQypI4WAcvwOiSQHASQEgSB00EtAlDgsUCmQouM6XWKTZinSNqlPAt0OG0I
+K73Sn7tSFRSmeiZ4RWC1VGGhUf8u3Msvrvar9WNJeZsT5p/8kul5a6hdfbTi+z7/
+kTsU88fnpcGmVdsOhy3pcxzdpvT4mT1nb890hCRMe89Unx+uHUjePw5SYy4EXzfI
+zY96dts7S36u91OzRZXmqHg684m9wX1NE+eYrB6Tpv1f3XQ3VvjsIaWXRUl3WfPt
+s2XrE8XfV8bOdvw14mHkGnHt3xNpB6eiezUe++PRrM/uFU4C03pX8cGWu+7Gke+O
+8a3T3qN1vQm7cnx8m7fM2nPKt8GcO0gs5VvGo9q2n0jOGz6trir9yOuv2dSU1FVe
+OTXQGrng6St/KWLn8Ll3RtsmMpuzz9WqH1YZw7d8fbL43aSqBVWFrh/vAxZbczYk
+pmquhi3Or3n02rrOjz0TMYM7oz1prkuqpPRrOxY/mcvYmHoxRrtkMPjS5n6Ms7m7
+rhpu3ZiYffNi1ljyn6ov73X37l+NHbhpdm+sv//gufcdZTteOF4XW5k4cNafNtO6
++7Eq3/uwIff5EfF2vKbnyIHRvVfKiz1t7WtPx0Zm/2qoqS2vnN+7oXO8KeLOhX1b
+z0zaT2He1xvjMsDddfcH8/tzEmZzQxya7PTN/Seina/s+s09l7jKRo9E3Ni3Z8s3
+ve2hhS3H8a6ti+EZx6obfOGtQyi0zDDQ4VnR5DT1eLsnXiU+bE10+dR1Lv/1yJML
+feeHOm596k7oXPPgpw+++AdJB8BP
+=8i2H
+-----END PGP MESSAGE-----
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/mouaad
+
+==================================================================
