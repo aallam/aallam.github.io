@@ -9,7 +9,7 @@ layout: page
 
 My name is Mouaad Aallam, a Developer and Master's student in Computer Science Engineering from University of Paris 7.
 
-I enjoy contributing to FOSS and I am working with Debian as a part of Google Summer of Code 2016.
+I enjoy contributing to FOSS and I was working with Debian as a part of Google Summer of Code 2016.
 
 #### Interests
 * Computer programming (Obviously!)
