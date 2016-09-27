@@ -25,6 +25,7 @@ layout: compress
     </style>
 
     {% if site.analytics-piwik %}{% include analytics-piwik.html %}{% endif %}
+    {% if site.analytics-google %}{% include analytics-google.html %}{% endif %}
 
 </head>
 <body>
@@ -44,9 +45,7 @@ layout: compress
         </div>
     </div>
 
-    {% include icons.html %}
-
-    {% if site.analytics-google %}{% include analytics-google.html %}{% endif %}    
+    {% include icons.html %}    
 
 </body>
 </html>
