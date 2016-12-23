@@ -69,8 +69,8 @@ width = 1/1.5
 plt.bar(x, number_listens, width, color="blue")
 plt.xlabel("Plays"); plt.ylabel("%")
 plt.title("the percentage of times the songs were played")
-plt.grid(b=True, which='major', color='k', linestyle='-')
-plt.grid(b=True, which='minor', color='r', linestyle='-', alpha=0.2)
+plt.grid(b=True, which="major", color="k", linestyle="-")
+plt.grid(b=True, which="minor", color="r", linestyle="-", alpha=0.2)
 plt.minorticks_on()
 plt.savefig("percentage_song_plays.png")
 {% endhighlight %}
