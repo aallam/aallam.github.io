@@ -59,6 +59,11 @@
         </a>
     {% endif %}
 
+    {% if site.docker %}
+        <a class="link" data-title="hub.docker.com/u/{{ site.github }}" href="https://hub.docker.com/u/{{ site.docker }}/" target="_blank">
+            <svg class="icon icon-docker"><use xlink:href="#icon-docker"></use></svg>
+        </a>
+    {% endif %}
 
     {% if site.medium %}
         <a class="link" data-title="medium.com/@{{ site.medium }}" href="https://medium.com/@{{ site.medium }}" target="_blank">
