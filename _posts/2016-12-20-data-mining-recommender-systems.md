@@ -50,8 +50,8 @@ import matplotlib.pyplot as plt
 import graphlab as gl
 import sqlite3
 
-# Loading train triplets"
-conn = sqlite3.connect('msd.sqlite3')
+# Loading train triplets
+conn = sqlite3.connect("msd.sqlite3")
 plays_df = gl.SFrame.from_sql(conn, "SELECT * FROM train")
 
 # Total entries
@@ -60,7 +60,7 @@ total_entries = plays_df.num_rows()
 # Percentage number of plays of songs
 number_listens = []
 for i in range(10):
-	number_listens.append(float(plays_df[plays_df['plays'] == i+1].num_rows())/total_entries*100)
+	number_listens.append(float(plays_df[plays_df["plays"] == i+1].num_rows())/total_entries*100)
 
 # Bar plot of the analysis
 n = len(number_listens)
@@ -69,8 +69,8 @@ width = 1/1.5
 plt.bar(x, number_listens, width, color="blue")
 plt.xlabel("Plays"); plt.ylabel("%")
 plt.title("the percentage of times the songs were played")
-plt.grid(b=True, which='major', color='k', linestyle='-')
-plt.grid(b=True, which='minor', color='r', linestyle='-', alpha=0.2)
+plt.grid(b=True, which="major", color="k", linestyle="-")
+plt.grid(b=True, which="minor", color="r", linestyle="-", alpha=0.2)
 plt.minorticks_on()
 plt.savefig("percentage_song_plays.png")
 {% endhighlight %}
@@ -92,16 +92,16 @@ import graphlab.aggregate as agg
 import sqlite3
 
 # Loading the DB
-conn = sqlite3.connect('msd.sqlite3')
+conn = sqlite3.connect("msd.sqlite3")
 
 plays_df = gl.SFrame.from_sql(conn, "SELECT * FROM train")
 songs_df = gl.SFrame.from_sql(conn, "SELECT * FROM song")
 
 # Get the most listened songs
-songs_total_listens = plays_df.groupby(key_columns='songID', operations={'plays': agg.SUM('plays')})
+songs_total_listens = plays_df.groupby(key_columns='songID', operations={"plays": agg.SUM("plays")})
 
 # Join songs with data
-songs_total_listens = songs_total_listens.join(songs_df, on='songID', how='inner').sort('plays', ascending=False)
+songs_total_listens = songs_total_listens.join(songs_df, on="songID", how="inner").sort("plays", ascending=False)
 print "# Top Songs with most total lisens:"
 print songs_total_listens.print_rows()
 {% endhighlight %}
@@ -123,17 +123,17 @@ import graphlab as gl
 import sqlite3
 
 # Load dataset
-conn = sqlite3.connect('msd.sqlite3')
+conn = sqlite3.connect("msd.sqlite3")
 listens = gl.SFrame.from_sql(conn, "SELECT * FROM train")
 
 # Create Training set and test set
-train_data, test_data = gl.recommender.util.random_split_by_user(listens, 'userID', 'songID')
+train_data, test_data = gl.recommender.util.random_split_by_user(listens, "userID", "songID")
 
 # Train the model
-model = gl.item_similarity_recommender.create(train_data, 'userID', 'songID')
+model = gl.item_similarity_recommender.create(train_data, "userID", "songID")
 
 # Evaluate the model
-rmse_data = model.evaluate_rmse(test_data, target='plays')
+rmse_data = model.evaluate_rmse(test_data, target="plays")
 
 # Print the results
 print rmse_data
@@ -155,17 +155,17 @@ import sqlite3
 import graphlab as gl
 
 # Load datasets
-conn = sqlite3.connect('msd.sqlite3')
+conn = sqlite3.connect("msd.sqlite3")
 listens = gl.SFrame.from_sql(conn, "SELECT * FROM train")
 
 # Build model
-training_data, validation_data = gl.recommender.util.random_split_by_user(listens, 'userID', 'songID')
+training_data, validation_data = gl.recommender.util.random_split_by_user(listens, "userID", "songID")
 
 # Train the model
-model = gl.recommender.factorization_recommender.create(training_data, user_id='userID', item_id='songID', target='plays')
+model = gl.recommender.factorization_recommender.create(training_data, user_id="userID", item_id="songID", target="plays")
 
 # Evaluate the model
-rmse_data = model.evaluate_rmse(validation_data, target='plays')
+rmse_data = model.evaluate_rmse(validation_data, target="plays")
 
 # Print the results
 print rmse_data
@@ -183,17 +183,17 @@ import sqlite3
 import graphlab as gl
 
 # Load datasets
-conn = sqlite3.connect('msd.sqlite3')
+conn = sqlite3.connect("msd.sqlite3")
 listens = gl.SFrame.from_sql(conn, "SELECT * FROM train")
 
 # Build model
-training_data, validation_data = gl.recommender.util.random_split_by_user(listens, 'userID', 'songID')
+training_data, validation_data = gl.recommender.util.random_split_by_user(listens, "userID", "songID")
 
 # Train the model
-model = gl.recommender.ranking_factorization_recommender.create(training_data, user_id='userID', item_id='songID', target='plays')
+model = gl.recommender.ranking_factorization_recommender.create(training_data, user_id="userID", item_id="songID", target="plays")
 
 # Recommend songs to users
-rmse_data = model.evaluate_rmse(validation_data, target='plays')
+rmse_data = model.evaluate_rmse(validation_data, target="plays")
 
 # Print the results
 print rmse_data
@@ -214,17 +214,17 @@ import sqlite3
 import graphlab as gl
 
 # Load datasets
-conn = sqlite3.connect('msd.sqlite3')
+conn = sqlite3.connect("msd.sqlite3")
 listens = gl.SFrame.from_sql(conn, "SELECT * FROM train where plays >=2")
 
 # Build model
-training_data, validation_data = gl.recommender.util.random_split_by_user(listens, 'userID', 'songID')
+training_data, validation_data = gl.recommender.util.random_split_by_user(listens, "userID", "songID")
 
 # Train the model
-model = gl.recommender.ranking_factorization_recommender.create(training_data, user_id='userID', item_id='songID', target='plays')
+model = gl.recommender.ranking_factorization_recommender.create(training_data, user_id="userID", item_id="songID", target="plays")
 
 # Evaluate the model
-rmse_data = model.evaluate_rmse(validation_data, target='plays')
+rmse_data = model.evaluate_rmse(validation_data, target="plays")
 
 # Print the results
 print rmse_data
@@ -242,16 +242,16 @@ import sqlite3
 import graphlab as gl
 
 # Load datasets
-conn = sqlite3.connect('msd.sqlite3')
+conn = sqlite3.connect("msd.sqlite3")
 listens = gl.SFrame.from_sql(conn, "SELECT * FROM train where plays >=2")
 songs_df = gl.SFrame.from_sql(conn, "SELECT * FROM song")
 
 # Build model
-model = gl.recommender.ranking_factorization_recommender.create(listens, user_id='userID', item_id='songID', target='plays')
+model = gl.recommender.ranking_factorization_recommender.create(listens, user_id="userID", item_id="songID", target="plays")
 
 # Recommend songs to users
 recommendations = model.recommend(users=["fd50c4007b68a3737fe052d5a4f78ce8aa117f3d"])
-song_recommendations = recommendations.join(songs_df, on='songID', how='inner').sort('rank')
+song_recommendations = recommendations.join(songs_df, on="songID", how="inner").sort("rank")
 
 # Show the results
 print song_recommendations
