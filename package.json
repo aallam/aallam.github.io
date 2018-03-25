@@ -4,7 +4,7 @@
   "homepage": "https://aallam.com",
   "license": "MIT",
   "bugs": {
-      "url": "https://github.com/Aallam/aallam.github.io/issues"
+    "url": "https://github.com/Aallam/aallam.github.io/issues"
   },
   "repository": {
     "type": "git",
@@ -14,5 +14,8 @@
     "build": "bundle exec jekyll build",
     "serve": "bundle exec jekyll serve",
     "test": "bundle exec htmlproofer ./_site"
+  },
+  "dependencies": {
+    "npm": "^5.8.0"
   }
 }

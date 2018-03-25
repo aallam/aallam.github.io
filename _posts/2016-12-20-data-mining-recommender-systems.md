@@ -283,7 +283,7 @@ Mouaad
 * [GraphLab Create API Documentation][16]
 
 [1]: http://labrosa.ee.columbia.edu/millionsong/
-[2]: https://dl.dropboxusercontent.com/u/25109353/aallam.com/msd.sqlite3
+[2]: https://www.dropbox.com/s/6t0awghwm5vlam5/msd.sqlite3
 [3]: http://scikit-learn.org/
 [4]: https://turi.com/
 [5]: {{ site.url }}/assets/images/blog/datamining.png
