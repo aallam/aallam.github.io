@@ -7,7 +7,7 @@ layout: page
 
 <br/>
 
-My name is Mouaad Aallam, a Developer and Master's student in Computer Science Engineering from University of Paris 7.
+My name is Mouaad Aallam, a Software Engineer, Oracle Certified [Associate][1] & [Professional][2] Java Programmer, and an enthusiastic Android Developer.
 
 I enjoy contributing to FOSS and I was working with Debian as a part of Google Summer of Code 2016.
 
@@ -28,3 +28,6 @@ I enjoy contributing to FOSS and I was working with Debian as a part of Google S
 
 <a href="{{ site.url }}/assets/files/MouaadAallam.vcard">
  <img src="{{ site.url }}/assets/images/MouaadAallamQR.png" style="width: inherit;" alt="vCard" /></a>
+
+[1]: https://www.youracclaim.com/badges/6b6ebc04-9a38-4311-8d2b-6fba5c9852ae
+[2]: https://www.youracclaim.com/badges/441df602-eb18-4ce9-91b1-54996fffe1ec
