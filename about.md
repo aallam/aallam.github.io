@@ -7,7 +7,7 @@ layout: page
 
 <br/>
 
-My name is Mouaad Aallam, a Software Engineer, Oracle Certified [Associate][1] & [Professional][2] Java Programmer, and an enthusiastic Android Developer.
+Mouaad Aallam. Software Engineer. Certified Java & Android Developer.
 
 I enjoy contributing to FOSS and I was working with Debian as a part of Google Summer of Code 2016.
 
@@ -26,8 +26,13 @@ I enjoy contributing to FOSS and I was working with Debian as a part of Google S
 * Theme : A fork of [indigo](https://github.com/sergiokopplin/indigo)
 * Tools : Jekyll, GitHub Pages
 
+<br/>
+
+<center>
+<a href="https://www.youracclaim.com/badges/6b6ebc04-9a38-4311-8d2b-6fba5c9852ae"><img src="{{ site.url }}/assets/images/badge/oca.png" style="width: inherit; display: inline!important;"/></a>
+<a href="https://www.youracclaim.com/badges/441df602-eb18-4ce9-91b1-54996fffe1ec"><img src="{{ site.url }}/assets/images/badge/ocp.png" style="width: inherit; display: inline!important;"/></a>
+<a href="https://www.credential.net/ipw6amqw"><img src="{{ site.url }}/assets/images/badge/aad.png" style="width: inherit; display: inline!important;"/></a>
+</center>
+
 <a href="{{ site.url }}/assets/files/MouaadAallam.vcard">
  <img src="{{ site.url }}/assets/images/MouaadAallamQR.png" style="width: inherit;" alt="vCard" /></a>
-
-[1]: https://www.youracclaim.com/badges/6b6ebc04-9a38-4311-8d2b-6fba5c9852ae
-[2]: https://www.youracclaim.com/badges/441df602-eb18-4ce9-91b1-54996fffe1ec
