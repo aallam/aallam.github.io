@@ -1,5 +1,5 @@
 ---
-title: "Kotlin For Java Developers"
+title: "Kotlin for Java Developers"
 layout: post
 date: 2018-10-29 14:29
 description:
@@ -401,7 +401,7 @@ package mypackage;
 * [Kotlin for Java Developers][1]
 * [Kotlin Grammar][4]
 
-[0]: {{ site.url }}/assets/images/blog/kotlin_logo.png
+[0]: {{ site.url }}/assets/images/blog/kotlin_java.png
 [1]: https://www.coursera.org/learn/kotlin-for-java-developers
 [2]: {{ site.url }}/assets/images/blog/kotlin_precedence.png
 [3]: https://kotlinlang.org/docs/reference/grammar.html#precedence
