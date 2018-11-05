@@ -17,8 +17,10 @@ jemoji:
 </style>
 
 <div class="text-center" markdown="1">
-![Kotlin][0]
+![Kotlin for Java Developers Certificate][0]{:width="75%"}
+<figcaption class="caption">Kotlin for Java Developers Certificate</figcaption>
 </div>
+<br/>
 
 The following are my notes for the course: [Kotlin for Java Developers][1].<br/>
 This course is given by Svetlana Isakova and Andrey Breslav from JetBrains.
@@ -401,7 +403,7 @@ package mypackage;
 * [Kotlin for Java Developers][1]
 * [Kotlin Grammar][4]
 
-[0]: {{ site.url }}/assets/images/blog/kotlin_java.png
+[0]: {{ site.url }}/assets/images/blog/kotlin_for_java_developers_certificate_aallam.png
 [1]: https://www.coursera.org/learn/kotlin-for-java-developers
 [2]: {{ site.url }}/assets/images/blog/kotlin_precedence.png
 [3]: https://kotlinlang.org/docs/reference/grammar.html#precedence
