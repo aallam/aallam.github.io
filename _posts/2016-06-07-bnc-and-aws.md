@@ -3,10 +3,7 @@ title: "BNC and AWS"
 layout: post
 date: 2016-06-07 06:54
 description: "IRC Bouncer (ZNC) and Amazon Web Service (EC2)"
-tag:
-- IRC
-- AWS
-blog: true
+blog: false
 ---
 
 As a Developer (and especially for FOSS contributing) I need to be always on communication tools like IRC, but I had two problems: First: I can’t connect from multiple devices at the same time with same nickname (which identify me), Second and more important: missing discussions while not connected (especially for the channels without log). That’s why I decided to use [IRC bouncers][1] to resolve this.
