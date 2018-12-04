@@ -9,7 +9,7 @@ external-image: false
 picture: 'assets/images/profile.jpg'
 doodle: './assets/images/doodle/coffee.png'
 
-url: https://aallam.com
+url: https://mouaad.aallam.com
 # your url: http://USERNAME.github.io
 
 permalink: /:title/
@@ -86,6 +86,6 @@ gems:
   - jekyll-paginate
 
 jekyll-mentions:
-    base_url: https://aallam.com
+    base_url: https://mouaad.aallam.com
 
 exclude: [README.md, Gemfile, Gemfile.lock, node_modules, gulpfile.js, package.json, _site, src, vendor, CNAME, indigo-gh-pages.zip, Rakefile, screen-shot.png, travis.sh, tasks]
