@@ -26,7 +26,7 @@ analytics-google: 'UA-38285154-3'
 # id: 1
 
 # if you don't want comments in your posts, set to false
-disqus: aallam
+disqus: false #aallam
 
 # if you don't have any of social below, comment the line
 # facebook: myfacebook
@@ -71,6 +71,9 @@ related: true
 
 # do you want some animations?
 animation: true
+
+# show author in posts ?
+show-author: true
 
 sass:
     sass_dir: _sass
