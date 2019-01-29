@@ -67,7 +67,7 @@ How `Observable` is any different from Java 8 _Streams_ or Kotlin _sequences_? T
 ## Advanced RxJava
 The following are more detailed subjects for a deeper understanding of RxJava:
 
-* Observable & Observer
+* [Observable & Observer][11]
 * Hot vs Cold Observable
 * Observable Factories
 * Disposing
@@ -88,3 +88,4 @@ The following are more detailed subjects for a deeper understanding of RxJava:
 [2]: http://reactivex.io/documentation/observable.html
 [3]: http://reactivex.io/documentation/operators.html
 [4]: https://rxmarbles.com/
+[11]: {{ site.url }}/rxjava-observable-and-observer
