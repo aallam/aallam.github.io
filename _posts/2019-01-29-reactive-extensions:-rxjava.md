@@ -90,7 +90,7 @@ The following are more detailed subjects for a deeper understanding of RxJava:
 [4]: https://rxmarbles.com/
 [11]: {{ site.url }}/rxjava-observable-and-observer
 [12]: {{ site.url }}/rxjava-hot-vs-cold-observable
-[13]: {{ site.url }}/404
+[13]: {{ site.url }}/rxjava-observable-factories
 [14]: {{ site.url }}/404
 [15]: {{ site.url }}/404
 [16]: {{ site.url }}/404
