@@ -4,7 +4,7 @@ layout: post
 date: 2019-01-29 23:06
 description:
 tag:
-- Reactive Extensions
+- ReactiveX
 - RxJava
 - Java
 - Kotlin
@@ -68,12 +68,12 @@ How `Observable` is any different from Java 8 _Streams_ or Kotlin _sequences_? T
 The following are more detailed subjects for a deeper understanding of RxJava:
 
 * [Observable & Observer][11]
-* Hot vs Cold Observable
-* Observable Factories
-* Disposing
-* Operators: Supressing
-* Operators: Transforming
-* Operators: Reducing
+* [Hot vs Cold Observable][12]
+* [Observable Factories][13]
+* [Disposing][14]
+* [Operators: Supressing][15]
+* [Operators: Transforming][16]
+* [Operators: Reducing][17]
 
 ## Sources
 * [Learning RxJava][1]
@@ -89,3 +89,9 @@ The following are more detailed subjects for a deeper understanding of RxJava:
 [3]: http://reactivex.io/documentation/operators.html
 [4]: https://rxmarbles.com/
 [11]: {{ site.url }}/rxjava-observable-and-observer
+[12]: {{ site.url }}/rxjava-hot-vs-cold-observable
+[13]: {{ site.url }}/404
+[14]: {{ site.url }}/404
+[15]: {{ site.url }}/404
+[16]: {{ site.url }}/404
+[17]: {{ site.url }}/404

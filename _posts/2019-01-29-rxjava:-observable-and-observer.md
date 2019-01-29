@@ -4,7 +4,7 @@ layout: post
 date: 2019-01-29 23:47
 description:
 tag:
-- Reactive Extensions
+- ReactiveX
 - RxJava
 - Java
 - Kotlin
