@@ -91,7 +91,7 @@ The following are more detailed subjects for a deeper understanding of RxJava:
 [11]: {{ site.url }}/rxjava-observable-and-observer
 [12]: {{ site.url }}/rxjava-hot-vs-cold-observable
 [13]: {{ site.url }}/rxjava-observable-factories
-[14]: {{ site.url }}/404
+[14]: {{ site.url }}/rxjava-disposing
 [15]: {{ site.url }}/404
 [16]: {{ site.url }}/404
 [17]: {{ site.url }}/404
