@@ -92,6 +92,6 @@ The following are more detailed subjects for a deeper understanding of RxJava:
 [12]: {{ site.url }}/rxjava-hot-vs-cold-observable
 [13]: {{ site.url }}/rxjava-observable-factories
 [14]: {{ site.url }}/rxjava-disposing
-[15]: {{ site.url }}/404
-[16]: {{ site.url }}/404
-[17]: {{ site.url }}/404
+[15]: {{ site.url }}/rxjava-supressing-operators
+[16]: {{ site.url }}/rxjava-transforming-operators
+[17]: {{ site.url }}/rxjava-reducing-operators
