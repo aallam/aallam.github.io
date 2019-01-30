@@ -1,5 +1,5 @@
 ---
-title: "Reactive Extensions: RxJava"
+title: "ReactiveX: RxJava"
 layout: post
 date: 2019-01-29 23:06
 description:
@@ -18,7 +18,7 @@ jemoji:
 </div>
 <br/>
 
-I always has been interested by Reactive Streams (ReactiveX) and RxJava (and RxKotlin).  
+I always has been interested by Reactive Extensions (ReactiveX) and RxJava (and RxKotlin).  
 Recently, I enjoyed reading the excellent book: [Learning RxJava][1] by Thomas Nield, and the following are my notes.
 
 ## Why RxJava ?
