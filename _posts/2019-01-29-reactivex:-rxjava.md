@@ -71,9 +71,11 @@ The following are more detailed subjects for a deeper understanding of RxJava:
 * [Hot vs Cold Observable][12]
 * [Observable Factories][13]
 * [Disposing][14]
-* [Operators: Supressing][15]
-* [Operators: Transforming][16]
-* [Operators: Reducing][17]
+* Operators:
+	* [Supressing][15]
+	* [Transforming][16]
+	* [Reducing][17]
+	* [Collection][18]
 
 ## Sources
 * [Learning RxJava][1]
@@ -95,3 +97,4 @@ The following are more detailed subjects for a deeper understanding of RxJava:
 [15]: {{ site.url }}/rxjava-supressing-operators
 [16]: {{ site.url }}/rxjava-transforming-operators
 [17]: {{ site.url }}/rxjava-reducing-operators
+[18]: {{ site.url }}/rxjava-collection-operators
