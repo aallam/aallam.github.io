@@ -65,7 +65,7 @@ HELLO WORLD !
 How `Observable` is any different from Java 8 _Streams_ or Kotlin _sequences_? The key difference is that `Observable` _pushes_ the items while Streams and sequences _pull_ the items. 
 
 ## Advanced RxJava
-The following are more detailed subjects for a deeper understanding of RxJava:
+The following are more detailed notes for a deeper understanding of RxJava:
 
 * [Observable & Observer][11]
 * [Hot vs Cold Observable][12]
