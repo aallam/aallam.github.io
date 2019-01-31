@@ -1,5 +1,5 @@
 ---
-title: "ReactiveX: RxJava"
+title: "Reactive Extensions: RxJava"
 layout: post
 date: 2019-01-29 23:06
 description:
@@ -76,6 +76,7 @@ The following are more detailed subjects for a deeper understanding of RxJava:
 	* [Transforming][16]
 	* [Reducing][17]
 	* [Collection][18]
+    * [Recovery][19]
 
 ## Sources
 * [Learning RxJava][1]
@@ -98,3 +99,4 @@ The following are more detailed subjects for a deeper understanding of RxJava:
 [16]: {{ site.url }}/rxjava-transforming-operators
 [17]: {{ site.url }}/rxjava-reducing-operators
 [18]: {{ site.url }}/rxjava-collection-operators
+[19]: {{ site.url }}/rxjava-recovery-operators
