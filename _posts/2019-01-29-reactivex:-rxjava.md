@@ -77,6 +77,7 @@ The following are more detailed notes for a deeper understanding of RxJava:
 	* [Reducing][17]
 	* [Collection][18]
     * [Recovery][19]
+    * [Action][20]
 
 ## Sources
 * [Learning RxJava][1]
@@ -100,3 +101,4 @@ The following are more detailed notes for a deeper understanding of RxJava:
 [17]: {{ site.url }}/rxjava-reducing-operators
 [18]: {{ site.url }}/rxjava-collection-operators
 [19]: {{ site.url }}/rxjava-recovery-operators
+[20]: {{ site.url }}/rxjava-action-operators
