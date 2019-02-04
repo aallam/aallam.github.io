@@ -73,6 +73,7 @@ The following are more detailed notes for a deeper understanding of RxJava:
 * [Disposing][14]
 * [Supressing][15], [Transforming][16], [Reducing][17], [Collection][18], [Recovery][19] and [Action][20] Operators.
 * [Combining Observables][21]
+* [Multicasting][22], [Replaying and Caching][23] and [Subjects][24]
 
 ## Sources
 * [Learning RxJava][1]
@@ -98,3 +99,6 @@ The following are more detailed notes for a deeper understanding of RxJava:
 [19]: {{ site.url }}/rxjava-recovery-operators
 [20]: {{ site.url }}/rxjava-action-operators
 [21]: {{ site.url }}/rxjava-combining-observables
+[22]: {{ site.url }}/rxjava-multicasting
+[23]: {{ site.url }}/rxjava-replaying-and-caching
+[24]: {{ site.url }}/rxjava-subjects
