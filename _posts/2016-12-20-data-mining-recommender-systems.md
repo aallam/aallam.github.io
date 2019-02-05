@@ -7,6 +7,7 @@ tag:
 - Data Mining
 blog: true
 jemoji:
+hidden: true
 ---
 
 <div class="text-center" markdown="1">
