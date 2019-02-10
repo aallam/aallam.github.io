@@ -26,7 +26,7 @@ The blog post goes through the following processes to understand how D8 works:
 
 In the blog post, the above process allows us to understand what happens under the hood when some Java 8 features (Lambdas and APIs) are desugared using D8.
 
-In this post, we will use the same process to understand how `default` methods and `static` methods in Java 8 interfaces are desugared using D8. To better understand this post, I heavily recommend to read Jake Warthon’s post first.
+In this post, we will use the same process to understand how `default` methods and `static` methods in Java 8 interfaces are desugared using D8. To better understand this post, I heavily recommend reading Jake Warthon’s post first.
 
 ## Compile Java 8 Code
 We will try to analyse the following code : 
@@ -85,7 +85,7 @@ $ $ANDROID_HOME/build-tools/28.0.2/dexdump -d classes.dex
 We get a lot of output (the full output can be found [here][3]).
 
 ## Default Methods
-First we find the following output:
+Firs, we find the following output:
 ```
 Class #0            -
   Class descriptor  : 'LJava8$Logger-CC;'
@@ -95,9 +95,9 @@ Class #0            -
   Static fields     -
   Instance fields   -
 ```
-A new class `Java8$Logger-CC` has been generated ! (We know it’s generated because of the `SYNTHETIC` flag). This class has `Object` as super class and doesn’t implement any interfaces and have no static or instance fields.
+A new class `Java8$Logger-CC` has been generated! (We know it’s generated because of the `SYNTHETIC` flag). This class has `Object` as superclass and doesn’t implement any interfaces and have no static or instance fields.
 
-Now let’s check this class methods. The class hase two methods, the first one is `$default$log`:
+Now let’s check these class methods. The class has two methods, the first one is `$default$log`:
 ```
 Direct methods    -
     #0              : (in LJava8$Logger-CC;)
@@ -105,7 +105,7 @@ Direct methods    -
       type          : '(LJava8$Logger;Ljava/lang/String;Ljava/lang/String;)V'
       access        : 0x0009 (PUBLIC STATIC)
 ```
-We can read that this method is a `static` method and takes as arguments a `Logger` plus the same arguments as our default method in our `Logger` interface ! 
+We can read that this method is a `static` method and takes as arguments a `Logger` plus the same arguments as our default method in our `Logger` interface! 
 The content of the method is:
 ```
 [000434] Java8.Logger-CC.$default$log:(LJava8$Logger;Ljava/lang/String;Ljava/lang/String;)V
@@ -120,18 +120,18 @@ The content of the method is:
 |0014: invoke-interface {v1, v2}, LJava8$Logger;.log:(Ljava/lang/String;)V // method@0009
 |0017: return-void
 ```
-Even though the output looks like complicated, the code here is actualy simple and its logic is equivalent to the implementation of the the `default` method in `Logger` interface !
-The equivalent java code of the the method can be the following :
+Even though the output looks complicated, the code here is actually simple and its logic is equivalent to the implementation of the `default` method in `Logger` interface!
+The equivalent Java code of the method can be the following :
 ```java
 public static void defaultLog(Logger logger, String tag, String s) {
     logger.log(tag + ":" + s);
 }
 ```
-We can conclude that the `default` method in interfaces are desugered to `static` methods in a new generated utility class (`Loger-CC`).
+We can conclude that the `default` method in interfaces are desugared to `static` methods in a newly generated utility class (`Loger-CC`).
 
 ## Static Method
-Based on what we already saw before, we can have a guess how `static` methods in interfaces are desugared ! Let’s check !
-The generated class `Loger-CC` have a second `static` method ! And without surprise, it’s name is `systemOut`:
+Based on what we already saw before, we can have a guess how `static` methods in interfaces are desugared! Let’s check!
+The generated class `Loger-CC` have a second `static` method! And without surprise, its name is `systemOut`:
 ```
 #1            : (in LJava8$Logger-CC;)
   name        : 'systemOut'
