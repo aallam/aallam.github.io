@@ -8,6 +8,7 @@ tag:
 blog: true
 jemoji:
 hidden: true
+archived: true
 ---
 
 <div class="text-center" markdown="1">
