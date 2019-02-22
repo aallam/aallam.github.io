@@ -10,3 +10,4 @@ tmp
 #*#
 *.swp
 Gemfile.lock
+.idea/
