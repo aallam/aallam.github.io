@@ -159,9 +159,6 @@ exit 0
 * [po-debconf manpage][5]
 * [the debconf programmer's tutorial][6]
 
-Cheers, <br />
-_Mouaad_
-
 [1]: https://github.com/Aallam/debian_google-android-m2repository-installer
 [2]: https://github.com/Aallam/debian_google-android-sdk-docs-installer
 [3]: https://www.debian.org/doc/packaging-manuals/debconf_specification.html

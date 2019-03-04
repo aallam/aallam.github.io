@@ -64,9 +64,6 @@ $ locale-gen
 
 And finaly, the debian chroot environement is ready !
 
-Cheers,<br />
-Mouaad
-
 ####  Sources:
 * [https://wiki.debian.org/Debootstrap][1]
 * [https://wiki.ubuntu.com/DebootstrapChroot][2]

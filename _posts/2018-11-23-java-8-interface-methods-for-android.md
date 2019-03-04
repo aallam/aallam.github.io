@@ -235,9 +235,6 @@ hello from:default
 hello from static
 ```
 
--- *Mouaad*
-
-- - - -
 ## Sources
 * [Android’s Java 8 Support][1]
 * [Dalvik bytecode][2]

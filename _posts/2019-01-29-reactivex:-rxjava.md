@@ -82,8 +82,6 @@ The following are more detailed notes for a deeper understanding of RxJava:
 * [ReactiveX Documentation: Operators][3]
 * [RxMarbles][4]
 
--- *Mouaad*
-
 [0]: {{ site.url }}/assets/images/blog/reactivex.png
 [1]: https://www.amazon.com/Learning-RxJava-Thomas-Nield/dp/1787120422
 [2]: http://reactivex.io/documentation/observable.html

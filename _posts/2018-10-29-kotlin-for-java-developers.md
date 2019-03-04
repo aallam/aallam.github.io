@@ -397,8 +397,6 @@ package mypackage;
 * Triple quotes (called also multiline strings) are good for regex strings.
 * Expressions precedence ([documentation][3])
 
----
-
 ### Sources
 * [Kotlin for Java Developers][1]
 * [Kotlin Grammar][4]
