@@ -79,14 +79,14 @@ The following are more detailed notes for a deeper understanding of RxJava:
 
 ## Sources
 * [Learning RxJava][1]
-* [ReactiveX Documentation: Observable][2]
-* [ReactiveX Documentation: Operators][3]
+* [ReactiveX Documentation][2]
+* [RxJava Github][3]
 * [RxMarbles][4]
 
 [0]: {{ site.url }}/assets/images/blog/reactivex.png
 [1]: https://www.amazon.com/Learning-RxJava-Thomas-Nield/dp/1787120422
-[2]: http://reactivex.io/documentation/observable.html
-[3]: http://reactivex.io/documentation/operators.html
+[2]: http://reactivex.io/documentation
+[3]: https://github.com/ReactiveX/RxJava
 [4]: https://rxmarbles.com/
 [11]: {{ site.url }}/rxjava-observable-and-observer
 [12]: {{ site.url }}/rxjava-hot-vs-cold-observable
