@@ -32,7 +32,7 @@ fun main() {
     val symbols3 = Observable.just("ε", "ϝ")
     val list = listOf(letters1, letters2, letters3, symbols1, symbols2, symbols3)
     Observable.merge(list)
-        .subscribe *{*i *->*println("Received: $i") *}*
+        .subscribe {i ->println("Received: $i") }
 }
 ```
 ```
