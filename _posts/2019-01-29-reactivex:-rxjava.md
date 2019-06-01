@@ -76,6 +76,7 @@ The following are more detailed notes for a deeper understanding of RxJava:
 * [Multicasting][22], [Replaying and Caching][23] and [Subjects][24]
 * [Concurrency][25] and [Parallelisation][26]
 * [Buffering][27], [Windowing][28], [Throttling][29] and [Switching][30]
+* [Backpressure][31], [Flowable][32] and [Subscriber][33]
 
 ## Sources
 * [Learning RxJava][1]
@@ -108,3 +109,9 @@ The following are more detailed notes for a deeper understanding of RxJava:
 [28]: {{ site.url }}/rxjava-windowing
 [29]: {{ site.url }}/rxjava-throttling
 [30]: {{ site.url }}/rxjava-switching
+[31]: {{ site.url }}/rxjava-backpressure
+[32]: {{ site.url }}/rxjava-flowable
+[33]: {{ site.url }}/rxjava-subscriber
+
+
+
