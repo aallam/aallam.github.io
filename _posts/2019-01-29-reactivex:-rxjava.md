@@ -77,6 +77,7 @@ The following are more detailed notes for a deeper understanding of RxJava:
 * [Concurrency][25] and [Parallelisation][26]
 * [Buffering][27], [Windowing][28], [Throttling][29] and [Switching][30]
 * [Backpressure][31], [Flowable][32] and [Subscriber][33]
+* [Transformers][34] and [Custom Operators][35]
 
 ## Sources
 * [Learning RxJava][1]
@@ -115,3 +116,5 @@ _Note: code examples in this article are written in Kotlin to showcase the inter
 [31]: {{ site.url }}/rxjava-backpressure
 [32]: {{ site.url }}/rxjava-flowable
 [33]: {{ site.url }}/rxjava-subscriber
+[34]: {{ site.url }}/rxjava-transformers
+[35]: {{ site.url }}/rxjava-custom-operators
