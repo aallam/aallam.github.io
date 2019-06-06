@@ -12,8 +12,11 @@ jemoji:
 ---
 
 <div class="text-center" markdown="1">
-![Kotlin Couroutines][0]
+![Kotlin Couroutines][0]{:width="50%"}
+<figcaption class="caption">Kotlin Couroutines - <a href="https://pspdfkit.com/blog/2019/kotlin-coroutines/">Source</a></figcaption>
 </div>
+<br/>
+  
   
 Kotlin coroutines are a way of doing “asynchronous or non-blocking programming”, but what does it mean to be “asynchronous” and “non-blocking” ?
 
