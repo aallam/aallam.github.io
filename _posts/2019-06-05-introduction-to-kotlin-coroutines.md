@@ -74,7 +74,14 @@ If a thread is doing nothing but waiting for a I/O operation (file or network), 
 Each function should split into **chunks**, **release** the thread after running a chunk, and **continue** the next chunk once the result it needs is ready. The functions are *cooperating* to use thread effectively and thus approach is called *cooperative* or *non-preemptive* multitasking. This is exactly what coroutines are about!
   
 For further understanding, please read this excellent [article][3] and check the sources section below.
- 
+
+## ReactiveX and Coroutines
+Rx and Kotlin coroutines are often being compared. The following citation is an excellent answer to this comparaison:
+>(…) RxKotlin does not use coroutines yet; the reason is quite simple–both coroutines and Schedulers in RxKotlin share nearly the same internal architecture.    
+> — [Reactive Programming in Kotlin][4]
+  
+In other terms: coroutines and Rx are simply two different layers of abstraction.
+
 - - - -
 
 ## Sources
@@ -86,5 +93,4 @@ For further understanding, please read this excellent [article][3] and check the
 [1]: {{ site.url }}/assets/images/blog/intro_coroutines_request.png
 [2]: {{ site.url }}/assets/images/blog/intro_coroutines_yield_continue.png
 [3]: https://blog.alexnesterov.com/post/coroutines/
-
-
+[4]: https://www.packtpub.com/application-development/reactive-programming-kotlin
