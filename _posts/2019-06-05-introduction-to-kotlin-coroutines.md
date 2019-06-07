@@ -13,7 +13,7 @@ jemoji:
 
 <div class="text-center" markdown="1">
 ![Kotlin Couroutines][0]{:width="50%"}
-<figcaption class="caption">Kotlin Couroutines - <a href="https://pspdfkit.com/blog/2019/kotlin-coroutines/">Source</a></figcaption>
+<figcaption class="caption">Banner from <em>kotlinlang.org</em></figcaption>
 </div>
 <br/>
   
@@ -89,7 +89,7 @@ In other terms: coroutines and Rx are simply two different layers of abstraction
 * [Coroutines in Kotlin · Code for glory](https://blog.alexnesterov.com/post/coroutines/)
 * [Kotlin Coroutines Concurrency · Kotlin Expertise Blog](https://kotlinexpertise.com/kotlin-coroutines-concurrency/)
 
-[0]: {{ site.url }}/assets/images/blog/intro_coroutines_header.png
+[0]: {{ site.url }}/assets/images/blog/intro_coroutines_header.gif
 [1]: {{ site.url }}/assets/images/blog/intro_coroutines_request.png
 [2]: {{ site.url }}/assets/images/blog/intro_coroutines_yield_continue.png
 [3]: https://blog.alexnesterov.com/post/coroutines/
