@@ -1,5 +1,5 @@
 ---
-title: "Reactive Extensions: RxJava"
+title: "Reactive Programming with RxJava"
 layout: post
 date: 2019-01-29 23:06
 description:
