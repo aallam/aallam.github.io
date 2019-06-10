@@ -128,7 +128,7 @@ In the previous example,  `GlobalScope.launch` has been used to create a top-lev
   
 <div class="text-center">
    <img class="image" src="{{ site.url }}/assets/images/blog/job_lifecycle.svg" alt="Job lifecycle" width="75%"/>
-   <figcaption class="caption">Job Lifecycle</figcaption>
+   <figcaption class="caption">Coroutine (Job) Lifecycle</figcaption>
 </div>
 
 Let’s apply this to our example:
