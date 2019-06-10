@@ -176,7 +176,36 @@ suspend fun hello() = coroutineScope {
     }
 }
 ```
-The new scope created by `coroutineScope` inherits the context from the outer scope.  
+```
+[main] Start
+[DefaultDispatcher-worker-1] Hello1
+[main] Done
+```
+The new scope created by `coroutineScope` inherits the context from the outer scope.
+
+### CoroutineScope extension vs suspend
+The previous example (using `suspend`) can be rewritten using `CoroutineScope` extension:
+```kotlin
+fun main() = runBlocking {
+    log("Start")
+    hello()  // not suspendable, no waiting!
+    log("Done")
+}
+
+
+private fun CoroutineScope.hello() = launch(Dispatchers.Default) {
+    delay(1000L)
+    log("Hello1")
+}
+```
+```
+[main] Start
+[main] Done
+[DefaultDispatcher-worker-1] Hello1
+```
+The output though is not the same! why? Here is the rules:
+* `suspend`: function do something long and waits for it to complete without blocking.
+* Extension of `CoroutineScope`: function launch new coroutines and quickly return without waiting for them.
 
 ## Coroutine Context and Dispatchers
 Coroutines always execute in some `CoroutineContext`. The coroutine context is a set of various elements. The main elements are the `Job` of the coroutine and its `CoroutineDispatcher`.
@@ -328,9 +357,8 @@ The following is an (over)simplified diagram of coroutines structure while keepi
 ## Sources
 * [Coroutines Guide · Kotlin/kotlinx.corou tines · GitHub][1]
 * [Introduction to Coroutines and Channels · Kotlin Playground][2]
+* [Kotlin Coroutines in Practice by Roman Elizarov · KotlinConf 2018][3]
 
 [1]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/coroutines-guide.md
 [2]: https://play.kotlinlang.org/hands-on/Introduction%20to%20Coroutines%20and%20Channels/01_Introduction
-[3]: {{ site.url }}/assets/images/blog/kotlin_coroutines_banner.png
-[4]: {{ site.url }}/asynchronous-programming-with-kotlin/
-[6]: {{ site.url }}/assets/images/blog/job_lifecycle.svg
+[3]: https://www.youtube.com/watch?v=a3agLJQ6vt8
