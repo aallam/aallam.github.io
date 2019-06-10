@@ -11,9 +11,9 @@ blog: true
 jemoji:
 ---
 
-<div class="text-center" markdown="1">
-![Kotlin Couroutines][0]{:width="50%"}
-<figcaption class="caption">Banner from <em>kotlinlang.org</em></figcaption>
+<div class="text-center">
+   <img class="image" src="{{ site.url }}/assets/images/blog/intro_coroutines_header.gif" alt="Kotlin Couroutines" width="75%"/>
+   <figcaption class="caption">Banner from <em>kotlin blog</em></figcaption>
 </div>
 <br/>
   
@@ -55,8 +55,8 @@ Lets consider a simple web-application that:
 * Returns back to the client the URL of the uploaded file.
 
 The picture below shows the application might work in the single-thread mode:
-<div class="text-center" markdown="1">
-![Single-thread request handling][1]
+<div class="text-center">
+   <img class="image" src="{{ site.url }}/assets/images/blog/intro_coroutines_request.png" alt="Single-thread request handling"/>
 </div>
 This only works for a single request, when working thread is busy handling a request, it won’t be able to respond to another request in the same time!  
 
@@ -68,8 +68,8 @@ What about using thread pools? A limit here is once all the threads are busy, ea
 
 #### Yield and Continue
 If a thread is doing nothing but waiting for a I/O operation (file or network), why not just to re-use it? for this to work, we need each request to **yield** the thread to another request instead of keeping the thread and waiting, then **continue** later when the waiting is done. 
-<div class="text-center" markdown="1">
-![Coroutine Yield and Continue handling][2]
+<div class="text-center">
+   <img class="image" src="{{ site.url }}/assets/images/blog/intro_coroutines_yield_continue.png" alt="Coroutine Yield and Continue handling"/>
 </div>
 Each function should split into **chunks**, **release** the thread after running a chunk, and **continue** the next chunk once the result it needs is ready. The functions are *cooperating* to use thread effectively and thus approach is called *cooperative* or *non-preemptive* multitasking. This is exactly what coroutines are about!
   
@@ -89,8 +89,5 @@ In other terms: coroutines and Rx are simply two different layers of abstraction
 * [Coroutines in Kotlin · Code for glory](https://blog.alexnesterov.com/post/coroutines/)
 * [Kotlin Coroutines Concurrency · Kotlin Expertise Blog](https://kotlinexpertise.com/kotlin-coroutines-concurrency/)
 
-[0]: {{ site.url }}/assets/images/blog/intro_coroutines_header.gif
-[1]: {{ site.url }}/assets/images/blog/intro_coroutines_request.png
-[2]: {{ site.url }}/assets/images/blog/intro_coroutines_yield_continue.png
 [3]: https://blog.alexnesterov.com/post/coroutines/
 [4]: https://www.packtpub.com/application-development/reactive-programming-kotlin

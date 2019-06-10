@@ -11,9 +11,9 @@ blog: true
 jemoji:
 ---
 
-<div class="text-center" markdown="1">
-![Kotlin Couroutines][3]{:width="75%"}
-<figcaption class="caption">Banner from <em>kotlin blog</em></figcaption>
+<div class="text-center">
+   <img class="image" src="{{ site.url }}/assets/images/blog/kotlin_coroutines_banner.png" alt="Kotlin Couroutines" width="75%"/>
+   <figcaption class="caption">Banner from <em>kotlin blog</em></figcaption>
 </div>
 <br/>
 
@@ -126,6 +126,11 @@ In the previous example,  `GlobalScope.launch` has been used to create a top-lev
 * The scope can automatically cancel children coroutines in case of the operation canceling or revoke.
 * The scope automatically waits for completion of all the children coroutines.
   
+<div class="text-center">
+   <img class="image" src="{{ site.url }}/assets/images/blog/job_lifecycle.svg" alt="Job lifecycle" width="75%"/>
+   <figcaption class="caption">Job Lifecycle</figcaption>
+</div>
+
 Let’s apply this to our example:
 ```kotlin
 fun main() = runBlocking {
@@ -306,6 +311,15 @@ class Activity : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 }
 ```
 
+## Conclusion
+Coroutines are a very good way to achieve [asynchonous programming with kotlin][4].  
+The following is an (over)simplified diagram of coroutines structure while keeping in mind each `Element` *is* a `CoroutineContext` by its own:
+
+<div class="text-center">
+   <img class="image" src="{{ site.url }}/assets/images/blog/coroutines_structure.svg" alt="coroutines structure" width="50%"/>
+   <figcaption class="caption">(over)simplified coroutines structure</figcaption>
+</div>
+
 ## Tips
 * `-Dkotlinx.coroutines.debug` as VM parameter for debugging.
 * `CoroutineName` as parameter to coroutine builders for debugging purposes.
@@ -318,3 +332,5 @@ class Activity : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 [1]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/coroutines-guide.md
 [2]: https://play.kotlinlang.org/hands-on/Introduction%20to%20Coroutines%20and%20Channels/01_Introduction
 [3]: {{ site.url }}/assets/images/blog/kotlin_coroutines_banner.png
+[4]: {{ site.url }}/asynchronous-programming-with-kotlin/
+[6]: {{ site.url }}/assets/images/blog/job_lifecycle.svg
