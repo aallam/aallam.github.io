@@ -349,16 +349,20 @@ The following is an (over)simplified diagram of coroutines structure while keepi
    <figcaption class="caption">(over)simplified coroutines structure</figcaption>
 </div>
 
+For more advanced topics like [composing suspending functions][4], [exception handling and supervision][5], the main [coroutines guide][1] is the way to go!
+
 ## Tips
 * `-Dkotlinx.coroutines.debug` as VM parameter for debugging.
 * `CoroutineName` as parameter to coroutine builders for debugging purposes.
 * Combining context element can be using `+` operator: `launch(Dispatchers.Default + CoroutineName("test")) { … }`.
 
 ## Sources
-* [Coroutines Guide · Kotlin/kotlinx.corou tines · GitHub][1]
+* [Coroutines Guide · GitHub][1]
 * [Introduction to Coroutines and Channels · Kotlin Playground][2]
 * [Kotlin Coroutines in Practice by Roman Elizarov · KotlinConf 2018][3]
 
-[1]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/coroutines-guide.md
+[1]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/coroutines-guide.md
 [2]: https://play.kotlinlang.org/hands-on/Introduction%20to%20Coroutines%20and%20Channels/01_Introduction
 [3]: https://www.youtube.com/watch?v=a3agLJQ6vt8
+[4]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/composing-suspending-functions.md
+[5]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/exception-handling.md
