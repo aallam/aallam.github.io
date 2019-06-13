@@ -357,12 +357,14 @@ For more advanced topics like [composing suspending functions][4], [exception ha
 * Combining context element can be using `+` operator: `launch(Dispatchers.Default + CoroutineName("test")) { … }`.
 
 ## Sources
-* [Coroutines Guide · GitHub][1]
-* [Introduction to Coroutines and Channels · Kotlin Playground][2]
-* [Kotlin Coroutines in Practice by Roman Elizarov · KotlinConf 2018][3]
+* [Coroutines Guide][1]
+* [Introduction to Coroutines and Channels][2]
+* [Kotlin Coroutines in Practice by Roman Elizarov][3]
+* [KEEP Kotlin Coroutines][6]
 
 [1]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/coroutines-guide.md
 [2]: https://play.kotlinlang.org/hands-on/Introduction%20to%20Coroutines%20and%20Channels/01_Introduction
 [3]: https://www.youtube.com/watch?v=a3agLJQ6vt8
 [4]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/composing-suspending-functions.md
 [5]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/exception-handling.md
+[6]: https://github.com/Kotlin/KEEP/blob/master/proposals/coroutines.md
