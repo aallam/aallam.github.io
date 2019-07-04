@@ -75,12 +75,13 @@ Each function should split into **chunks**, **release** the thread after running
   
 For further understanding, please read this excellent [article][3] and check the sources section below.
 
-## ReactiveX and Coroutines
-Rx and Kotlin coroutines are often being compared. The following citation is an excellent answer to this comparaison:
+## Reactive Streams and Coroutines
+Reactive streams and Kotlin coroutines are often being compared. The following citation is an excellent answer to this comparaison:
 >(…) RxKotlin does not use coroutines yet; the reason is quite simple–both coroutines and Schedulers in RxKotlin share nearly the same internal architecture.    
 > — [Reactive Programming in Kotlin][4]
   
-In other terms: coroutines and Rx are simply two different layers of abstraction.
+In other terms, coroutines and Rx are simply **two different layers of abstraction**.  
+However, in a near future, [Kotlin Flows][5] could be a solution to this delima.
 
 - - - -
 
@@ -88,6 +89,9 @@ In other terms: coroutines and Rx are simply two different layers of abstraction
 * [Coroutines Guide· GitHub](https://github.com/Kotlin/kotlinx.coroutines/blob/master/coroutines-guide.md)
 * [Coroutines in Kotlin · Code for glory](https://blog.alexnesterov.com/post/coroutines/)
 * [Kotlin Coroutines Concurrency · Kotlin Expertise Blog](https://kotlinexpertise.com/kotlin-coroutines-concurrency/)
+* [Reactive Streams and Kotlin Flows · Roman Elizarov](https://medium.com/@elizarov/reactive-streams-and-kotlin-flows-bfd12772cda4)
 
 [3]: https://blog.alexnesterov.com/post/coroutines/
 [4]: https://www.packtpub.com/application-development/reactive-programming-kotlin
+[5]: https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/
+
