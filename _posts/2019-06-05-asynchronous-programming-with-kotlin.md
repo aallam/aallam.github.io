@@ -18,10 +18,10 @@ jemoji:
 <br/>
   
   
-Kotlin coroutines are a way of doing “asynchronous or non-blocking programming”, but what does it mean to be “asynchronous” and “non-blocking” ?
+Kotlin coroutines are a way of doing “asynchronous or non-blocking programming”, but what does it mean to be “asynchronous” and “non-blocking”?
 
-## Asynchrony, Concurrency and Parrallelism
-To understand Asynchrony, lets define it along with other terms used in the same context: Concurrency and Parallellism:
+## Asynchrony, Concurrency, and Parrallelism
+To understand Asynchrony, let's define it along with other terms used in the same context: Concurrency and Parallelism:
 
 ### Asynchrony
 A simple definition of asynchrony is the following:
@@ -29,15 +29,15 @@ A simple definition of asynchrony is the following:
 > “Asynchrony, in computer programming, refers to the occurrence of events independent of the main program flow and ways to deal with such events”    
 > — [Wikipedia](https://en.wikipedia.org/wiki/Asynchrony_(computer_programming))    
 
-Asynchrony, is a programming model where a program starts some tasks, without waiting/blocking for the tasks results. The program continues his work until receiving a signal that the results are available.
+Asynchrony is a programming model where a program starts some tasks, without waiting/blocking for the results of the tasks. The program continues his work until receiving a signal that the results are available.
 
 ### Concurrency
 > In programming, concurrency is the _composition_ of independently executing processes (…), [and] dealing _with_ lots of things at once (…).    
 > — [Rob Pike](https://blog.golang.org/concurrency-is-not-parallelism)     
 
-Concurrency is about composition: handling multiple tasks being in progress at the same time, but not necessary simultaneously or with specific order. 
+Concurrency is about composition: handling multiple tasks being in progress in the same time, but not necessarily simultaneously or with a specific order. 
 
-### Parallellism
+### Parallelism
 > Parallel computing is a type of computation in which many calculations or the execution of processes are carried out simultaneously    
 > — [Wikipedia](https://en.wikipedia.org/wiki/Parallel_computing)    
 
@@ -48,7 +48,7 @@ Parallelism, often mistakenly used for concurrency,  is about simultaneous execu
 
 ## The problematic
 Now that we have defined asynchrony, what is the problem we are trying to solve ? 
-Lets consider a simple web-application that:
+Let's consider a simple web-application that:
 * Receives request from a client.
 * Reads a local file.
 * Uploads the file to some server.
@@ -58,16 +58,16 @@ The picture below shows the application might work in the single-thread mode:
 <div class="text-center">
    <img class="image" src="{{ site.url }}/assets/images/blog/intro_coroutines_request.png" alt="Single-thread request handling"/>
 </div>
-This only works for a single request, when working thread is busy handling a request, it won’t be able to respond to another request in the same time!  
+This only works for a single request, when the working thread is busy handling a request, it won’t be able to respond to another request in the same time!  
 
 #### Thread by request
-A solution might be to have a thread for each request! however, thread creation is expensive and this approach has a limit: number of thread OS can manage concurrently!  
+A solution might be to have a thread for each request! however, thread creation is expensive and this approach has a limit: the number of thread OS can manage concurrently!  
 
 #### Thread Pool
 What about using thread pools? A limit here is once all the threads are busy, each new request will have to wait until a thread is available.  
 
 #### Yield and Continue
-If a thread is doing nothing but waiting for a I/O operation (file or network), why not just to re-use it? for this to work, we need each request to **yield** the thread to another request instead of keeping the thread and waiting, then **continue** later when the waiting is done. 
+If a thread is doing nothing but waiting for an I/O operation (file or network), why not just to re-use it? for this to work, we need each request to **yield** the thread to another request instead of keeping the thread and waiting, then **continue** later when the waiting is done. 
 <div class="text-center">
    <img class="image" src="{{ site.url }}/assets/images/blog/intro_coroutines_yield_continue.png" alt="Coroutine Yield and Continue handling"/>
 </div>
@@ -76,12 +76,11 @@ Each function should split into **chunks**, **release** the thread after running
 For further understanding, please read this excellent [article][3] and check the sources section below.
 
 ## Reactive Streams and Coroutines
-Reactive streams and Kotlin coroutines are often being compared. The following citation is an excellent answer to this comparaison:
+Reactive streams and Kotlin coroutines are often being compared. The following citation is an excellent answer to this comparison:
 >(…) RxKotlin does not use coroutines yet; the reason is quite simple–both coroutines and Schedulers in RxKotlin share nearly the same internal architecture.    
 > — [Reactive Programming in Kotlin][4]
   
-In other terms, coroutines and Rx are simply **two different layers of abstraction**.  
-However, in a near future, [Kotlin Flows][5] could be a solution to this delima.
+In other terms, coroutines and Rx are simply **two different layers of abstraction**. However, in the near future, [Kotlin Flows][5] could be a solution to this dilemma.
 
 - - - -
 
