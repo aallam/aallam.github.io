@@ -2,7 +2,7 @@
 title: "JVM Architecture"
 layout: post
 date: 2019-08-08 16:16
-description:
+description: Java Virtual Machine Architecture
 tag:
 - Java
 - JVM
