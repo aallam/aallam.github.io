@@ -11,7 +11,7 @@ jemoji:
 ---
 
 <div class="text-center" markdown="1">
-![Java][0]
+![Java][0]{:width="75%"}
 </div>
 
 Java source codes are compiled into an intermediate state called **bytecode** (i.e. **.class** file) using the Java compiler (**javac**). The Java Virtual Machine a.k.a **JVM** interprets the bytecode (without further recompilations) into native machine language. Therefore, bytecode acts as a **platform-independent** intermediary state which is **portable** among any JVM regardless of underlying OS and hardware architecture.
@@ -140,7 +140,7 @@ The major system threads are as follows:
 * **VM thread**: This thread waits for operations to appear that require the JVM to reach a safe-point where modifications to the heap can not occur. The type of operations performed by this thread are “stop-the-world” garbage collections, thread stack dumps, thread suspension and biased locking revocation.
 
 ## 7. Conclusion
-Java is considered as both compiled (high-level code java into bytecode) and interpreted (bytecode into native machine code). By design, Java is slow due to dynamic linking and run-time interpreting, however, JIT compiler compensate for the disadvantages of the interpreter for repeating operations by keeping a native code instead of bytecode.
+Java is considered as both compiled (high-level java code into bytecode) and interpreted (bytecode into native machine code). By design, Java is slow due to dynamic linking and run-time interpreting, however, JIT compiler compensate for the disadvantages of the interpreter for repeating operations by keeping a native code instead of bytecode.
 
 ## 8. Useful Commands
 * `javac`: Java compiler;
@@ -163,7 +163,7 @@ Java is considered as both compiled (high-level code java into bytecode) and int
 * [How JVM Works - JVM Architecture](https://www.geeksforgeeks.org/jvm-works-jvm-architecture/)
 * [Java Virtual Machine (JVM) & its Architecture](https://www.guru99.com/java-virtual-machine-jvm.html)
 
-[0]: {{ site.url }}/assets/images/blog/java_icon.png
+[0]: {{ site.url }}/assets/images/blog/JVM.png
 [1]: {{ site.url }}/assets/images/blog/JVM_Architecture.png
 [2]: {{ site.url }}/assets/images/blog/JVM_stack_configuration.png
 [3]: {{ site.url }}/assets/images/blog/java_class_loaders.png
