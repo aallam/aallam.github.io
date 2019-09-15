@@ -11,7 +11,7 @@ jemoji:
 ---
 
 <div class="text-center" markdown="1">
-![Java][0]{:width="75%"}
+![Java][0]{:width="50%"}
 </div>
 
 Java source codes are compiled into an intermediate state called **bytecode** (i.e. **.class** file) using the Java compiler (**javac**). The Java Virtual Machine a.k.a **JVM** interprets the bytecode (without further recompilations) into native machine language. Therefore, bytecode acts as a **platform-independent** intermediary state which is **portable** among any JVM regardless of underlying OS and hardware architecture.
