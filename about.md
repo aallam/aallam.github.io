@@ -3,7 +3,7 @@ title: About
 layout: page
 ---
 ![Profile Image]({{ site.url }}/{{ site.picture }})
-<figcaption class="caption">Mouaad Aallam, Eiffel Tower - Paris</figcaption>
+<figcaption class="caption">Mouaad Aallam, Seine River - Paris</figcaption>
 
 <br/>
 
