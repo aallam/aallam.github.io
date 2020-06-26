@@ -7,9 +7,7 @@ layout: page
 
 <br/>
 
-Mouaad Aallam. Software Engineer. Certified Java & Android Developer.
-
-I enjoy contributing to FOSS and I was working with Debian as a part of Google Summer of Code 2016.
+Mouaad Aallam. Software Engineer. Certified Java & Android developer. Kotlin Enthusiastic.
 
 #### Interests
 * Computer programming (Obviously!)
@@ -18,9 +16,8 @@ I enjoy contributing to FOSS and I was working with Debian as a part of Google S
 * Coffee ! :D
 
 #### Contact
-* Email:  Mouaad@Aallam.com
+* Email:  mouaad@aallam.com
 * PGP key: [`0x10A2422B`](https://keyserver2.pgp.com/vkd/SubmitSearch.event?&&SearchCriteria=mouaad%40aallam.com), Fingerprint: `369F 867F 6A06 5383 61AC  B36E 5825 9B81 10A2 422B`
-* IRC Nickname: Mouaad <small>(OFTC/Freenode)</small>
 
 #### Site credits
 * Theme : A fork of [indigo](https://github.com/sergiokopplin/indigo)
