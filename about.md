@@ -7,12 +7,12 @@ layout: page
 
 <br/>
 
-Mouaad Aallam. Software Engineer. Certified Java & Android developer. Kotlin Enthusiastic.
+Mouaad Aallam. Software engineer. Certified Java & Android developer. Kotlin Enthusiastic.
 
 #### Interests
 * Computer programming (Obviously!)
 * Open-Source software
-* Reading (General knowledge): Science, Philosophy, History.. etc.
+* Reading: Science, Philosophy, History.. etc.
 * Coffee ! :D
 
 #### Contact
