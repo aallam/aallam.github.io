@@ -16,6 +16,6 @@
     "test": "bundle exec htmlproofer ./_site"
   },
   "dependencies": {
-    "npm": "^6.13.4"
+    "npm": "^6.14.6"
   }
 }
