@@ -17,9 +17,9 @@ jemoji:
 </div>
 <br/>
 
-Kotlin v1.3 was released bringing coroutines for asynchronous programming. This article is a quick introduction to the core features of `kotlinx.coroutines`.
+Kotlin v1.3 was released, bringing coroutines for asynchronous programming. This article is a quick introduction to the core features of `kotlinx.coroutines`.
 
-Let’s say the objective is to say hello asynchronously. Lets start with the following very classic code:
+Let’s say the objective is to say hello asynchronously. Let's start with the following classic code snippet:
 ```kotlin
 fun main() {
     println("Start")
@@ -37,7 +37,7 @@ Start
 Done
 Hello
 ```
-What happened within the 3 seconds when the created `Thread` was sleeping? The answer: nothing!  The thread was occupying memory without being used! This is when coroutines the light-weight threads kick in!
+What happened within the 3 seconds when the created `Thread` was sleeping? The answer: nothing! The thread was occupying memory without being used! This is when coroutines the light-weight threads kick in!
 
 ## First Coroutine
 The following is a basic way to migrate the previous example to use coroutines:
@@ -61,19 +61,19 @@ Done
 Hello
 ```
 The coroutine is launched with `launch` _coroutine builder_ in a context of a `CoroutineScope` (in this case `GlobalScope`).
-But what are _coroutine builders_ ? _coroutine contexts_ ?  _coroutine scopes_?
+But what are _coroutine builders_? _coroutine contexts_?  _coroutine scopes_?
 
 ## Coroutine Builders
 Coroutine builders are simple functions to create a new coroutine; the following are the main ones:
 * `launch`:  used for starting a computation that isn’t expected to return a specific result. `launch` _starts_ a coroutine and _returns_ a `Job`, which represents the coroutine. It is possible to wait until it completes by calling `Job.join()`.
-* `async`: like `launch` it starts a new coroutine, but returns a `Deferred`* object instead: it stores a computation, but it _defers_ the final result; it _promises_ the result sometime in the_future_.
-* `runBlocking`:  used as a bridge between blocking and non-blocking worlds. It works as an adaptor starting the top-level main coroutine and is intended primarily to be used in _main functions_ and in _tests_. 
+* `async`: like `launch` it starts a new coroutine but returns a `Deferred`* object instead: it stores a computation, but it _defers_ the final result; it _promises_ the result sometime in the_future_.
+* `runBlocking`: used as a bridge between blocking and non-blocking worlds. It works as an adaptor starting the top-level main coroutine and is intended primarily to be used in _main functions_ and _tests_. 
 *  `withContext`: calls the given code with the specified coroutine context, suspends until it completes, and returns the result. An alternative (but more verbose) way to achieve the same thing would be: `launch(context) { … }.join()`.
   
 _*_ `Deffered` _is a generic type which extends_ `Job`.
 
 ### Building Coroutines
-Lets use coroutines builders to improve the previous example by introducing `runBlocking`:
+Let's use coroutines builders to improve the previous example by introducing `runBlocking`:
 ```kotlin
 fun main() {
     println("Start")
@@ -90,7 +90,7 @@ fun main() {
     println("Done")
 }
 ```
-It is possible to do better ? Yes ! By moving the `runBlocking`  to wrap the execution of the main function:
+It is possible to do better? Yes! By moving the `runBlocking`  to wrap the execution of the main function:
 ```kotlin
 fun main() = runBlocking {
     println("Start")
@@ -104,7 +104,7 @@ fun main() = runBlocking {
     println("Done")
 }
 ```
-But wait a minute, the initial goal of having `delay(2000L)` was to wait for the coroutine to finish ! Let’s explicitly wait for it then:
+But wait a minute, the initial goal of having `delay(2000L)` was to wait for the coroutine to finish! Let’s explicitly wait for it then:
 ```kotlin
 fun main() = runBlocking {
     println("Start")
@@ -120,7 +120,7 @@ fun main() = runBlocking {
 ```
 
 ## Structured concurrency
-In the previous example,  `GlobalScope.launch` has been used to create a top-level “independent” coroutine. Why “top-level” ? Because `GlobalScope`  is used to launch coroutines which are operating on _the whole application lifetime_.
+In the previous example,  `GlobalScope.launch` has been used to create a top-level “independent” coroutine. Why “top-level”? Because `GlobalScope`  is used to launch coroutines that are operating on _the whole application lifetime_.
 “_Structured concurrency_” is the mechanism providing the structure of coroutines which gives the following benefits:
 * The scope is generally responsible for children coroutines, and their lifetime is attached to the lifetime of the scope.
 * The scope can automatically cancel children coroutines in case of the operation canceling or revoke.
@@ -203,7 +203,7 @@ private fun CoroutineScope.hello() = launch(Dispatchers.Default) {
 [main] Done
 [DefaultDispatcher-worker-1] Hello1
 ```
-The output though is not the same! why? Here is the rules:
+The output is not the same! why? Here are the rules:
 * `suspend`: function do something long and waits for it to complete without blocking.
 * Extension of `CoroutineScope`: function launch new coroutines and quickly return without waiting for them.
 
@@ -213,12 +213,12 @@ Coroutines always execute in some `CoroutineContext`. The coroutine context is a
 ### Dispatchers
 `CoroutineContext` _includes_ a `CoroutineDispatcher` that determines what thread or threads the corresponding coroutine uses for its execution. Coroutine dispatcher can confine coroutine execution to a _specific thread_, dispatch it to a _thread pool,_ or let it run _unconfined_.  
 
-Coroutine builders `launch`, `async`  and `withContext` accept an `CoroutineContext` parameter that can be used to explicitly specify the _dispatcher_ for new coroutine (and other context elements).
+Coroutine builders `launch`, `async`  and `withContext` accept a `CoroutineContext` parameter that can be used to explicitly specify the _dispatcher_ for new coroutine (and other context elements).
 
-Here is  various implementations of `CoroutineDispatcher`:
+Here are various implementations of `CoroutineDispatcher`:
 * `Dispatchers.Default`: the default dispatcher, that is used when coroutines are launched in `GlobalScope`. Uses shared background pool of threads,  appropriate for _compute-intensive_ coroutines.
-* `Dispatchers.IO`: Uses a shared pool of on-demand created thread. Designed for IO-intensive _blocking_ operations.
-* `Dispatchers.Unconfined`: Unrestricted to any specific thread or pool. Can be useful for some really special cases, but should not be used in general code.
+* `Dispatchers.IO`: Uses a shared pool of on-demand created threads. Designed for IO-intensive _blocking_ operations.
+* `Dispatchers.Unconfined`: Unrestricted to any specific thread or pool. Can be useful for some special cases, but should not be used in general code.
 
 ```kotlin
 fun main() = runBlocking {
@@ -260,9 +260,9 @@ private suspend fun hello() = coroutineScope {
 (`Dispatcher.IO` _dispatcher shares threads with_ `Dispatchers.Default`)
 
 ## Coroutine Scope
-Each coroutine run inside a _scope_. A scope can be application wide or specific. But why this is needed ?  
+Each coroutine runs inside a _scope_. A scope can be application-wide or specific.
 Contexts and jobs lifecycles are often tied to objects who are not coroutines (_Android activities for example_). Managing coroutines lifecycles can be done by keeping references and handling them manually. However, a better approach is to use `CoroutineScope`.  
-Best way to create a `CoroutineScope` is using:
+The best way to create a `CoroutineScope` is using:
 * `CoroutineScope()`: creates a general-purpose scope.
 * `MainScope()`: creates scope for UI applications and uses `Dispatchers.Main` as default dispatcher.
 
@@ -306,9 +306,9 @@ Start
 [DefaultDispatcher-worker-2] doing something...
 Done
 ```
-Only the first four coroutines had printed a message and the others were cancelled by a single invocation of `CoroutineScope.cancel()` in `Activity.destroy()`.
+Only the first four coroutines had printed a message and the others were canceled by a single invocation of `CoroutineScope.cancel()` in `Activity.destroy()`.
 
-Alternatively, we can implement `CoroutineScope` interface in this `Activity` class, and use delegation with default factory function:
+Alternatively, we can implement `CoroutineScope` interface in this `Activity` class, and use delegation with the default factory function:
 ```kotlin
 fun main() {
     println("Start")
@@ -341,7 +341,7 @@ class Activity : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 ```
 
 ## Conclusion
-Coroutines are a very good way to achieve [asynchonous programming with kotlin][4].  
+Coroutines are a very good way to achieve [asynchronous programming with kotlin][4].  
 The following is an (over)simplified diagram of coroutines structure while keeping in mind each `Element` *is* a `CoroutineContext` by its own:
 
 <div class="text-center">
@@ -349,11 +349,11 @@ The following is an (over)simplified diagram of coroutines structure while keepi
    <figcaption class="caption">(over)simplified coroutines structure</figcaption>
 </div>
 
-For more advanced topics like [composing suspending functions][4], [exception handling and supervision][5], the main [coroutines guide][1] is the way to go!
+For more advanced topics like [composing suspending functions][4], [exception handling, and supervision][5], the main [coroutines guide][1] is the way to go!
 
 ## Tips
 * `-Dkotlinx.coroutines.debug` as VM parameter for debugging.
-* `CoroutineName` as parameter to coroutine builders for debugging purposes.
+* `CoroutineName` as a parameter to coroutine builders for debugging purposes.
 * Combining context element can be using `+` operator: `launch(Dispatchers.Default + CoroutineName("test")) { … }`.
 
 ## Sources
