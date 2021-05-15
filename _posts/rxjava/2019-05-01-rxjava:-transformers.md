@@ -13,7 +13,7 @@ hidden: true
 jemoji:
 ---
 
-RxJava provides the possibility to reuse of pieces of `Observable` or `Flowable` chains and consolidate these operators into a new operator. using `ObservableTransformer` and `FlowableTransformer`.
+RxJava provides the possibility to reuse pieces of `Observable` or `Flowable` chains and combine these operators into a new operator. using `ObservableTransformer` and `FlowableTransformer`.
 
 ## ObservableTransformer
 Lets take the following example:
@@ -36,8 +36,7 @@ fun main() {
 Alpha Beta Gamma Delta Epsilon 
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
 ```
-The piece of code that is chaining of the two operators `collect()` and `map()` is exactly the same! Lets enhance the code reusability 
-using `ObservableTransformer` and `compose()`:
+The piece of code that is chaining of the two operators `collect()` and `map()` is the same! Enhance the code reusability using `ObservableTransformer` and `compose()`:
 ```kotlin
 fun main() {
     // Letters
@@ -66,7 +65,7 @@ Alpha Beta Gamma Delta Epsilon
 ```
 
 ## FlowableTransformer
-The `FlowableTransformer` is not much different from `ObservableTransformer`. Of course, it will support backpressure since it is composed with `Flowables`:
+The `FlowableTransformer` isn't much different from `ObservableTransformer`. Of course, it supports backpressure since it's composed with `Flowables`:
 ```kotlin
 fun main() {
     // Letters
@@ -127,7 +126,7 @@ Subscriber 1: IndexedValue(index=7, value=Gamma)
 Subscriber 1: IndexedValue(index=8, value=Delta)
 Subscriber 1: IndexedValue(index=9, value=Epsilon)
 ```
-A single instance (and state) of `AtomicInteger` was shared between both subscriptions. On the second subscription, instead of starting over at 0, it picks up at the index left by the previous subscription and starts at index 5 since the previous subscription ended at 4. 
+A single instance (and state) of `AtomicInteger` is shared between both subscriptions. On the second subscription, instead of starting over at 0, it picks up at the index left by the earlier subscription and starts at index 5 since it ended at 4.
 
 - - - -
-_Note: In Kotlin, instead of using Transformers, it is possible to leverage extension functions to add operators to `Observable` and `Flowable` types._
+_Note: in Kotlin, instead of using Transformers, it's possible to leverage extension functions to add operators to `Observable` and `Flowable` types._
