@@ -400,7 +400,7 @@ For such volatile element access: `java.util.concurrent.atomic.AtomicIntegerArra
 * [Java memory model - Wikipedia](https://en.wikipedia.org/wiki/Java_memory_model)
 * [JSR-133 Java Memory Model and Thread Specification 1.0 Proposed Final Draft](https://download.oracle.com/otndocs/jcp/memory_model-1.0-pfd-spec-oth-JSpec/)
 * [Happened-before - Wikipedia](https://en.wikipedia.org/wiki/Happened-before)
-* [http://tutorials.jenkov.com/java-concurrency/java-memory-model.html](http://tutorials.jenkov.com/java-concurrency/java-memory-model.html)
+* [Java Memory Model - jenkov](http://tutorials.jenkov.com/java-concurrency/java-memory-model.html)
 * [The Java Memory Model for Practitioners](https://www.youtube.com/watch?v=XgiXKPEILoc)
 * [Close Encounters of The Java Memory Model Kind](https://shipilev.net/blog/2016/close-encounters-of-jmm-kind/)
 
