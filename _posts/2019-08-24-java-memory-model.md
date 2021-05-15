@@ -356,7 +356,7 @@ class DoubleChecked {
         return instance;
     }
 
-    int foo;
+    int foo = 0;
 
     DoubleChecked() {
         foo = 42;
