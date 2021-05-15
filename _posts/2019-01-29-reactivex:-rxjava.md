@@ -18,23 +18,22 @@ jemoji:
 </div>
 <br/>
 
-I always has been interested by Reactive Extensions (ReactiveX) and RxJava (and RxKotlin).  
-Recently, I enjoyed reading the excellent book: [Learning RxJava][1] by Thomas Nield, and the following are my notes.
+Interested in Reactive Extensions and RxJava, I enjoyed reading the excellent book: [Learning RxJava][1] by Thomas Nield, and the following are my notes.
 
-## Why RxJava ?
+## Why RxJava?
 * Concurrency, event handling, obsolete data states, and exception recovery.
 * Maintainable, reusable, and evolvable.
 * Allows applications to be tactical and evolvable while maintaining stability in production.
 
-## Quick Start
-In ReactiveX, the core type is the `Observable` which essentially pushes things. A given `Observable<T>` pushes things of type `T` through a series of operators until it arrives at an `Observer` that consumes the items. 
-The following is an example of an `Observable<String>` that will push three `String` objects:
+## Quickstart
+In ReactiveX, the core type is the `Observable` which essentially pushes things. A given `Observable<T>` pushes things of type `T` through a series of operators until it arrives at an `Observer` that consumes the items.
+The following is an example of an `Observable<String>` that pushes three `String` objects:
 ```kotlin
 fun main() {
     val observable = Observable.just("Hello", "world", "!")
 }
 ```
-However, running this `main` method is not going to do anything other than declare a `Observable<String>`. To make this `Observable` actually push (or emit) these three strings, we need an `Observer` to _subscribe_ to it and receive the items:
+Running this `main` method isn't doing anything other than declare a `Observable<String>`. To make this `Observable` actually emit these three strings, an`Observer` need to _subscribe_ to it and receive the items:
 ```kotlin
 fun main() {
     val observable = Observable.just("Hello", "world", "!")
@@ -45,24 +44,24 @@ fun main() {
 ```
 This time, the output is the following:
 ```
-Hello world ! 
+Hello, world! 
 ```
-What happened here is that our `Observable<String>` pushed each `String` object once at a time to the `Observer` (the lambda).
+What happened here is that `Observable<String>` pushed each `String` object once at a time to the `Observer` lambda.
 
 It’s possible to use several operators between `Observable` and `Observer` to transform each pushed item or manipulate them, the following is an example of `map()`:
 ```kotlin
 fun main() {
     val observable = Observable.just("Hello", "world", "!")
-    observable.map { it.toUpperCase() }.subscribe { print("$it ") }
+    observable.map { it.uppercase() }.subscribe { print("$it ") }
 }
 ```
 The output should be:
 ```
-HELLO WORLD !
+HELLO WORLD!
 ```
 
-## RxJava vs Java 8 Streams
-How `Observable` is any different from Java 8 _Streams_ or Kotlin _sequences_? The key difference is that `Observable` _pushes_ the items while Streams and sequences _pull_ the items. 
+## RxJava vs Java 8 streams
+How `Observable` is any different from Java 8 _Streams_ or Kotlin _sequences_? The key difference is that `Observable` _pushes_ the items while Streams and sequences _pull_ the items.
 
 ## Advanced RxJava
 The following are more detailed notes for a deeper understanding of RxJava:
