@@ -51,7 +51,7 @@ Received: ϝ
 ```
 
 ### flatMap()
-This operator maps emission to Observables (cold or hot) (the new `Observable` can empty or emit one or many emissions).
+This operator maps emissions to Observables (cold or hot) (the new `Observable` can empty or emit one or many emissions).
 Operators:
 * `flatMap()`
 * `flatMapIterable()`
@@ -78,7 +78,7 @@ Received: e
 
 ## Concatenation
 Concatenation will fire elements of each provided Observable sequentially and in the order specified. It will not move on to the next Observable until the current one calls `onComplete()`.
-Concatenation should be preferred when order matters, otherwise, prefer merging instead. 
+Concatenation should be preferred when order matters, otherwise, prefer merging instead.
 Operators:
 * `Observable.concat()`
 * `Observable.concatArray()`
@@ -158,7 +158,7 @@ Received: Source2: 3000
 ```
 
 ## Zipping
-`Zip`  takes an emission from each `Observable` source and combine it into a single emission.
+`Zip` takes an emissions from each `Observable` source and combine it into a single emission.
 Operators:
 * `Observable.zip()`
 * `Observable.zipArray()`
