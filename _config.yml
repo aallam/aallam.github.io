@@ -30,7 +30,7 @@ disqus: false #aallam
 
 # if you don't have any of social below, comment the line
 # facebook: myfacebook
-twitter: MouaadAallam
+# twitter: MouaadAallam
 # google: mygoogle
 # instagram: myinstagram
 # pinterest: mypinterest
@@ -43,6 +43,7 @@ github: Aallam
 #medium: medium
 #vimeo: myvimeo
 email: Mouaad@Aallam.com
+mastodon: mastodon.social/@aal
 
 # do you want a larger site? change the option below
 # options: [normal, large] | default: normal
