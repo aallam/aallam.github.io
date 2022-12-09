@@ -18,7 +18,7 @@ markdown: kramdown
 highlighter: rouge
 
 # To enable google analytics, supply your token below
-analytics-google: 'UA-38285154-3'
+analytics-google: 'G-EEV09HJQNE'
 
 # To enable piwik tracking, supply your url & site ID below
 #analytics-piwik:
