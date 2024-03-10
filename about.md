@@ -7,7 +7,7 @@ layout: page
 
 <br/>
 
-Mouaad Aallam. Software engineer. Certified Java & Android developer. Kotlin Enthusiastic.
+Software Engineer with expertise in Kotlin, Java, and mobile app development, and an explorer of backend development realms. Engaging in collaborative development and community-driven initiatives, I embrace continuous learning and technological exploration.
 
 #### Interests
 * Computer programming (Obviously!)
