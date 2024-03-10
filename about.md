@@ -29,6 +29,7 @@ Mouaad Aallam. Software engineer. Certified Java & Android developer. Kotlin Ent
 <a href="https://www.youracclaim.com/badges/6b6ebc04-9a38-4311-8d2b-6fba5c9852ae"><img src="{{ site.url }}/assets/images/badge/oca.png" style="width: 15%; display: inline!important;"/></a>
 <a href="https://www.youracclaim.com/badges/441df602-eb18-4ce9-91b1-54996fffe1ec"><img src="{{ site.url }}/assets/images/badge/ocp.png" style="width: 15%; display: inline!important;"/></a>
 <a href="https://www.credential.net/ipw6amqw"><img src="{{ site.url }}/assets/images/badge/aad.png" style="width: 15%; display: inline!important;"/></a>
+<a href="https://www.credly.com/badges/c2254e09-146d-4a23-bd78-471a19a1b756"><img src="{{ site.url }}/assets/images/badge/ckad.png" style="width: 15%; display: inline!important;"/></a>
 </center>
 
 <a href="{{ site.url }}/assets/files/MouaadAallam.vcard">
