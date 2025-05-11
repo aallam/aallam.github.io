@@ -7,13 +7,18 @@ layout: page
 
 <br/>
 
-Software Engineer with expertise in Kotlin, Java, and mobile app development, and an explorer of backend development realms. Engaging in collaborative development and community-driven initiatives, I embrace continuous learning and technological exploration.
+I'm a Software Engineer with a strong background in Kotlin, Java, and mobile development.
+In recent years, my focus has expanded to include application architecture, cloud infrastructure, and DevOps practices.
+I enjoy designing well-structured systems and working closely with teams to build software that’s clear, reliable,
+and built to last.
 
 #### Interests
-* Computer programming (Obviously!)
-* Open-Source software
-* Reading: Science, Philosophy, History.. etc.
-* Coffee ! :D
+
+* Application architecture & systems design
+* Cloud platforms & DevOps
+* Open-source projects, mentoring and knowledge sharing
+* Reading: science, philosophy and history
+* Coffee. Always.
 
 #### Contact
 * Email:  mouaad@aallam.com
