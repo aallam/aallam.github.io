@@ -30,6 +30,7 @@ Software Engineer with expertise in Kotlin, Java, and mobile app development, an
 <a href="https://www.youracclaim.com/badges/441df602-eb18-4ce9-91b1-54996fffe1ec"><img src="{{ site.url }}/assets/images/badge/ocp.png" style="width: 15%; display: inline!important;"/></a>
 <a href="https://www.credential.net/ipw6amqw"><img src="{{ site.url }}/assets/images/badge/aad.png" style="width: 15%; display: inline!important;"/></a>
 <a href="https://www.credly.com/badges/c2254e09-146d-4a23-bd78-471a19a1b756"><img src="{{ site.url }}/assets/images/badge/ckad.png" style="width: 15%; display: inline!important;"/></a>
+<a href="https://www.credly.com/badges/356b9004-7d77-4d22-b8ba-e8e48d972755"><img src="{{ site.url }}/assets/images/badge/saa.png" style="width: 15%; display: inline!important;"/></a>
 </center>
 
 <a href="{{ site.url }}/assets/files/MouaadAallam.vcard">
