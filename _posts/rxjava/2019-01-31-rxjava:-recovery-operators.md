@@ -53,7 +53,7 @@ Received: 10
 Received: 3
 Received: -1
 ```
-Note that there is _no more emission_ s after the error, the sequence is terminated!
+Note that there is _no more emissions_ after the error, the sequence is terminated!
 
 ## onErrorReturn()
 On error, the operator `onErrorReturn()` allow to return a value dynamically using a given function:

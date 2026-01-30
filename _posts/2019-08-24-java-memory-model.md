@@ -88,8 +88,8 @@ latency*!
 ### Eventual consistency
 
 A machine can have multiprocessors, and (at some level) each processor has its cache, which means, each processor loads
-only the values it needs for its operations.  
-Lets we have two processors and the following program:
+only the values it needs for its operations.
+Let's say we have two processors and the following program:
 
 ```java
 class Caching {
@@ -154,7 +154,7 @@ energy-consuming efficiency, than x86 processors which are more about calculatio
 Java memory model answers the question: what values can be observed upon reading from a specific field?
 
 Formally specified by breaking down a Java program into **actions** and applying several **orderings** to these actions.
-If one can derive a so-called **happens-before** ordering between **write actions**, and a **read actions** of one
+If one can derive a so-called **happens-before** ordering between a **write action** and a **read action** of one
 field, the Java memory model guarantees that the read returns a particular value.
 
 The Java memory machine guarantees _intra-thread consistency_ equivalent to sequential consistency.
@@ -174,7 +174,7 @@ A memory model is a **trade-off** between a language’s simplicity (consistency
 
 ### Volatile
 
-Lets take the following example:
+Let's take the following example:
 
 ```java
 class DataRace {
@@ -229,7 +229,7 @@ allowed!
 ### Synchronized
 
 Another way to achieve the synchronization is by using: `synchronized`
-Lets check the following example assuming the second thread acquires the lock first:
+Let's check the following example assuming the second thread acquires the lock first:
 
 ```java
 class DataRace {

@@ -24,7 +24,7 @@ The steps to create a recommender system are:
 3. Use this information for the purpose of making a recommendation, as accurate as possible.
 
 The challenge here is to get a dataset and to use it in order to be as accurate as possible in the recommendation process.
-As example, let's create a music recommender system.
+For example, let's create a music recommender system.
 
 ### Dataset
 
@@ -42,7 +42,7 @@ There are many frameworks and libraries for data mining, for this example :
 
 ### Data Analysis
 
-First, we consider the songs plays as "ratings" for the songs by users, in other words, more a user listens to the same song more he likes it (and higher he evaluates it).
+First, we consider the songs plays as "ratings" for the songs by users, in other words, the more a user listens to the same song, the more he likes it (and higher he evaluates it).
 We can do some analysis of the data to get as much information as possible to improve our prediction system afterward.
 
 {% highlight Python %}
@@ -85,7 +85,7 @@ We note here about 58% of the songs were listened to only once.
 
 ### Basic Recommender System
 
-The most basic method is simply to recommend the most listened songs ! this method may seem obvious and too easy, but it actually works in many cases and to solve many problems like the cold start.
+The most basic method is simply to recommend the most listened songs! This method may seem obvious, and too easy, but it actually works in many cases and to solve many problems like the cold start.
 
 {% highlight Python %}
 #!/usr/bin/env python
@@ -104,7 +104,7 @@ songs_total_listens = plays_df.groupby(key_columns='songID', operations={"plays"
 
 # Join songs with data
 songs_total_listens = songs_total_listens.join(songs_df, on="songID", how="inner").sort("plays", ascending=False)
-print "# Top Songs with most total lisens:"
+print "# Top Songs with most total listens:"
 print songs_total_listens.print_rows()
 {% endhighlight %}
 
@@ -112,10 +112,10 @@ print songs_total_listens.print_rows()
 ![Basic music recommender system][7]
 </div>
 
-### Similarity Recommendater
+### Similarity Recommender
 
 The principle is to base the similarity on the songs listened to by the user. Therefore two songs are considered similar if they were already listened to by the same user (which means the plays/ratings are ignored).
-There is many algorithms for item similarity like _cosine_, _pearson_ and _jaccard_.
+There are many algorithms for item similarity like _cosine_, _pearson_ and _jaccard_.
 
 In the following code, we will use the Graphlab's [item similarity recommender][8] (which uses _jaccard_ by default) to calculate similarity, train the model, and calculate the [RMSE][9].
 
@@ -143,9 +143,9 @@ print rmse_data
 
 We get an overall RMSE of _6.776336098094174_
 
-### Factorization Recommander
+### Factorization Recommender
 
-In this category of recommendation algorithm, we have the choice between favoring "ranking performance" (predecting the order of the songs that a user will like) or "rating performance" (predicting the exact number of songs plays by a user).
+In this category of recommendation algorithm, we have the choice between favoring "ranking performance" (predicting the order of the songs that a user will like) or "rating performance" (predicting the exact number of songs plays by a user).
 
 #### Rating Performance :
 

@@ -58,7 +58,7 @@ class App : Application() {
     }
 }
 
-private fun <T> ObservableValue<T>. toObservable(): Observable<T> {
+private fun <T> ObservableValue<T>.toObservable(): Observable<T> {
     return Observable.create { observableEmitter ->
         //emit initial state
         observableEmitter.onNext(value)

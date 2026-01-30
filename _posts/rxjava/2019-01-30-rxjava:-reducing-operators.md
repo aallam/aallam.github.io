@@ -47,7 +47,7 @@ It's possible to pass a _seed_ argument that will serve as the _initial_ value t
 This operator verifies that each emission qualifies with a specified condition and return a `Single<Boolean>`: 
 ```kotlin
 fun main() {
-    Observable.just(1, 5, 12, 7,3)
+    Observable.just(1, 5, 12, 7, 3)
         .all { it < 10 }
         .subscribe { b -> println("Received: $b") }
 }

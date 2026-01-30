@@ -35,7 +35,7 @@ Received: 5
 Processing: Delta
 Received: 5
 ```
-It also possible to leverage `doAfterNext()` which performs the action _after_ the emission is passed downstream rather than before. 
+It is also possible to leverage `doAfterNext()` which performs the action _after_ the emission is passed downstream rather than before. 
 
 ## doOnComplete()
 The `doOnComplete()` operator fires off an action when `onComplete()` is called at the point in the `Observable` chain: 

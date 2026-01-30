@@ -13,7 +13,7 @@ hidden: true
 jemoji:
 ---
 
-_Erik Meijer_, the creator of ReactiveX, describes Subjects as the “_mutable variables of reactive programming_“ . Subjects are both an `Observer` and an `Observable` acting as a _proxy mulitcasting_ device (like an event bus) .
+_Erik Meijer_, the creator of ReactiveX, describes Subjects as the "_mutable variables of reactive programming_" . Subjects are both an `Observer` and an `Observable` acting as a _proxy multicasting_ device (like an event bus) .
 
 ## PublishSubject
 ```kotlin

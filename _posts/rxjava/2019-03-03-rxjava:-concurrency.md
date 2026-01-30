@@ -13,7 +13,7 @@ hidden: true
 jemoji:
 ---
 
-**Concurrency** is handling multiple tasks being in progress at the same time, but not necessary simultaneously.
+**Concurrency** is handling multiple tasks being in progress at the same time, but not necessarily simultaneously.
 
 The following are two tasks which will run sequentially:
 ```kotlin
@@ -106,7 +106,7 @@ Schedulers are mainly thread pools with different policies, threads may be persi
 * `Schedulers.newThread()`: creates a new thread for each Observer and then destroy the thread when it is done (without caching/persisting threads).
 * `Schedulers.single()`: backed by a single-threaded (to run tasks sequentially on a single thread).
 * `Schedulers.trampoline()`: run on the immediate thread, but it prevents cases of recursive scheduling.
-* `Schedulers.from()`: it’s possible to create a custom thread pool using `ExecurtorService`, and pass it as argument to `Schedulers.from()`.
+* `Schedulers.from()`: it's possible to create a custom thread pool using `ExecutorService`, and pass it as argument to `Schedulers.from()`.
 
 
 ## Operator: subscribeOn()

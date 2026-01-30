@@ -13,7 +13,7 @@ hidden: true
 jemoji:
 ---
 
-There the classic factories: `Observable.create()`, `Observable.just()` and `Observable.fromIterable()`.  
+There are the classic factories: `Observable.create()`, `Observable.just()` and `Observable.fromIterable()`.
 Let's see more:
 
 ## Observable.range
@@ -51,7 +51,7 @@ fun main() {
 `Observable.interval()` runs on the _computation Scheduler_ by default, and it is a **cold** `Observable` (each observable will get its own emissions, starting at 0). But it’s always possible to make it **hot** using `publish()` and `connect()`
 
 ## Observable.future()
-Its possible to use Java `Future` and turn them to `Observable`:
+It's possible to use Java `Future` and turn them to `Observable`:
 ```kotlin
 fun main() {
     val future: Future<String> = CompletableFuture.completedFuture("Alpha")
@@ -117,7 +117,7 @@ fun main() {
     source.subscribe { println("Observer 2: $it") }
 }
 ```
-The variable `count`  value changes it taken in consideration thanks to `Observable.defer()`, The output:
+The variable `count` value changes are taken in consideration thanks to `Observable.defer()`. The output:
 ```
 Observer 1: 0
 Observer 1: 1
@@ -136,7 +136,7 @@ Perform a calculation or action in a lazy or deferred manner, and in case of an 
 fun main() {
     Observable.fromCallable { 1 / 0 }
         .subscribe(
-            { i -> println("Eeceived: " + i!!) },
+            { i -> println("Received: " + i!!) },
             { e -> println("Error Captured: $e") }
         )
 }

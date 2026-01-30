@@ -1,5 +1,5 @@
 ---
-title: "RxJava: Supressing Operators"
+title: "RxJava: Suppressing Operators"
 layout: post
 date: 2019-01-29 23:47
 description:
@@ -44,7 +44,7 @@ Received: Beta
 Received: Gamma
 ```
 
-The other _overload_ of `filter()` will take emissions within a _specific time duration_ and then call `onComplete()`:
+The other _overload_ of `take()` will take emissions within a _specific time duration_ and then call `onComplete()`:
 ```kotlin
 fun main() {
     Observable.interval(300, TimeUnit.MILLISECONDS)
@@ -118,7 +118,7 @@ This operator will _keep skipping_ emissions while _the condition is satisfied_.
 ```kotlin
 fun main() {
     Observable.range(1, 10)
-        .skipWhile { it <= 95 }
+        .skipWhile { it <= 7 }
         .subscribe { println("Received: $it") }
 }
 ```
@@ -152,7 +152,7 @@ The `distinct()` operator will emit each unique emission and suppress any duplic
 ```kotlin
 fun main() {
     Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
-        .map{ it.length }
+        .map { it.length }
         .distinct()
         .subscribe { println("Received: $it") }
 }
@@ -167,7 +167,7 @@ It’s possible to add a _lambda_ argument that maps each emission to a key used
 ```kotlin
 fun main() {
     Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon")
-        .distinct{ it.length }
+        .distinct { it.length }
         .subscribe { println("Received: $it") }
 }
 ```

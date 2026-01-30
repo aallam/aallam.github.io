@@ -17,7 +17,7 @@ In order to develop and package for Debian, a testing environment is required, t
 <figcaption class="caption">Chroot using Debootstrap Simplified Diagram</figcaption>
 </div>
 
-To do this  I've run the following commands:
+To do this I've run the following commands:
 {% highlight bash %}
 $ sudo apt-get install schroot dchroot debootstrap
 $ sudo debootstrap sid /sid-root http://httpredir.debian.org/debian/
@@ -49,12 +49,12 @@ And finaly :
 $ sudo su -c 'echo "stretch /sid-root" > /etc/dchroot.conf'
 {% endhighlight %}
 
-Now to change to chroot is simply type:
+Now to change to chroot, simply type:
 {% highlight bash %}
 $ dchroot #sudo chroot for root
 {% endhighlight %}
 
-Now that I am on chroot I've run the following commands to setup the environement for packaging:
+Now that I am in the chroot I've run the following commands to setup the environment for packaging:
 {% highlight bash %}
 $ apt-get update
 $ apt-get install debconf devscripts gnupg
@@ -62,7 +62,7 @@ $ apt-get install locales
 $ locale-gen
 {% endhighlight %}
 
-And finaly, the debian chroot environement is ready !
+And finally, the debian chroot environment is ready!
 
 ####  Sources:
 * [https://wiki.debian.org/Debootstrap][1]

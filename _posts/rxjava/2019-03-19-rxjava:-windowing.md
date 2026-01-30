@@ -54,7 +54,7 @@ Received:  49 50
 ```
 
 ### Time-based
-It is possible to can _cut-off_ windowed Observables _at time intervals_ :
+It is possible to _cut-off_ windowed Observables _at time intervals_ :
 ```kotlin
 fun main() {
     Observable.interval(300, TimeUnit.MILLISECONDS)
@@ -72,4 +72,4 @@ Received:  1200 1500 1800
 Received:  2100 2400 2700
 Received:  3000 3300 3600 3900
 ```
-It is also possible yo specify `count` and `timeshift` arguments just like `buffer()` operator.
+It is also possible to specify `count` and `timeshift` arguments just like `buffer()` operator.

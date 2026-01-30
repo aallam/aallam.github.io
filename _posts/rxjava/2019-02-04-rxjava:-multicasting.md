@@ -18,9 +18,9 @@ Multicasting is helpful to prevent redundant work being done by multiple Observe
 Using cold `Observable`, without multicasting:
 ```kotlin
 fun main() {
-    val observable = Observable.just("Alpha", "Beta", "Gamma").map *{*(0..1000).random() *}*
-observable.subscribe *{*println("Observer 1: $*it*") *}*
-observable.subscribe *{*println("Observer 2: $*it*") *}*
+    val observable = Observable.just("Alpha", "Beta", "Gamma").map { (0..1000).random() }
+    observable.subscribe { println("Observer 1: $it") }
+    observable.subscribe { println("Observer 2: $it") }
 }
 ```
 ```
@@ -51,7 +51,7 @@ Observer 2: 706
 ```
 
 ## Automatic connection
-There is operators to automatically call connect(), but it is important to have awareness of their subscribe timing behaviours.
+There are operators to automatically call connect(), but it is important to have awareness of their subscribe timing behaviours.
 
 ### autoConnect()
 For a given `ConnectableObservable<T>`, calling `autoConnect()` will return an `Observable<T>` that will automatically call `connect()` after a specified number subscriptions: 

@@ -26,7 +26,7 @@ The blog post goes through the following processes to understand how D8 works:
 
 In the blog post, the above process allows us to understand what happens under the hood when some Java 8 features (Lambdas and APIs) are desugared using D8.
 
-In this post, we will use the same process to understand how `default` methods and `static` methods in Java 8 interfaces are desugared using D8. To better understand this post, I heavily recommend reading Jake Warthon’s post first.
+In this post, we will use the same process to understand how `default` methods and `static` methods in Java 8 interfaces are desugared using D8. To better understand this post, I heavily recommend reading Jake Wharton's post first.
 
 ## Compile Java 8 Code
 We will try to analyse the following code : 
@@ -226,7 +226,7 @@ class Java8Desugared {
   }
 }
 ```
-Compiling the running the above code gives the same output as out `Java8` class :
+Compiling and running the above code gives the same output as our `Java8` class:
 ```
 $ javac Java8Desugared.java
 $ java Java8Desugared

@@ -37,10 +37,10 @@ Type: select
 Choices: choice1, choice2
 Default: choice1
 _Description: A short description here
- A longer description here about the quastion.
+ A longer description here about the question.
 {% endhighlight %}
 
-* Create debian/config file (`packagename/somthing` is the same as in `debian/templates`):
+* Create debian/config file (`packagename/something` is the same as in `debian/templates`):
 
 {% highlight sh %}
 #!/bin/sh
@@ -64,7 +64,7 @@ exit 0
 $ cd debian && mkdir po
 {% endhighlight %}
 
-* Create the file `debian/po/PORFILES.in`:
+* Create the file `debian/po/POTFILES.in`:
 {% highlight bash %}
 $ echo "[type: gettext/rfc822deb] templates" > po/POTFILES.in
 {% endhighlight %}
@@ -74,7 +74,7 @@ $ echo "[type: gettext/rfc822deb] templates" > po/POTFILES.in
 $ debconf-updatepo
 {% endhighlight %}
 
-* Add `debconf` and `po-debconf` to `debconf/control` as dependenties:
+* Add `debconf` and `po-debconf` to `debconf/control` as dependencies:
 
 {% highlight debcontrol %}
 Depends: debconf,
@@ -83,7 +83,7 @@ Depends: debconf,
 {% endhighlight %}
 
 
-* Get and use the result  (in `debian/postinit` for example with the variable `$RET`):
+* Get and use the result (in `debian/postinst` for example with the variable `$RET`):
 
 {% highlight sh %}
 #!/bin/sh
@@ -113,7 +113,7 @@ esac
 exit 0
 {% endhighlight %}
 
-* We can purge the database when purging the package with the command `db_purge` command in `debian/postrm`, example:
+* We can purge the database when purging the package with the `db_purge` command in `debian/postrm`, example:
 
 {% highlight sh %}
 #!/bin/sh
@@ -145,7 +145,7 @@ esac
 exit 0
 {% endhighlight %}
 
-* Finaly, We can add the entry `packagename.postrm.debhelper` to `.gitignore`.
+* Finally, we can add the entry `packagename.postrm.debhelper` to `.gitignore`.
 
 ### Examples:
 

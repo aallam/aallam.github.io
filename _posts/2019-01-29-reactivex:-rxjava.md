@@ -33,7 +33,7 @@ fun main() {
     val observable = Observable.just("Hello", "world", "!")
 }
 ```
-Running this `main` method isn't doing anything other than declare a `Observable<String>`. To make this `Observable` actually emit these three strings, an`Observer` need to _subscribe_ to it and receive the items:
+Running this `main` method isn't doing anything other than declare a `Observable<String>`. To make this `Observable` actually emit these three strings, an `Observer` need to _subscribe_ to it and receive the items:
 ```kotlin
 fun main() {
     val observable = Observable.just("Hello", "world", "!")
@@ -44,7 +44,7 @@ fun main() {
 ```
 This time, the output is the following:
 ```
-Hello, world! 
+Hello world! 
 ```
 What happened here is that `Observable<String>` pushed each `String` object once at a time to the `Observer` lambda.
 
@@ -70,7 +70,7 @@ The following are more detailed notes for a deeper understanding of RxJava:
 * [Hot vs Cold Observable][12]
 * [Observable Factories][13]
 * [Disposing][14]
-* [Supressing][15], [Transforming][16], [Reducing][17], [Collection][18], [Recovery][19] and [Action][20] Operators.
+* [Suppressing][15], [Transforming][16], [Reducing][17], [Collection][18], [Recovery][19] and [Action][20] Operators.
 * [Combining Observables][21]
 * [Multicasting][22], [Replaying and Caching][23] and [Subjects][24]
 * [Concurrency][25] and [Parallelisation][26]

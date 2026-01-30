@@ -34,7 +34,7 @@ Received: 4
 ```
 
 ## Disposable within an Observer
-An `Observer` receives it’s own `Disposable` when subscribing as an argument of `onSubscribe(d: Disposable)`.
+An `Observer` receives its own `Disposable` when subscribing as an argument of `onSubscribe(d: Disposable)`.
 The following is an example of an `Observer` self-disposing after consuming an emission: 
 ```kotlin
 fun main() {
@@ -70,7 +70,7 @@ class MyObserver<T> : Observer<T> {
 Received: 0
 ```
 
-By default, calling `subscribe()` with an `Observer` instance don’t return a `Disposable`, but it possible to get it by extending `ResourceObserver`  and subscribing using `subscribeWith()`:
+By default, calling `subscribe()` with an `Observer` instance doesn't return a `Disposable`, but it's possible to get it by extending `ResourceObserver` and subscribing using `subscribeWith()`:
 ```kotlin
 fun main() {
     val seconds = Observable.interval(1, TimeUnit.SECONDS)

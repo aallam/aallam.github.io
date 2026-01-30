@@ -20,7 +20,7 @@ jemoji:
   
 Kotlin coroutines are a way of doing “asynchronous or non-blocking programming”, but what does it mean to be “asynchronous” and “non-blocking”?
 
-## Asynchrony, Concurrency, and Parrallelism
+## Asynchrony, Concurrency, and Parallelism
 To understand Asynchrony, let's define it along with other terms used in the same context: Concurrency and Parallelism:
 
 ### Asynchrony
@@ -47,7 +47,7 @@ Parallelism, often mistakenly used for concurrency,  is about simultaneous execu
 > — [Rob Pike](https://blog.golang.org/concurrency-is-not-parallelism)     
 
 ## The problematic
-Now that we have defined asynchrony, what is the problem we are trying to solve ? 
+Now that we have defined asynchrony, what are the problems we are trying to solve? 
 Let's consider a simple web-application that:
 * Receives request from a client.
 * Reads a local file.

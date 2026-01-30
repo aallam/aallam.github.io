@@ -13,7 +13,7 @@ hidden: true
 jemoji:
 ---
 
-In a reactive world, there is the case where a source is producing emissions _faster_ then the downstream can _process_ them. A solution of such case is to proactively make _the source slow down_ in the first place and emit at a pace that agrees with the downstream operations. This is known as **backpressure** or flow control. 
+In a reactive world, there is the case where a source is producing emissions _faster_ than the downstream can _process_ them. A solution of such case is to proactively make _the source slow down_ in the first place and emit at a pace that agrees with the downstream operations. This is known as **backpressure** or flow control. 
 
 Lets take the following example:
 ```kotlin
@@ -71,5 +71,5 @@ Constructing Item 3486558
 Constructing Item 3486559
 ...
 ```
-This precious output is just a section of the console output. 
+This previous output is just a section of the console output. 
 When Item **3486556** is created, the `Observer` is still processing the Item **259**! The emissions are being pushed much _faster_ than the `Observer` can _process_ them. This could lead to many problems like `OutOfMemoryError` exceptions. 

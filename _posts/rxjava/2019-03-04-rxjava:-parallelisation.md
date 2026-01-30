@@ -38,8 +38,8 @@ Received 10 20:40:54.149
 ```
 The previous example took around 20 seconds to finish !
 
-### Operator: flatmap()
-Let’s parallelise the previous example using `flatmap`:
+### Operator: flatMap()
+Let's parallelise the previous example using `flatMap`:
 ```kotlin
 fun main() {
     Observable.range(1, 10)

@@ -66,11 +66,11 @@ But what are _coroutine builders_? _coroutine contexts_?  _coroutine scopes_?
 ## Coroutine Builders
 Coroutine builders are simple functions to create a new coroutine; the following are the main ones:
 * `launch`:  used for starting a computation that isn’t expected to return a specific result. `launch` _starts_ a coroutine and _returns_ a `Job`, which represents the coroutine. It is possible to wait until it completes by calling `Job.join()`.
-* `async`: like `launch` it starts a new coroutine but returns a `Deferred`* object instead: it stores a computation, but it _defers_ the final result; it _promises_ the result sometime in the_future_.
+* `async`: like `launch` it starts a new coroutine but returns a `Deferred` object instead: it stores a computation, but it _defers_ the final result; it _promises_ the result sometime in the _future_.
 * `runBlocking`: used as a bridge between blocking and non-blocking worlds. It works as an adaptor starting the top-level main coroutine and is intended primarily to be used in _main functions_ and _tests_. 
 *  `withContext`: calls the given code with the specified coroutine context, suspends until it completes, and returns the result. An alternative (but more verbose) way to achieve the same thing would be: `launch(context) { … }.join()`.
   
-_*_ `Deffered` _is a generic type which extends_ `Job`.
+_*_ `Deferred` _is a generic type which extends_ `Job`.
 
 ### Building Coroutines
 Let's use coroutines builders to improve the previous example by introducing `runBlocking`:
@@ -90,7 +90,7 @@ fun main() {
     println("Done")
 }
 ```
-It is possible to do better? Yes! By moving the `runBlocking`  to wrap the execution of the main function:
+Is it possible to do better? Yes! By moving the `runBlocking`  to wrap the execution of the main function:
 ```kotlin
 fun main() = runBlocking {
     println("Start")

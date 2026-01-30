@@ -61,7 +61,7 @@ Received: Beta
 Received: Gamma
 ```
 
-There is too the operator `startWithArray()` : to start with more than one emission, it accepts `vararg` parameter:
+There is also the operator `startWithArray()` : to start with more than one emission, it accepts `vararg` parameter:
 ```kotlin
 fun main() {
     Observable.just("Alpha", "Beta", "Gamma")
@@ -173,7 +173,7 @@ Received: Epsilon
 There is also a `repeatUntil()` operator to keep repeating until the passed `Boolean` supplier yields `false`.
 
 ## scan()
-The `scan()` operator is a rolling aggregator. _It will emit after each upstream emission the new accumulation:
+The `scan()` operator is a rolling aggregator. It will emit after each upstream emission the new accumulation:
 ```kotlin
 fun main() {
     Observable.just(1, 1, 2, 3, 5)

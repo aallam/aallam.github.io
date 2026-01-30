@@ -70,4 +70,4 @@ Disposing ! Next..
 `switchMap()` receives every 5 seconds emissions from the `interval()` operator, the emission going into `switchMap()` will promptly dispose of the currently processing `Observable` (if there are any) and then emit from the new Observable it maps to. 
 In other terms, `switchMap()` is like `flatMap()` except that it will cancel any previous Observables and only emit from the latest one. This can be helpful to prevent redundant or stale work.
 
-For better performance, the thread pushing emissions into `switchMap()` should not be occupied doing the work inside `switchMap()`  (by using `observeOn()`, `subscriveOn()`  and `unsubscribeOn()`).
+For better performance, the thread pushing emissions into `switchMap()` should not be occupied doing the work inside `switchMap()`  (by using `observeOn()`, `subscribeOn()`  and `unsubscribeOn()`).

@@ -21,12 +21,12 @@ and built to last.
 * Coffee. Always.
 
 #### Contact
-* Email:  mouaad@aallam.com
+* Email: mouaad@aallam.com
 * PGP key: [`0x10A2422B`](https://keyserver2.pgp.com/vkd/SubmitSearch.event?&&SearchCriteria=mouaad%40aallam.com), Fingerprint: `369F 867F 6A06 5383 61AC  B36E 5825 9B81 10A2 422B`
 
 #### Site credits
-* Theme : A fork of [indigo](https://github.com/sergiokopplin/indigo)
-* Tools : Jekyll, GitHub Pages
+* Theme: A fork of [indigo](https://github.com/sergiokopplin/indigo)
+* Tools: Jekyll, GitHub Pages
 
 <br/>
 

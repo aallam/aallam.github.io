@@ -13,7 +13,7 @@ hidden: true
 jemoji:
 ---
 
-It’s possible to consider Collection operators as a reducing operators since they _consolidate emissions into a single one_. Collection operators will accumulate all emissions into a collection (`List`, `map`, `set`…).
+It's possible to consider Collection operators as reducing operators since they _consolidate emissions into a single one_. Collection operators will accumulate all emissions into a collection (`List`, `Map`, `Set`…).
 
 ## toList()
 For a given `Observable<T>`, this operator will collect incoming emissions into a `List<T>` and then push it as a single emission (`Single<List<T>>`):
@@ -54,7 +54,7 @@ Received: [Alpha, Beta, Delta, Eta, Gamma, Zeta]
 It’s possible to provide a `Comparator` as an argument to apply a different sorting logic. 
 
 ## toMap()
-This operator will collect emissions into `Map<K,T>` for a given `Observable<T>`, where `K` is the key type derived of a lambda `Function<T,K>` :
+This operator will collect emissions into `Map<K, T>` for a given `Observable<T>`, where `K` is the key type derived of a lambda `Function<T, K>`:
 ```kotlin
 fun main() {
     Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta")
@@ -91,7 +91,7 @@ Received: class java.util.concurrent.ConcurrentHashMap
 ```
 
 ## toMultiMap()
-For the  operator `toMap()` , if a key maps to multiple emissions, the last emission for that key is going to replace subsequent ones:
+For the operator `toMap()`, if a key maps to multiple emissions, the last emission for that key is going to replace subsequent ones:
 ```kotlin
 fun main() {
     Observable.just("Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta")

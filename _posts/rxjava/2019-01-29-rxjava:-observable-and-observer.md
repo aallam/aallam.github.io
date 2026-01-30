@@ -14,7 +14,7 @@ jemoji:
 ---
 
 ## Observable
-There is many factories  to create Observables:
+There are many factories to create Observables:
 *  `Observable.create`: 
 ```kotlin
 fun main() {
@@ -63,7 +63,7 @@ fun main() {
 ```
 
 ## Observer
-Each `Observable` returned by an operator (`map`, `filter`…) is internally an `Observer` that receives, transforms, and relays emissions to the next `Observer` downstream., without knowing if the next `Observer` is another operator or the final `Observer`. 
+Each `Observable` returned by an operator (`map`, `filter`…) is internally an `Observer` that receives, transforms, and relays emissions to the next `Observer` downstream, without knowing if the next `Observer` is another operator or the final `Observer`. 
 
 It’s possible to pass an object implementing the `Observer` interface to the `Observable.subscribe` method and override `onNext`, `onError`, and `onComplete`:
 
@@ -96,7 +96,7 @@ fun main() {
 
 Implementing an `Observer` is probably verbose, that’s why `subscribe` function is overloaded to accept lambda arguments for the three events:
 ```kotlin
-ffun main() {
+fun main() {
     val source: Observable<String> = Observable.just("Alpha", "Beta", "Charlie", "Delta", "Epsilon")
 
     val onNext: (Int) -> Unit = { println("Received: $it") }

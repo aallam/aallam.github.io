@@ -48,7 +48,7 @@ JVM annotations are useful for Kotlin code which will be called from Java code.
 * We can iterate over Strings (chars in a string).
 
 ## Operator “in”
-* `i in 1..9` is equivalent `i <= 9 && i>=9`.
+* `i in 1..9` is equivalent `i >= 1 && i <= 9`.
 * Not in : `!in` .
 * `"ball" in "a".."k"` is equivalent to `"a" <= "ball" && "ball" <= "k"` which is equivalent to `"a".compareTo("ball") <= 0 && "ball".compareTo("k") <= 0` _(String are compared alphabetically)_.
 
@@ -59,7 +59,7 @@ JVM annotations are useful for Kotlin code which will be called from Java code.
 * `@throws` annotation is for checked exceptions (to be catchable in Java).
 
 ## Extension Functions
-* `for String.lastChar() = this.get(this.length - 1)` ,  `String` (and `this` ) in this expression is  called: **Receiver**. `this` can be omitted , the expression becomes `for String.lastChar() = get(tlength - 1)`.
+* `fun String.lastChar() = this.get(this.length - 1)` ,  `String` (and `this` ) in this expression is  called: **Receiver**. `this` can be omitted , the expression becomes `fun String.lastChar() = get(length - 1)`.
 * Extension functions needs to be _imported_.
 * From Java, extensions are called as static methods.
 * An expression can’t call the private members of the receiver.
@@ -103,14 +103,14 @@ s.length
 * `find` (`firstOrNull`): finds an element satisfying a predicate and returns it, if none is found,  `null` is returned.
 * `first`: finds the first element to satisfy a predicate, if no result found, and exception is thrown.
 * `count`: count’s the element satisfying the predicate.
-* `partition`: devices a collection to two collections: one with elements satisfying the predicate and the other the ones that do not.
+* `partition`: divides a collection to two collections: one with elements satisfying the predicate and the other the ones that do not.
 * `groupBy`:  group elements by a provided key.
-* `assosiateBy`: it performs grouping, but for unique elements, duplicates are removed.
+* `associateBy`: it performs grouping, but for unique elements, duplicates are removed.
 * `zip`: return a list which its elements  (pair) are the combination of two lists elements.(Like a zipper :D).
-* `flatMap`: performs two actions: _first_ it **maps**”the collection (from a `String` to `Char` list for example), _then_ **flatten** them to return a single list with all mapped elements from all collections.
+* `flatMap`: performs two actions: _first_ it **maps** the collection (from a `String` to `Char` list for example), _then_ **flatten** them to return a single list with all mapped elements from all collections.
 
 ## Functional Programming
-* Lambdas can be stored in variables : `val isEven: (int) -> Boolean = { i: Int -> i % 2 == 0 }`, we can omit the types to become `val isEven = { i: Int -> i % 2 == 0 }`,. 
+* Lambdas can be stored in variables : `val isEven: (int) -> Boolean = { i: Int -> i % 2 == 0 }`, we can omit the types to become `val isEven = { i: Int -> i % 2 == 0 }`. 
 * It’s possible to pass stored lambdas whenever the expression of function type is expected : `list.any(isEven)`.
 * It’s possible to call stored lambdas : `isEven(42)`.
 * Lambdas can be run directly : `{ println("hi!") }()`, another more convenient way to run lambdas is using `run` instead of `()` : `run { println("hi!") }`.
@@ -208,7 +208,7 @@ class A {
 * Class delegation:  `by` modifier means _by delegating to the following instance_: `class Controller (repository: Repository, logger: Logger) : Repository by repository, Logger by logger`.
 
 ### Objects
-* `object` is a singleton in Kotlin: `object class KSingleton { fun foo () }`. Class members can be accessed directly: `KSingleton.foo()`. In java, it corresponds to the static singleton with private constructor pattern in Java. To access the singleton from Java we use _INSTANCE_: `KSingleton.INSTANCE.foo()`.
+* `object` is a singleton in Kotlin: `object class KSingleton { fun foo () }`. Class members can be accessed directly: `KSingleton.foo()`. In Java, it corresponds to the static singleton with private constructor pattern. To access the singleton from Java we use _INSTANCE_: `KSingleton.INSTANCE.foo()`.
 * `object` keyword can be used to create anonymous classes,  an instance is created each time though : 
 ```kotlin
 view.addListener(

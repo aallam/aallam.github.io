@@ -20,7 +20,7 @@ _**The JVM is a specification**_. Vendors are free to customize, innovate, and i
 
 <div class="text-center" markdown="1">
 ![JVM Architecture][1]{:width="75%"}
-<figcaption class="caption">Java Virtual Machine Archirecture</figcaption>
+<figcaption class="caption">Java Virtual Machine Architecture</figcaption>
 </div>
 
 ## 1. Class Loader Subsystem
@@ -76,7 +76,7 @@ Method area stores **class level data** (including **static variables**) such as
 This is also a **shared resource** (only 1 heap area per JVM). Information of all **objects** and their corresponding **instance variables and arrays** are stored in the Heap area. Heap area is a great target for GC.
 
 ### 2.3. Stack Area (Per thread)
-This is not a shared resource _(thread safe)_. Every JVM thread has a separate **runtime stack** to store**method calls**. For every such method call, one entry will be created and added (pushed) into the top of runtime stack and such entry it is called a **Stack Frame**.
+This is not a shared resource _(thread safe)_. Every JVM thread has a separate **runtime stack** to store **method calls**. For every such method call, one entry will be created and added (pushed) into the top of runtime stack and such entry it is called a **Stack Frame**.
 
 <div class="text-center" markdown="1">
 ![JVM Stack Configuration][2]

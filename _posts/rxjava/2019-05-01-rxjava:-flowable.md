@@ -61,7 +61,7 @@ When to use `Flowable`?
 _Note: in RxJava 1.0, the Observable had backpressure support and was what the Flowable is in RxJava 2.0._
 
 ### BackpressureException
-`Flowable` has factories  like: `Flowable.range()`,`Flowable.just()`,`Flowable.fromIterable()`, and `Flowable.interval() `. Most of these implement backpressure, and usage is the same as the `Observable` equal.
+`Flowable` has factories  like: `Flowable.range()`,`Flowable.just()`,`Flowable.fromIterable()`, and `Flowable.interval() `. Most of these implement backpressure, and usage is the same as the `Observable` equivalent.
 Let’s consider `Flowable.interval()`, which pushes time-based emissions at fixed time intervals. This can’t be logically backpressured because slowing down the `Flowable.interval()` emissions would not reflect time intervals and become misleading. For that reason, `Flowable.interval()` is one of those cases that can throw `MissingBackpressureException` the moment downstream requests backpressure:
 ```kotlin
 fun main() {
@@ -76,9 +76,9 @@ fun main() {
 ```
 Received item 0
 io.reactivex.exceptions.MissingBackpressureException: Can't deliver value 128 due to lack of requests
-... 
+...
 ```
-A solution for this issue is to use operators such as `onBackpresureDrop()` or `onBackPressureBuffer()`.
+A solution for this issue is to use operators such as `onBackpressureDrop()` or `onBackpressureBuffer()`.
 
 ## Creating a Flowable
 Leveraging `Flowable.create()` to create a `Flowable` feels much like `Observable.create()`, but there is one critical difference: `BackpressureStrategy` as a second argument. This enumerable simply supports backpressure by not implementing it, caching or dropping emissions.

@@ -41,7 +41,7 @@ Observer 2: 4
 Observer 1: 5
 Observer 2: 5
 ```
-It’s possible to pass a buffer size as argument, or to specify time-based window .
+It's possible to pass a buffer size as argument, or to specify a time-based window.
 
 ## cache()
 When it’s not possible to control observers behaviour, `cache()` can be a solution, it caches all of its events and replays them, however, this operator should be used carefully, because it holds all elements indefinitely: 
