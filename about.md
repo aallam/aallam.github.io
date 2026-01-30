@@ -7,10 +7,9 @@ layout: page
 
 <br/>
 
-I'm a Software Engineer with a strong background in Kotlin, Java, and mobile development.
-In recent years, my focus has expanded to include application architecture, cloud infrastructure, and DevOps practices.
-I enjoy designing well-structured systems and working closely with teams to build software that’s clear, reliable,
-and built to last.
+I'm a Software Engineer focused on building and designing systems. I spend most of my time thinking about
+architecture, cloud infrastructure, and DevOps. I work with Kotlin and Java, and enjoy figuring out how to
+make software simpler and more reliable.
 
 #### Interests
 
