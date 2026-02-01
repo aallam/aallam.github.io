@@ -2,7 +2,7 @@
 title: "Reactive Programming with RxJava"
 layout: post
 date: 2019-01-29 23:06
-description:
+description: "Introduction to RxJava and reactive programming. Learn the fundamentals of ReactiveX for building asynchronous, event-based applications in Java."
 tag:
 - ReactiveX
 - RxJava
@@ -17,6 +17,8 @@ jemoji:
 <figcaption class="caption">Reactive Extensions (ReactiveX)</figcaption>
 </div>
 <br/>
+
+> **Update Note**: This RxJava series was written for RxJava 2.x (2019). RxJava 3.x introduced breaking changes and improvements. Core concepts remain the same, but some APIs have changed. Refer to the [RxJava 3.x migration guide](https://github.com/ReactiveX/RxJava/wiki/What's-different-in-3.0) for differences.
 
 Interested in Reactive Extensions and RxJava, I enjoyed reading the excellent book: [Learning RxJava][1] by Thomas Nield, and the following are my notes.
 
@@ -63,20 +65,46 @@ HELLO WORLD!
 ## RxJava vs Java 8 streams
 How `Observable` is any different from Java 8 _Streams_ or Kotlin _sequences_? The key difference is that `Observable` _pushes_ the items while Streams and sequences _pull_ the items.
 
-## Advanced RxJava
-The following are more detailed notes for a deeper understanding of RxJava:
+## RxJava Series Guide
 
-* [Observable & Observer][11]
-* [Hot vs Cold Observable][12]
-* [Observable Factories][13]
-* [Disposing][14]
-* [Suppressing][15], [Transforming][16], [Reducing][17], [Collection][18], [Recovery][19] and [Action][20] Operators.
-* [Combining Observables][21]
-* [Multicasting][22], [Replaying and Caching][23] and [Subjects][24]
-* [Concurrency][25] and [Parallelisation][26]
-* [Buffering][27], [Windowing][28], [Throttling][29] and [Switching][30]
-* [Backpressure][31], [Flowable][32] and [Subscriber][33]
-* [Transformers][34] and [Custom Operators][35]
+This is a comprehensive guide to RxJava organized by topic. Follow the links below for in-depth coverage:
+
+### Fundamentals
+* [Observable & Observer][11] - Core concepts and Observable factories
+* [Hot vs Cold Observable][12] - Understanding observable behavior patterns
+* [Observable Factories][13] - Additional factory methods (range, interval, timer, etc.)
+* [Disposing][14] - Resource management and stopping emissions
+
+### Operators
+* **Filtering & Control**: [Suppressing][15] - filter, take, skip, distinct
+* **Transformation**: [Transforming][16] - map, flatMap, concatMap, switchMap
+* **Aggregation**: [Reducing][17] - count, reduce, all, any
+* **Collection**: [Collection][18] - toList, toMap, collect
+* **Error Handling**: [Recovery][19] - onErrorReturn, onErrorResumeNext
+* **Side Effects**: [Action][20] - doOnNext, doOnComplete, doOnError
+
+### Advanced Topics
+* [Combining Observables][21] - merge, concat, zip, combineLatest
+* [Multicasting][22] - ConnectableObservable and sharing streams
+* [Replaying and Caching][23] - replay() and cache() operators
+* [Subjects][24] - PublishSubject, BehaviorSubject, and more
+* [Concurrency][25] - subscribeOn and observeOn with Schedulers
+* [Parallelisation][26] - Parallel execution strategies
+
+### Flow Control
+* [Buffering][27] - Batch emissions into collections
+* [Windowing][28] - Batch emissions into separate Observables
+* [Throttling][29] - Control emission rate
+* [Switching][30] - Cancel previous Observables
+
+### Backpressure
+* [Backpressure][31] - Understanding and handling backpressure
+* [Flowable][32] - Observable with backpressure support
+* [Subscriber][33] - Consuming Flowables
+
+### Customization
+* [Transformers][34] - Reusable operator chains
+* [Custom Operators][35] - Building your own operators
 
 ## Sources
 * [Learning RxJava][1]

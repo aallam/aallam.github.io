@@ -2,7 +2,7 @@
 title: "RxJava: Throttling"
 layout: post
 date: 2019-03-19 13:27
-description:
+description: Explore RxJava throttling operators like throttleLast and throttleFirst to omit rapid emissions and handle redundant events in reactive streams.
 tag:
 - ReactiveX
 - RxJava

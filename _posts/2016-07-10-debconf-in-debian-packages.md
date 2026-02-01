@@ -2,7 +2,7 @@
 title: "Debconf in Debian Packages"
 layout: post
 date: 2016-07-10 03:09
-description:
+description: "Learn how to use debconf to ask users questions during Debian package installation and handle multilingual support with po-debconf."
 tag:
 - Debian
 - GSoC

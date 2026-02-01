@@ -2,7 +2,7 @@
 title: "RxJava: Backpressure"
 layout: post
 date: 2019-05-01 14:18
-description:
+description: Master RxJava backpressure strategies to handle fast-emitting sources and slow consumers. Learn flow control techniques for reactive stream management.
 tag:
 - ReactiveX
 - RxJava

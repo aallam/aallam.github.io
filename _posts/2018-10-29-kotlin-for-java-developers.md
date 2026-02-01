@@ -2,7 +2,7 @@
 title: "Kotlin for Java Developers"
 layout: post
 date: 2018-10-29 14:29
-description:
+description: "Complete guide for Java developers learning Kotlin. Covers types, nullability, lambdas, extensions, properties, OOP, and functional programming concepts."
 tag:
 - Kotlin
 - Java
@@ -21,6 +21,8 @@ jemoji:
 <figcaption class="caption">Kotlin for Java Developers Certificate</figcaption>
 </div>
 <br/>
+
+> **Note**: This article was written in 2018. While the core concepts remain valid, Kotlin has evolved significantly with version 2.x. Some APIs and best practices may have changed. Please refer to the [official Kotlin documentation](https://kotlinlang.org/docs/home.html) for the most current information.
 
 The following are my notes for the course: [Kotlin for Java Developers][1].<br/>
 This course is given by Svetlana Isakova and Andrey Breslav from JetBrains.
@@ -41,15 +43,15 @@ JVM annotations are useful for Kotlin code which will be called from Java code.
 ## Loops
 * `for (i in list)` is equivalent to `for (i:Int in list)` .
 * We can iterate over a map : `for ((key, value) in map)`.
-* There is no full form of `for` .
-* `for (i in 1..9)` is equivalent to `for (i in 1 until 9)`.
+* There is no traditional C-style `for` loop.
+* `for (i in 1..9)` is equivalent to `for (i in 1 until 10)` (the range `1..9` is inclusive on both ends).
 * Reverse : `for (i in 9 downTo 1)`.
 * Reverse and step : `for (i in 9 downTo 1 step 2)`.
 * We can iterate over Strings (chars in a string).
 
 ## Operator “in”
 * `i in 1..9` is equivalent `i >= 1 && i <= 9`.
-* Not in : `!in` .
+* Not in: `!in`.
 * `"ball" in "a".."k"` is equivalent to `"a" <= "ball" && "ball" <= "k"` which is equivalent to `"a".compareTo("ball") <= 0 && "ball".compareTo("k") <= 0` _(String are compared alphabetically)_.
 
 ## Exceptions

@@ -2,7 +2,7 @@
 title: "Kotlin Coroutines Basics"
 layout: post
 date: 2019-06-08 14:52
-description:
+description: "Learn Kotlin coroutines fundamentals: builders, structured concurrency, dispatchers, and scopes. Practical guide with examples for async programming."
 tag:
 - Kotlin
 - Coroutines
@@ -12,10 +12,12 @@ jemoji:
 ---
 
 <div class="text-center">
-   <img class="image" src="{{ site.url }}/assets/images/blog/kotlin_coroutines_banner.png" alt="Kotlin Couroutines" width="75%"/>
+   <img class="image" src="{{ site.url }}/assets/images/blog/kotlin_coroutines_banner.png" alt="Kotlin Coroutines" width="75%"/>
    <figcaption class="caption">Banner from <em>kotlin blog</em></figcaption>
 </div>
 <br/>
+
+> **Update Note**: This article was written for Kotlin 1.3 (2019). Kotlin coroutines have matured significantly in Kotlin 2.x. The fundamental concepts remain valid, but newer features like Kotlin Flows and structured concurrency improvements may not be covered. Check the [official coroutines guide](https://kotlinlang.org/docs/coroutines-guide.html) for updates.
 
 Kotlin v1.3 was released, bringing coroutines for asynchronous programming. This article is a quick introduction to the core features of `kotlinx.coroutines`.
 
@@ -362,9 +364,9 @@ For more advanced topics like [composing suspending functions][4], [exception ha
 * [Kotlin Coroutines in Practice by Roman Elizarov][3]
 * [KEEP Kotlin Coroutines][6]
 
-[1]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/coroutines-guide.md
-[2]: https://play.kotlinlang.org/hands-on/Introduction%20to%20Coroutines%20and%20Channels/01_Introduction
+[1]: https://kotlinlang.org/docs/coroutines-guide.html
+[2]: https://kotlinlang.org/docs/coroutines-and-channels.html
 [3]: https://www.youtube.com/watch?v=a3agLJQ6vt8
-[4]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/composing-suspending-functions.md
-[5]: https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/exception-handling.md
+[4]: https://kotlinlang.org/docs/composing-suspending-functions.html
+[5]: https://kotlinlang.org/docs/exception-handling.html
 [6]: https://github.com/Kotlin/KEEP/blob/master/proposals/coroutines.md

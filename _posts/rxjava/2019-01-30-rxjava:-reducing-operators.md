@@ -2,7 +2,7 @@
 title: "RxJava: Reducing Operators"
 layout: post
 date: 2019-01-29 23:47
-description:
+description: "Learn RxJava reducing operators: count, reduce, all, any, and contains for consolidating multiple emissions into single values."
 tag:
 - ReactiveX
 - RxJava

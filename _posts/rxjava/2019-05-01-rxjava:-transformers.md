@@ -2,7 +2,7 @@
 title: "RxJava: Transformers"
 layout: post
 date: 2019-05-02 18:21
-description:
+description: Master RxJava transformers using ObservableTransformer and FlowableTransformer to reuse operator chains and build powerful custom reusable operators.
 tag:
 - ReactiveX
 - RxJava

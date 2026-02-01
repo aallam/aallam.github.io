@@ -2,7 +2,7 @@
 title: "RxJava: Transforming Operators"
 layout: post
 date: 2019-01-29 23:47
-description:
+description: "Master RxJava transforming operators: map, flatMap, concatMap, switchMap, and scan for transforming and flattening emissions."
 tag:
 - ReactiveX
 - RxJava

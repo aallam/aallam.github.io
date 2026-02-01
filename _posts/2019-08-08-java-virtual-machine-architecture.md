@@ -2,7 +2,7 @@
 title: "JVM Architecture"
 layout: post
 date: 2019-08-08 16:16
-description: Java Virtual Machine Architecture
+description: "Complete guide to Java Virtual Machine architecture: class loading, memory areas, execution engine, JIT compiler, and garbage collection explained."
 tag:
 - Java
 - JVM
@@ -13,6 +13,8 @@ jemoji:
 <div class="text-center" markdown="1">
 ![Java][0]{:width="50%"}
 </div>
+
+> **Note**: Written in 2019. JVM architecture fundamentals remain valid, but modern JVMs (Java 17+) include significant improvements like ZGC, Shenandoah GC, and upcoming features like Project Leyden. Core concepts described here are still accurate.
 
 Java source codes are compiled into an intermediate state called **bytecode** (i.e. **.class** file) using the Java compiler (**javac**). The Java Virtual Machine a.k.a **JVM** interprets the bytecode (without further recompilations) into native machine language. Therefore, bytecode acts as a **platform-independent** intermediary state which is **portable** among any JVM regardless of underlying OS and hardware architecture.
 

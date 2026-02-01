@@ -2,7 +2,7 @@
 title: "RxJava: Subscriber"
 layout: post
 date: 2019-05-01 14:18
-description:
+description: Understand RxJava Subscriber for Flowable consumption. Learn how to use Subscription and request method for backpressure-aware stream handling.
 tag:
 - ReactiveX
 - RxJava

@@ -2,7 +2,7 @@
 title: "RxJava: Concurrency"
 layout: post
 date: 2019-03-03 23:55
-description:
+description: "Implementing concurrency in RxJava using subscribeOn and observeOn operators with Schedulers for parallel execution and thread management."
 tag:
 - ReactiveX
 - RxJava

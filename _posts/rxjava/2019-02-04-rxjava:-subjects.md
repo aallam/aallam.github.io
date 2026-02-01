@@ -2,7 +2,7 @@
 title: "RxJava: Subjects"
 layout: post
 date: 2019-02-04 17:38
-description:
+description: Discover RxJava Subjects as proxy multicasting devices. Master PublishSubject and other Subject types for implementing reactive event bus patterns.
 tag:
 - ReactiveX
 - RxJava

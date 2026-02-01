@@ -2,7 +2,7 @@
 title: "RxJava: Suppressing Operators"
 layout: post
 date: 2019-01-29 23:47
-description:
+description: "RxJava suppressing operators: filter, take, skip, distinct, elementAt for controlling which emissions pass through the chain."
 tag:
 - ReactiveX
 - RxJava

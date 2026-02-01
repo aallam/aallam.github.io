@@ -2,7 +2,7 @@
 title: "RxJava: Windowing"
 layout: post
 date: 2019-03-19 13:27
-description:
+description: Explore RxJava window operator to batch emissions into separate Observables. Learn fixed-size and time-based windowing for reactive stream processing.
 tag:
 - ReactiveX
 - RxJava

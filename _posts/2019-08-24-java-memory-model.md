@@ -2,7 +2,7 @@
 title: "Java Memory Model"
 layout: post
 date: 2019-08-24 14:42
-description:
+description: "Deep dive into Java Memory Model covering sequential consistency, happens-before relationships, volatile, synchronized, and concurrency optimization patterns."
 tag:
 - Java
 - JVM
@@ -13,6 +13,8 @@ jemoji:
 <div class="text-center" markdown="1">
 ![Java][0]{:width="50%"}
 </div>
+
+> **Note**: This article was written in 2019 for Java 8-11. While the Java Memory Model fundamentals haven't changed, Java has evolved through versions 12-23 with new features like Virtual Threads (Project Loom) that affect concurrency patterns. The core JMM concepts remain accurate.
 
 ## The problem
 
@@ -47,7 +49,7 @@ How the processor can execute the method `calc()` in memory?
 2. Load `bar` from main memory to processor cache. Increment by 1, write it back the main memory (`#2`).
 3. Load `foo` from main memory to processor cache. Increment by 2, write it back the main memory (`#3`).
 
-How the earlier example can be optimized ? by swiping the instructions (`#2` and `#3`):
+How the earlier example can be optimized ? by swapping the instructions (`#2` and `#3`):
 
 ```java
 void calc() {

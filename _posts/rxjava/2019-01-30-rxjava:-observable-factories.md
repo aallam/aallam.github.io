@@ -2,7 +2,7 @@
 title: "RxJava: (More) Observable Factories"
 layout: post
 date: 2019-01-29 23:47
-description:
+description: "Advanced RxJava Observable factories: range, interval, timer, defer, fromCallable, and empty for various emission patterns."
 tag:
 - ReactiveX
 - RxJava

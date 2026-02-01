@@ -2,7 +2,7 @@
 title: "Asynchronous Programming with Kotlin"
 layout: post
 date: 2019-06-05 21:06
-description:
+description: "Understanding asynchrony, concurrency, and parallelism in Kotlin. Learn how coroutines solve async programming challenges with cooperative multitasking."
 tag:
 - Kotlin
 - Coroutines
@@ -12,13 +12,14 @@ jemoji:
 ---
 
 <div class="text-center">
-   <img class="image" src="{{ site.url }}/assets/images/blog/intro_coroutines_header.gif" alt="Kotlin Couroutines" width="75%"/>
+   <img class="image" src="{{ site.url }}/assets/images/blog/intro_coroutines_header.gif" alt="Kotlin Coroutines" width="75%"/>
    <figcaption class="caption">Banner from <em>kotlin blog</em></figcaption>
 </div>
 <br/>
-  
-  
-Kotlin coroutines are a way of doing “asynchronous or non-blocking programming”, but what does it mean to be “asynchronous” and “non-blocking”?
+
+> **Update Note**: This article was written in 2019. While the fundamental concepts of asynchrony remain valid, Kotlin has evolved significantly with version 2.x and Kotlin Flows. Check the [official documentation](https://kotlinlang.org/docs/coroutines-guide.html) for current best practices.
+
+Kotlin coroutines are a way of doing "asynchronous or non-blocking programming", but what does it mean to be "asynchronous" and "non-blocking"?
 
 ## Asynchrony, Concurrency, and Parallelism
 To understand Asynchrony, let's define it along with other terms used in the same context: Concurrency and Parallelism:
@@ -33,7 +34,7 @@ Asynchrony is a programming model where a program starts some tasks, without wai
 
 ### Concurrency
 > In programming, concurrency is the _composition_ of independently executing processes (…), [and] dealing _with_ lots of things at once (…).    
-> — [Rob Pike](https://blog.golang.org/concurrency-is-not-parallelism)     
+> — [Rob Pike](https://go.dev/blog/concurrency-is-not-parallelism)     
 
 Concurrency is about composition: handling multiple tasks being in progress in the same time, but not necessarily simultaneously or with a specific order. 
 
@@ -44,7 +45,7 @@ Concurrency is about composition: handling multiple tasks being in progress in t
 Parallelism, often mistakenly used for concurrency,  is about simultaneous execution of multiple tasks.
 
 > In programming, (…) parallelism is the simultaneous _execution_ of (possibly related) computations. , [and] _doing_ lots of things at once (…).    
-> — [Rob Pike](https://blog.golang.org/concurrency-is-not-parallelism)     
+> — [Rob Pike](https://go.dev/blog/concurrency-is-not-parallelism)     
 
 ## The problematic
 Now that we have defined asynchrony, what are the problems we are trying to solve? 
@@ -92,5 +93,5 @@ In other terms, coroutines and Rx are simply **two different layers of abstracti
 
 [3]: https://blog.alexnesterov.com/post/coroutines/
 [4]: https://www.packtpub.com/application-development/reactive-programming-kotlin
-[5]: https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/
+[5]: https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/
 

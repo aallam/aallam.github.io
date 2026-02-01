@@ -2,7 +2,7 @@
 title: "RxJava: Multicasting"
 layout: post
 date: 2019-02-04 17:36
-description:
+description: Learn RxJava multicasting using ConnectableObservable to prevent redundant work and efficiently share a single stream across multiple Observers.
 tag:
 - ReactiveX
 - RxJava
