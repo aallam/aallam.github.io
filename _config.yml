@@ -6,7 +6,7 @@ description: "Mouaad Aallam's personal website/blog"
 # if it's an external image, update below for true
 # better with square images
 external-image: false
-picture: 'assets/images/profile.jpg'
+picture: 'assets/images/profile.png'
 doodle: './assets/images/doodle/coffee.png'
 
 url: https://mouaad.aallam.com
