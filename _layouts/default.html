@@ -47,5 +47,34 @@ layout: compress
 
     {% include icons.html %}    
 
+    {% if page.mermaid %}
+    <script type="module">
+        import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.14.0/dist/mermaid.esm.min.mjs";
+
+        mermaid.initialize({
+            startOnLoad: true,
+            securityLevel: "loose",
+            theme: "base",
+            themeVariables: {
+                primaryColor: "#efe7ff",
+                primaryTextColor: "#20113a",
+                primaryBorderColor: "#6a3fd4",
+                lineColor: "#6a3fd4",
+                secondaryColor: "#d8f3ef",
+                secondaryTextColor: "#0f3c36",
+                tertiaryColor: "#fff3d6",
+                tertiaryTextColor: "#4f3200",
+                background: "#ffffff",
+                mainBkg: "#efe7ff",
+                secondBkg: "#d8f3ef",
+                tertiaryBkg: "#fff3d6",
+                clusterBkg: "#f7f7fb",
+                clusterBorder: "#d3d5df",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif"
+            }
+        });
+    </script>
+    {% endif %}
+
 </body>
 </html>
