@@ -10,12 +10,13 @@
         <p class="bio">{{ site.bio }}</p>
 
         <div class="share">
+            <span class="share-label">Share</span>
             <a class="share-x" href="https://twitter.com/intent/tweet?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer">
-                <svg class="icon icon-x"><use xlink:href="#icon-x"></use></svg><span>X</span>
+                <span>X</span>
             </a>
 
             <a class="share-bluesky" href="https://bsky.app/intent/compose?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer">
-                <svg class="icon icon-bsky"><use xlink:href="#icon-bsky"></use></svg><span>Bluesky</span>
+                <span>Bluesky</span>
             </a>
         </div>
     </div>

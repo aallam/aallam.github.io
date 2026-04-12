@@ -1,38 +1,51 @@
 .share
     float: right
     width: 40%
-    display: inline
-    text-align: right
+    display: flex
+    justify-content: flex-end
+    align-items: center
+    flex-wrap: wrap
+    gap: 8px
     position: relative
     top: -10px
 
     @media #{$mobile}
         width: 100%
-        display: block
+        justify-content: flex-start
         top: 0
-        text-align: left
         float: none
         margin-top: 5px
 
     @media #{$tablet}
         width: 100%
-        display: block
+        justify-content: flex-start
         top: 0
-        text-align: left
         float: none
         margin-top: 5px
 
+    > .share-label
+        font-size: 11px
+        font-weight: 700
+        letter-spacing: .08em
+        text-transform: uppercase
+        color: #666
+        line-height: 1
+
     > .share-x,
     > .share-bluesky
-        display: inline
+        display: inline-block
         vertical-align: middle
-        font-size: 13px
-        font-weight: 700
-        color: #fff
-        padding: 6px 10px
-        border-radius: 3px
-        margin-left: 5px
+        font-size: 12px
+        font-weight: 600
+        color: #222
+        padding: 7px 13px
+        border-radius: 999px
+        border: 1px solid #c9c9c9
+        background: #fff
         text-decoration: none
+        line-height: 1
+        box-shadow: 0 1px 0 rgba(0, 0, 0, .03)
+        transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease
 
         @media #{$mobile}
             margin: 0 5px 10px 0
@@ -40,23 +53,11 @@
         @media #{$tablet}
             margin: 0 5px 10px 0
 
-    > .share-x
-        background: #111
-
-    > .share-bluesky
-        background: #1185fe
-
-    // #bug
-    // can't use .icon with >
-    // don't know why - sorry
-    // take this insted: youtube.com/watch?v=59Zcx9YbZxI
-    svg
-        position: relative
-        top: 3px
-        margin: 0
-        margin-right: 4px
-        display: inherit
-
-    svg,
-    svg *
-        fill: #fff
+    > .share-x:hover,
+    > .share-x:focus,
+    > .share-bluesky:hover,
+    > .share-bluesky:focus
+        background: #f3f3f3
+        border-color: #9f9f9f
+        color: #111
+        box-shadow: 0 1px 0 rgba(0, 0, 0, .05)
