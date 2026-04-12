@@ -22,8 +22,8 @@
         float: none
         margin-top: 5px
 
-    > .twitter,
-    > .facebook
+    > .share-x,
+    > .share-bluesky
         display: inline
         vertical-align: middle
         font-size: 13px
@@ -40,20 +40,23 @@
         @media #{$tablet}
             margin: 0 5px 10px 0
 
-    > .twitter
-        background: #4fafed
+    > .share-x
+        background: #111
 
-    > .facebook
-        background: #4361b3
+    > .share-bluesky
+        background: #1185fe
 
     // #bug
     // can't use .icon with >
     // don't know why - sorry
     // take this insted: youtube.com/watch?v=59Zcx9YbZxI
     svg
-        fill: #fff
         position: relative
         top: 3px
         margin: 0
         margin-right: 4px
         display: inherit
+
+    svg,
+    svg *
+        fill: #fff

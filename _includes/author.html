@@ -1,4 +1,6 @@
 <section class="author{% if site.disqus == false %} no-disqus{% endif %}">
+    {% assign share_url = page.url | absolute_url %}
+    {% capture share_text %}{{ page.title }} {{ share_url }}{% endcapture %}
     <div class="toleft">
         <img class="selfie" src="{% if site.external-image == true %}{{ site.picture }}{% else %}{{ site.url }}/{{ site.picture }}{% endif %}" alt="{{ site.name }}">
     </div>
@@ -8,12 +10,12 @@
         <p class="bio">{{ site.bio }}</p>
 
         <div class="share">
-            <a class="twitter" href="https://twitter.com/intent/tweet?text={{ site.url }}{{ page.url }} - {{ page.title }} by @{{ site.twitter }}">
-                <svg class="icon icon-twitter"><use xlink:href="#icon-twitter"></use></svg><span class="icon-twitter">Tweet</span>
+            <a class="share-x" href="https://twitter.com/intent/tweet?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer">
+                <svg class="icon icon-x"><use xlink:href="#icon-x"></use></svg><span>X</span>
             </a>
 
-            <a class="facebook" href="javascript:void(0)" onclick="window.open('https://facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href), 'facebook-share-dialog', 'width=626,height=436'); return false;">
-                <svg class="icon icon-facebook"><use xlink:href="#icon-facebook"></use></svg><span class="icon-facebook-rect">Share</span>
+            <a class="share-bluesky" href="https://bsky.app/intent/compose?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer">
+                <svg class="icon icon-bsky"><use xlink:href="#icon-bsky"></use></svg><span>Bluesky</span>
             </a>
         </div>
     </div>
