@@ -5,9 +5,8 @@ date: 2026-04-12 12:10
 description: "A technical look at why direct MCP tool calling runs into context and boundary problems, what Anthropic and Cloudflare found, and the architecture behind execbox."
 mermaid: true
 tag:
-- JavaScript
-- Node.js
 - MCP
+- AI Agents
 - Architecture
 blog: true
 jemoji:
