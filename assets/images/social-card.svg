@@ -20,20 +20,14 @@
   <rect x="84" y="84" width="1032" height="462" rx="32" fill="#ffffff" opacity="0.88" />
   <rect x="84" y="84" width="1032" height="12" rx="6" fill="url(#accent)" />
 
-  <g transform="translate(136 154)">
+  <g transform="translate(136 170)">
     <text x="0" y="0" fill="#6a3fd4" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="2">
       MOUAAD AALLAM
     </text>
-    <text x="0" y="122" fill="#1d1d27" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="72" font-weight="700">
-      Software Engineer
+    <text x="0" y="168" fill="#1d1d27" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="94" font-weight="700">
+      Mouaad Aallam
     </text>
-    <text x="0" y="198" fill="#1d1d27" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="72" font-weight="700">
-      Architecture, cloud infrastructure,
-    </text>
-    <text x="0" y="274" fill="#1d1d27" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="72" font-weight="700">
-      Kotlin, Java, reliable systems.
-    </text>
-    <text x="0" y="374" fill="#4b4b5a" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34">
+    <text x="0" y="308" fill="#4b4b5a" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="38" letter-spacing="1">
       mouaad.aallam.com
     </text>
   </g>
