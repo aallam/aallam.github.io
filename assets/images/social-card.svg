@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Mouaad Aallam social card</title>
+  <desc id="desc">Default social sharing card for Mouaad Aallam's website and blog.</desc>
+
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f7f7fb" />
+      <stop offset="100%" stop-color="#efe7ff" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6a3fd4" />
+      <stop offset="100%" stop-color="#1b8c7a" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" rx="36" />
+  <circle cx="1025" cy="112" r="96" fill="#ffffff" opacity="0.65" />
+  <circle cx="1110" cy="510" r="140" fill="#ffffff" opacity="0.45" />
+  <circle cx="160" cy="540" r="180" fill="#ffffff" opacity="0.55" />
+  <rect x="84" y="84" width="1032" height="462" rx="32" fill="#ffffff" opacity="0.88" />
+  <rect x="84" y="84" width="1032" height="12" rx="6" fill="url(#accent)" />
+
+  <g transform="translate(136 154)">
+    <text x="0" y="0" fill="#6a3fd4" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="2">
+      MOUAAD AALLAM
+    </text>
+    <text x="0" y="122" fill="#1d1d27" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="72" font-weight="700">
+      Software Engineer
+    </text>
+    <text x="0" y="198" fill="#1d1d27" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="72" font-weight="700">
+      Architecture, cloud infrastructure,
+    </text>
+    <text x="0" y="274" fill="#1d1d27" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="72" font-weight="700">
+      Kotlin, Java, reliable systems.
+    </text>
+    <text x="0" y="374" fill="#4b4b5a" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34">
+      mouaad.aallam.com
+    </text>
+  </g>
+</svg>

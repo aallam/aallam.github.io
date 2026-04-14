@@ -3,6 +3,7 @@ title: "Java Memory Model"
 layout: post
 date: 2019-08-24 14:42
 description: "Deep dive into Java Memory Model covering sequential consistency, happens-before relationships, volatile, synchronized, and concurrency optimization patterns."
+image: /assets/images/blog/cart-observing-wrong.png
 tag:
 - Java
 - JVM

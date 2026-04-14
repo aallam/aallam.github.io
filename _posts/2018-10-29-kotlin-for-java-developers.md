@@ -3,6 +3,7 @@ title: "Kotlin for Java Developers"
 layout: post
 date: 2018-10-29 14:29
 description: "Complete guide for Java developers learning Kotlin. Covers types, nullability, lambdas, extensions, properties, OOP, and functional programming concepts."
+image: /assets/images/blog/kotlin_for_java_developers_certificate_aallam.png
 tag:
 - Kotlin
 - Java

@@ -3,6 +3,7 @@ title: "Debian Chroot in Ubuntu"
 layout: post
 date: 2016-06-11 20:51
 description: "Step-by-step guide to setting up a Debian chroot environment in Ubuntu using Debootstrap for Debian package development and testing."
+image: /assets/images/blog/chroot-debian.png
 tag:
 - Debian
 - Ubuntu

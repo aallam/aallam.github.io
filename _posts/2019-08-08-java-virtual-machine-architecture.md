@@ -3,6 +3,7 @@ title: "JVM Architecture"
 layout: post
 date: 2019-08-08 16:16
 description: "Complete guide to Java Virtual Machine architecture: class loading, memory areas, execution engine, JIT compiler, and garbage collection explained."
+image: /assets/images/blog/JVM.png
 tag:
 - Java
 - JVM

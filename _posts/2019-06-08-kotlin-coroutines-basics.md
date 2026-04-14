@@ -3,6 +3,7 @@ title: "Kotlin Coroutines Basics"
 layout: post
 date: 2019-06-08 14:52
 description: "Learn Kotlin coroutines fundamentals: builders, structured concurrency, dispatchers, and scopes. Practical guide with examples for async programming."
+image: /assets/images/blog/kotlin_coroutines_banner.png
 tag:
 - Kotlin
 - Coroutines

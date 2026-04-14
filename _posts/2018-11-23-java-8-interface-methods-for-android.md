@@ -3,6 +3,7 @@ title: "Java 8 Interface Methods for Android"
 layout: post
 date: 2018-11-23 18:07
 description: "Explore Java 8 interface features for Android development: default methods, static methods, and functional interfaces with practical examples."
+image: /assets/images/blog/android_desugar.png
 tag:
 - Java
 - Android
