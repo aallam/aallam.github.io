@@ -3,6 +3,7 @@ title: "Reactive Programming with RxJava"
 layout: post
 date: 2019-01-29 23:06
 description: "Introduction to RxJava and reactive programming. Learn the fundamentals of ReactiveX for building asynchronous, event-based applications in Java."
+image: /assets/images/blog/reactivex.png
 tag:
 - ReactiveX
 - RxJava

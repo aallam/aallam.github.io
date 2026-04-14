@@ -3,6 +3,7 @@ title: "Data Mining : Recommender Systems"
 layout: post
 date: 2016-12-20 18:10
 description: "Introduction to recommender systems in data mining: collaborative filtering, content-based filtering, and hybrid approaches explained."
+image: /assets/images/blog/datamining.png
 tag:
 - Data Mining
 blog: true

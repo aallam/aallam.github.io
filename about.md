@@ -1,6 +1,7 @@
 ---
 title: About
 layout: page
+description: "About Mouaad Aallam, a software engineer focused on architecture, cloud infrastructure, DevOps, Kotlin, and Java."
 ---
 <img class="about-selfie" src="{{ site.url }}/{{ site.picture }}" alt="Profile Image" />
 <figcaption class="caption">Mouaad Aallam</figcaption>
@@ -34,4 +35,3 @@ make software simpler and more reliable.
 <a href="https://www.credly.com/badges/c2254e09-146d-4a23-bd78-471a19a1b756"><img src="{{ site.url }}/assets/images/badge/ckad.png" alt="Certified Kubernetes Application Developer" style="width: 15%; display: inline!important;"/></a>
 <a href="https://www.credly.com/badges/356b9004-7d77-4d22-b8ba-e8e48d972755"><img src="{{ site.url }}/assets/images/badge/saa.png" alt="AWS Certified Solutions Architect – Associate" style="width: 15%; display: inline!important;"/></a>
 </center>
-

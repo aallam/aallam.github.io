@@ -3,6 +3,7 @@ title: "Asynchronous Programming with Kotlin"
 layout: post
 date: 2019-06-05 21:06
 description: "Understanding asynchrony, concurrency, and parallelism in Kotlin. Learn how coroutines solve async programming challenges with cooperative multitasking."
+image: /assets/images/blog/intro_coroutines_request.png
 tag:
 - Kotlin
 - Coroutines
@@ -94,4 +95,3 @@ In other terms, coroutines and Rx are simply **two different layers of abstracti
 [3]: https://blog.alexnesterov.com/post/coroutines/
 [4]: https://www.packtpub.com/application-development/reactive-programming-kotlin
 [5]: https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/
-

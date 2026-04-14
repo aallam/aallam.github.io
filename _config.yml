@@ -1,4 +1,5 @@
 # main text of home
+title: Mouaad Aallam
 name: Mouaad Aallam
 bio: "Software Engineer"
 description: "Mouaad Aallam's personal website/blog"
@@ -30,7 +31,6 @@ disqus: false #aallam
 
 # if you don't have any of social below, comment the line
 # facebook: myfacebook
-# twitter: MouaadAallam
 # google: mygoogle
 # instagram: myinstagram
 # pinterest: mypinterest
@@ -91,6 +91,18 @@ plugins:
   - jekyll-sitemap
   - jekyll-gist
   - jekyll-paginate
+
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      image: /assets/images/social-card.png
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      image: /assets/images/social-card.png
 
 jekyll-mentions:
     base_url: https://mouaad.aallam.com
