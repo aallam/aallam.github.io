@@ -2,47 +2,119 @@
 .nav-home
     > .list
         list-style: none
+        display: inline-flex
+        align-items: center
+        gap: 1.8rem
         margin: 0
-        padding: 0 13px 0
+        padding: 0
 
         > .item
-            display: inline-block
+            display: inline-flex
 
         > .item > .link
-            display: inline-block
+            position: relative
+            display: inline-flex
+            align-items: center
+            justify-content: center
+            padding: 0.5rem 0 0.95rem
+            color: $alpha
             font-family: $fontUi
             font-weight: 500
-            font-size: 1.4rem
-            letter-spacing: 0.02em
-            padding: 20px 10px
+            font-size: 1.28rem
+            letter-spacing: 0.08em
+            text-transform: uppercase
             text-decoration: none
+            transition: color 180ms ease, opacity 180ms ease
+
+            &:after
+                content: ""
+                position: absolute
+                left: 0
+                right: 0
+                bottom: 0.18rem
+                height: 1px
+                background: #d8d0c6
+                transform: scaleX(0)
+                transform-origin: left center
+                transition: transform 180ms ease, background 180ms ease
+
+            &:hover
+                color: $beta
+
+            &:hover:after
+                transform: scaleX(1)
+
+            &:focus-visible
+                color: $beta
+                outline: 2px solid rgba($delta, 0.18)
+                outline-offset: 0.7rem
+                border-radius: 2px
+
+            &:focus-visible:after
+                transform: scaleX(1)
+                background: $beta
+
+            &[aria-current="page"]
+                color: $beta
+                font-weight: 600
+
+            &[aria-current="page"]:after
+                transform: scaleX(1)
+                background: $beta
 
 .nav
     position: absolute
-    right: 0
-    top: 0
+    top: 2.6rem
+    right: 2.8rem
+    z-index: 100
 
     > .list
-        padding: 0 13px 0
-
-        > .item > .link
-            font-size: 1.4rem
-            padding: 20px 10px
+        gap: 1.6rem
 
 .nav-home
-    margin-top: 40px
+    margin-top: 3.6rem
     text-align: center
 
     > .list
-        padding: 0
+        justify-content: center
+        gap: 2.8rem
 
         > .item > .link
-            font-size: 1.9rem
-            padding: 7px 15px
-            margin: 0
-            border-radius: 4%
-            transition: all .4s ease-in-out
-            width: 70px
+            padding: 0.6rem 0 1rem
+            font-size: 1.48rem
 
-            &:hover
-                color: $alpha
+@media #{$tablet}
+    .nav
+        top: 2.1rem
+        right: 2.2rem
+
+    .nav-home
+        margin-top: 3.2rem
+
+        > .list
+            gap: 2.2rem
+
+            > .item > .link
+                font-size: 1.36rem
+
+@media #{$mobile}
+    .nav
+        top: 1.6rem
+        right: 1.7rem
+
+        > .list
+            gap: 1.2rem
+
+            > .item > .link
+                font-size: 1.15rem
+                padding-bottom: 0.85rem
+
+    .nav-home
+        margin-top: 3rem
+
+        > .list
+            gap: 1.8rem
+
+            > .item > .link
+                font-size: 1.24rem
+                padding-bottom: 0.9rem
