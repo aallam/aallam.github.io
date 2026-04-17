@@ -2,7 +2,7 @@
 title: "RxJava: Collection Operators"
 layout: post
 date: 2019-01-29 23:47
-description: "Master RxJava collection operators: toList, toSortedList, toMap, and collect for accumulating emissions into collections."
+description: "RxJava collection operators for gathering emissions into lists, maps, and custom containers."
 tag:
 - ReactiveX
 - RxJava

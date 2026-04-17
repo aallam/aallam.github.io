@@ -2,7 +2,7 @@
 title: "RxJava: Recovery Operators"
 layout: post
 date: 2019-01-29 23:47
-description: Learn RxJava error recovery operators including onErrorReturnItem and onErrorResumeNext to handle exceptions gracefully and maintain stream continuity.
+description: RxJava recovery operators for handling errors without breaking the stream.
 tag:
 - ReactiveX
 - RxJava

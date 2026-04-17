@@ -2,7 +2,7 @@
 title: "RxJava: Flowable"
 layout: post
 date: 2019-05-01 14:18
-description: Learn about RxJava Flowable, an Observable variant with backpressure capabilities that controls emission pace for efficient reactive stream processing.
+description: RxJava Flowable and backpressure-aware streams.
 tag:
 - ReactiveX
 - RxJava

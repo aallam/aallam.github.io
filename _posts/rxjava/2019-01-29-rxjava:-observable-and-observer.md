@@ -2,7 +2,7 @@
 title: "RxJava: Observable & Observer"
 layout: post
 date: 2019-01-29 23:47
-description: "Learn RxJava Observable factories (create, just, fromIterable) and Observer pattern implementation with practical code examples."
+description: "RxJava Observable and Observer basics, from creation operators to subscription flow."
 tag:
 - ReactiveX
 - RxJava

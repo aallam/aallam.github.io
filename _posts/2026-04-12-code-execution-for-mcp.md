@@ -2,7 +2,7 @@
 title: "Code execution for MCP"
 layout: post
 date: 2026-04-12 12:10
-description: "A technical look at why direct MCP tool calling runs into context and boundary problems, what Anthropic and Cloudflare found, and the architecture behind execbox."
+description: "Why code execution can scale MCP agents better than direct tool loops, while keeping execution boundaries clearer."
 mermaid: true
 tag:
 - MCP

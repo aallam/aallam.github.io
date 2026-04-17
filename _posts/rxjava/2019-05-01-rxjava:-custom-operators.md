@@ -2,7 +2,7 @@
 title: "RxJava: Custom Operators"
 layout: post
 date: 2019-05-02 18:21
-description: Learn to create custom RxJava operators using ObservableOperator interface when existing operators can't handle your specific reactive programming use cases.
+description: Build custom RxJava operators when the standard toolbox is not enough.
 tag:
 - ReactiveX
 - RxJava

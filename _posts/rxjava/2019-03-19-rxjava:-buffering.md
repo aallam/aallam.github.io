@@ -2,7 +2,7 @@
 title: "RxJava: Buffering"
 layout: post
 date: 2019-03-19 13:27
-description: Master RxJava buffer operator to batch emissions into collections. Learn fixed-size, time-based, and skip buffering strategies for stream control.
+description: RxJava buffering strategies for batching emissions by size, time, or skips.
 tag:
 - ReactiveX
 - RxJava

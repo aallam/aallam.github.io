@@ -2,7 +2,7 @@
 title: "RxJava: Disposing"
 layout: post
 date: 2019-01-29 23:47
-description: "Understanding Disposable in RxJava: how to properly manage resources, stop emissions, and prevent memory leaks with CompositeDisposable."
+description: "How RxJava Disposables stop work, release resources, and prevent leaks."
 tag:
 - ReactiveX
 - RxJava

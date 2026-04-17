@@ -2,7 +2,7 @@
 title: "RxJava: Hot vs Cold Observable"
 layout: post
 date: 2019-01-29 23:47
-description: "Understanding the difference between hot and cold Observables in RxJava: emission behavior, use cases, and when to use each type."
+description: "Hot vs. cold Observables in RxJava, when each emits, and when to use them."
 tag:
 - ReactiveX
 - RxJava

@@ -2,7 +2,7 @@
 title: "RxJava: Parallelisation"
 layout: post
 date: 2019-03-04 00:06
-description: Learn RxJava parallelization techniques using flatMap operator and Schedulers to process multiple emissions concurrently for dramatically improved performance.
+description: RxJava parallelization patterns with flatMap and Schedulers.
 tag:
 - ReactiveX
 - RxJava

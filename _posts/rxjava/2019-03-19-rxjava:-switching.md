@@ -2,7 +2,7 @@
 title: "RxJava: Switching"
 layout: post
 date: 2019-03-19 13:27
-description: Understand RxJava switchMap operator to cancel previous Observables and switch to the latest emission, preventing stale or redundant processing.
+description: RxJava switchMap and switching patterns for cancelling stale work.
 tag:
 - ReactiveX
 - RxJava

@@ -2,7 +2,7 @@
 title: "RxJava: Replaying and Caching"
 layout: post
 date: 2019-02-04 17:36
-description: Master RxJava replay and cache operators to hold and re-emit previous emissions for new Observers. Essential techniques for multicasting scenarios.
+description: RxJava replay and cache operators for sharing past emissions with new observers.
 tag:
 - ReactiveX
 - RxJava

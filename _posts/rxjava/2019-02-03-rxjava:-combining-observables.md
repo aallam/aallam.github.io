@@ -2,7 +2,7 @@
 title: "RxJava: Combining Observables"
 layout: post
 date: 2019-01-29 23:47
-description: Learn essential RxJava operators to combine multiple Observables. Master merge, concat, zip, and combineLatest for powerful reactive stream composition.
+description: RxJava operators for combining streams with merge, concat, zip, and combineLatest.
 tag:
 - ReactiveX
 - RxJava
