@@ -1,37 +1,27 @@
 ---
 title: About
 layout: page
-description: "About Mouaad Aallam, a software engineer focused on architecture, cloud infrastructure, DevOps, Kotlin, and Java."
+description: "About Mouaad Aallam, a software engineer working on architecture, infrastructure, and reliable systems."
 ---
-<img class="about-selfie" src="{{ site.url }}/{{ site.picture }}" alt="Profile Image" />
-<figcaption class="caption">Mouaad Aallam</figcaption>
 
-<br/>
+<figure class="about-portrait">
+  <img class="about-selfie" src="{{ site.url }}/{{ site.picture }}" alt="Profile Image" />
+  <figcaption class="caption">Mouaad Aallam</figcaption>
+</figure>
 
-I'm a Software Engineer focused on building and designing systems. I spend most of my time thinking about
-architecture, cloud infrastructure, and DevOps. I work with Kotlin and Java, and enjoy figuring out how to
-make software simpler and more reliable.
+I write here to think in public about software engineering in general.
 
-#### Interests
+## Interests
 
-* Application architecture & systems design
-* Cloud platforms & DevOps
-* Open-source projects, mentoring and knowledge sharing
-* Reading: science, philosophy and history
-* Coffee. Always.
+- Application architecture, platforms, and systems design
+- Cloud infrastructure, DevOps, and developer tooling
+- Open source, mentoring, writing, and knowledge sharing
+- Reading across science, philosophy, and history
+- Coffee, always
 
-#### Contact
-* Email: mouaad@aallam.com
-* PGP key: [`0x10A2422B`](https://keyserver2.pgp.com/vkd/SubmitSearch.event?&&SearchCriteria=mouaad%40aallam.com), Fingerprint: `369F 867F 6A06 5383 61AC  B36E 5825 9B81 10A2 422B`
+## Contact
 
-#### Site credits
-* Theme: A fork of [indigo](https://github.com/sergiokopplin/indigo)
-* Tools: Jekyll, GitHub Pages
-
-<br/>
-
-<center>
-<a href="https://www.credly.com/badges/441df602-eb18-4ce9-91b1-54996fffe1ec"><img src="{{ site.url }}/assets/images/badge/ocp.png" alt="Oracle Certified Professional, Java SE 8 Programmer" style="width: 15%; display: inline!important;"/></a>
-<a href="https://www.credly.com/badges/c2254e09-146d-4a23-bd78-471a19a1b756"><img src="{{ site.url }}/assets/images/badge/ckad.png" alt="Certified Kubernetes Application Developer" style="width: 15%; display: inline!important;"/></a>
-<a href="https://www.credly.com/badges/356b9004-7d77-4d22-b8ba-e8e48d972755"><img src="{{ site.url }}/assets/images/badge/saa.png" alt="AWS Certified Solutions Architect – Associate" style="width: 15%; display: inline!important;"/></a>
-</center>
+<ul class="about-meta">
+  <li><strong>Email</strong> — <a href="mailto:mouaad@aallam.com">mouaad@aallam.com</a></li>
+  <li><strong>PGP</strong> — <a href="https://keyserver2.pgp.com/vkd/SubmitSearch.event?&&SearchCriteria=mouaad%40aallam.com">0x10A2422B</a>, fingerprint <code>369F 867F 6A06 5383 61AC B36E 5825 9B81 10A2 422B</code></li>
+</ul>

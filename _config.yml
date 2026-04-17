@@ -1,7 +1,7 @@
 # main text of home
 title: Mouaad Aallam
 name: Mouaad Aallam
-bio: "Software Engineer"
+author_bio: "Software Engineer"
 description: "Mouaad Aallam's personal website/blog"
 
 # if it's an external image, update below for true
