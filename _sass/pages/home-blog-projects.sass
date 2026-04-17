@@ -40,8 +40,19 @@
     > .item > .url > .title
         margin: 0
         width: 75%
+        font-family: $fontDisplay
+        font-size: 4.1rem
+        line-height: 0.98
+        letter-spacing: -0.05em
         font-weight: 500
         transition: all ease-in-out .2s
+
+        @media #{$mobile}
+            width: 100%
+            font-size: 3.2rem
+
+        @media #{$tablet}
+            font-size: 3.5rem
 
     > .item:hover > .url > .title
         color: $delta
@@ -50,14 +61,27 @@
     // can you help me?
     aside
         position: relative
-        top: 2px
+        top: 8px
         margin: 0
         width: 25%
+        font-family: $fontUi
+        font-size: 1.1rem
+        font-weight: 500
+        letter-spacing: 0.12em
+        text-transform: uppercase
         float: right
-        font-weight: 300
         color: $gama
         text-align: right
         transition: all ease-in-out .2s
+
+        @media #{$mobile}
+            width: 100%
+            float: none
+            text-align: left
+            margin-bottom: 1.2rem
+
+        @media #{$tablet}
+            font-size: 1rem
 
     .item:hover .url aside
         color: $alpha
