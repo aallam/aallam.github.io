@@ -3,53 +3,70 @@
 
     > .title
         text-align: center
-        margin-bottom: 3rem
+        margin: 0 auto 2rem
+        max-width: 11ch
+        font-size: 7rem
+        line-height: 0.94
+        letter-spacing: -0.05em
+        font-weight: 500
+
+        @media #{$mobile}
+            font-size: 5.2rem
+
+        @media #{$tablet}
+            font-size: 6rem
 
     > .date,
     > .post-tags
         color: $gama
-        font-weight: 300
-        font-size: 1.4rem
+        font-family: $fontUi
+        font-weight: 500
+        font-size: 1.2rem
         text-transform: uppercase
         text-align: center
         display: block
         margin-bottom: 6rem
-        letter-spacing: 1px
+        letter-spacing: 0.14em
         -webkit-font-smoothing: antialiased
         text-rendering: optimizeLegibility
 
     > .date
-        margin-bottom: 2rem
+        margin-bottom: 1.8rem
 
     > .archived
-        font-weight: 300
-        font-size: 1.4rem
+        font-family: $fontUi
+        font-weight: 500
+        font-size: 1.2rem
         text-transform: uppercase
         text-align: center
         display: block
         margin-bottom: 3rem
-        letter-spacing: 1px
+        letter-spacing: 0.14em
         -webkit-font-smoothing: antialiased
         text-rendering: optimizeLegibility
 
     > .post-tags > .item
-        padding: 2px 8px
-        border-radius: 3px
+        padding: 4px 10px
+        border-radius: 999px
+        font-family: $fontUi
         font-size: 1.1rem
+        font-weight: 500
         background: $epsilon
         color: $alpha
-        letter-spacing: 1px
+        letter-spacing: 0.08em
         margin: 3px 1px
         text-decoration: none
         display: inline-block
 
     > .archived > .item
-        padding: 2px 8px
-        border-radius: 3px
+        padding: 4px 10px
+        border-radius: 999px
+        font-family: $fontUi
         font-size: 1.1rem
+        font-weight: 500
         background: $beta
         color: $gama
-        letter-spacing: 1px
+        letter-spacing: 0.08em
         margin: 3px 1px
         text-decoration: none
         display: inline-block
@@ -58,7 +75,7 @@
     > h2,
     > h3,
     > h4
-        margin-top: 40px
+        margin-top: 4.2rem
 
         a
             text-decoration: none
