@@ -54,6 +54,8 @@
         display: block
         padding: 20px 0
         text-decoration: none
+        border-radius: 10px
+        transition: background-color .2s ease, color .2s ease
 
     > .item > .url > .title
         margin: 0
@@ -66,6 +68,13 @@
         letter-spacing: -0.04em
 
     > .item:hover > .url > .title
+        color: $delta
+
+    > .item:hover > .url,
+    > .item:focus-within > .url
+        background: rgba($delta, 0.035)
+
+    > .item:focus-within > .url > .title
         color: $delta
 
     // maybe we can't nest html5 elements
@@ -86,4 +95,7 @@
         text-transform: uppercase
 
     .item:hover .url aside
+        color: $alpha
+
+    .item:focus-within .url aside
         color: $alpha

@@ -1,6 +1,23 @@
 body, html
   font-size: 62.5%
 
+:root
+  --color-ink-body: #{$alpha}
+  --color-ink-heading: #{$beta}
+  --color-ink-meta: #{$gama}
+  --color-accent: #{$delta}
+  --color-rule: #{$epsilon}
+  --color-paper: #fff
+  --mermaid-primary: #efe7ff
+  --mermaid-primary-text: #20113a
+  --mermaid-primary-border: #6a3fd4
+  --mermaid-secondary: #d8f3ef
+  --mermaid-secondary-text: #0f3c36
+  --mermaid-tertiary: #fff3d6
+  --mermaid-tertiary-text: #4f3200
+  --mermaid-cluster-bg: #f7f7fb
+  --mermaid-cluster-border: #d3d5df
+
 body
   font: 400 1.7rem/1.68 $fontSans
   color: $alpha
@@ -34,6 +51,11 @@ a
   text-decoration: underline
   text-decoration-thickness: 0.08em
   text-underline-offset: 0.14em
+
+:where(a, button, [role="button"]):focus-visible
+  outline: 2px solid rgba($delta, 0.24)
+  outline-offset: 0.25rem
+  border-radius: 2px
 
 p
   line-height: 1.72

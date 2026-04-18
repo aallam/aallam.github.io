@@ -52,26 +52,28 @@ layout: compress
     {% if page.mermaid %}
     <script type="module">
         import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.14.0/dist/mermaid.esm.min.mjs";
+        const css = getComputedStyle(document.documentElement);
+        const color = (name) => css.getPropertyValue(name).trim();
 
         mermaid.initialize({
             startOnLoad: true,
             securityLevel: "loose",
             theme: "base",
             themeVariables: {
-                primaryColor: "#efe7ff",
-                primaryTextColor: "#20113a",
-                primaryBorderColor: "#6a3fd4",
-                lineColor: "#6a3fd4",
-                secondaryColor: "#d8f3ef",
-                secondaryTextColor: "#0f3c36",
-                tertiaryColor: "#fff3d6",
-                tertiaryTextColor: "#4f3200",
-                background: "#ffffff",
-                mainBkg: "#efe7ff",
-                secondBkg: "#d8f3ef",
-                tertiaryBkg: "#fff3d6",
-                clusterBkg: "#f7f7fb",
-                clusterBorder: "#d3d5df",
+                primaryColor: color("--mermaid-primary"),
+                primaryTextColor: color("--mermaid-primary-text"),
+                primaryBorderColor: color("--mermaid-primary-border"),
+                lineColor: color("--mermaid-primary-border"),
+                secondaryColor: color("--mermaid-secondary"),
+                secondaryTextColor: color("--mermaid-secondary-text"),
+                tertiaryColor: color("--mermaid-tertiary"),
+                tertiaryTextColor: color("--mermaid-tertiary-text"),
+                background: color("--color-paper"),
+                mainBkg: color("--mermaid-primary"),
+                secondBkg: color("--mermaid-secondary"),
+                tertiaryBkg: color("--mermaid-tertiary"),
+                clusterBkg: color("--mermaid-cluster-bg"),
+                clusterBorder: color("--mermaid-cluster-border"),
                 fontFamily: "\"Source Sans 3\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
             }
         });
