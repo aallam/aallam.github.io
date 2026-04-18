@@ -4,7 +4,8 @@ title : Sitemap
 ---
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{% for post in site.posts %}
+{% assign visible_posts = site.posts | where_exp: "post", "post.archived != true" %}
+{% for post in visible_posts %}
     <url>
         <loc>{{site.url}}{{ post.url }}</loc>
     </url>

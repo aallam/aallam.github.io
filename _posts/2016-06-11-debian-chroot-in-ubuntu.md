@@ -9,6 +9,7 @@ tag:
 - Ubuntu
 - GSOC
 blog: true
+archived: true
 ---
 
 In order to develop and package for Debian, a testing environment is required, that's why I've setup a Debian [chroot][3] environment in my computer (Ubuntu) using Debootstrap.

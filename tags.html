@@ -10,11 +10,17 @@ description: "Browse posts by topic across software engineering, architecture, J
 
     {% if tags_list.first[0] == null %}
         {% for tag in tags_list %}
-            <a class="item" href="#{{ tag | slugify }}">{{ tag }}</a>
+            {% assign visible_posts = site.tags[tag] | where_exp: "post", "post.archived != true" %}
+            {% if visible_posts.size > 0 %}
+                <a class="item" href="#{{ tag | slugify }}">{{ tag }}</a>
+            {% endif %}
         {% endfor %}
     {% else %}
         {% for tag in tags_list %}
-            <a class="item" href="#{{ tag[0] | slugify }}">{{ tag[0] }}</a>
+            {% assign visible_posts = tag[1] | where_exp: "post", "post.archived != true" %}
+            {% if visible_posts.size > 0 %}
+                <a class="item" href="#{{ tag[0] | slugify }}">{{ tag[0] }}</a>
+            {% endif %}
         {% endfor %}
     {% endif %}
 
@@ -25,12 +31,14 @@ description: "Browse posts by topic across software engineering, architecture, J
 
 <section class="tag-list">
     {% for tag in site.tags  %}
+    {% assign visible_posts = tag[1] | where_exp: "post", "post.archived != true" %}
+    {% if visible_posts.size > 0 %}
     <h2 class="title" id="{{ tag[0] | slugify }}">#{{ tag[0] }}</h2>
 
     <ul class="list">
-        {% assign pages_list = tag[1] %}
+        {% assign pages_list = visible_posts %}
         {% for post in pages_list reversed %}
-            {% if post.title != null and post.hidden != true %}
+            {% if post.title != null %}
                 {% if group == null or group == post.group %}
                     <li class="item">
                         <a class="url" href="{{ site.url }}{{ post.url }}">
@@ -46,5 +54,6 @@ description: "Browse posts by topic across software engineering, architecture, J
     </ul>
 
     <div class="breaker"></div>
+    {% endif %}
     {% endfor %}
 </section>

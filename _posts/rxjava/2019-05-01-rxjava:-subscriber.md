@@ -9,7 +9,7 @@ tag:
 - Java
 - Kotlin
 blog: true
-hidden: true
+archived: true
 jemoji:
 ---
 

@@ -8,6 +8,7 @@ tag:
 - Kotlin
 - Java
 blog: true
+archived: true
 jemoji:
 ---
 

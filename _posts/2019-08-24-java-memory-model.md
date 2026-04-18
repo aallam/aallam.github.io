@@ -15,8 +15,6 @@ jemoji:
 ![Java][0]{:width="50%"}
 </div>
 
-> **Note**: This article was written in 2019 for Java 8-11. While the Java Memory Model fundamentals haven't changed, Java has evolved through versions 12-23 with new features like Virtual Threads (Project Loom) that affect concurrency patterns. The core JMM concepts remain accurate.
-
 ## The problem
 
 In Java, a program code can change a lot between its Java source code form, Byte code form, and machine code form. The

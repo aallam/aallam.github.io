@@ -15,8 +15,6 @@ jemoji:
 ![Java][0]{:width="50%"}
 </div>
 
-> **Note**: Written in 2019. JVM architecture fundamentals remain valid, but modern JVMs (Java 17+) include significant improvements like ZGC, Shenandoah GC, and upcoming features like Project Leyden. Core concepts described here are still accurate.
-
 Java source codes are compiled into an intermediate state called **bytecode** (i.e. **.class** file) using the Java compiler (**javac**). The Java Virtual Machine a.k.a **JVM** interprets the bytecode (without further recompilations) into native machine language. Therefore, bytecode acts as a **platform-independent** intermediary state which is **portable** among any JVM regardless of underlying OS and hardware architecture.
 
 _**The JVM is a specification**_. Vendors are free to customize, innovate, and improve its performance during the implementation.

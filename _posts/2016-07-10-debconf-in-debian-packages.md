@@ -8,7 +8,7 @@ tag:
 - Debian
 - GSoC
 blog: true
-jemoji:
+archived: true
 ---
 
 As part of my GSoC project, I had to find a way to ask users questions and install the packages depending on their given answers, my specific case was to ask the users to select an entry from multiple choices and download an archive from the chosen one, to achieve this, I used debconf.

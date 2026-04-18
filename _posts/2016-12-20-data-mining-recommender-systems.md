@@ -8,7 +8,6 @@ tag:
 - Data Mining
 blog: true
 jemoji:
-hidden: true
 archived: true
 ---
 

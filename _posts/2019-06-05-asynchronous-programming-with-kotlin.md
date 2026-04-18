@@ -9,7 +9,7 @@ tag:
 - Coroutines
 - Asynchrony
 blog: true
-jemoji:
+archived: true
 ---
 
 <div class="text-center">

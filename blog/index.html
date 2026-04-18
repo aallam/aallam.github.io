@@ -10,7 +10,7 @@ description: "Articles about software engineering, architecture, the JVM, Kotlin
 		<p class="text-center">Nothing published yet!</p>
 	{% elsif site.paginate %}
 		{% for post in paginator.posts %}
-	        {% if post.hidden != true %}
+	        {% if post.archived != true %}
 				{% include blog-post.html %}
 			{% endif %}
 	    {% endfor %}
@@ -20,7 +20,7 @@ description: "Articles about software engineering, architecture, the JVM, Kotlin
 		{% endif %}
 	{% else %}
 		{% for post in site.posts %}
-			{% if post.hidden != true %}
+			{% if post.archived != true %}
 				{% include blog-post.html %}
 			{% endif %}
 		{% endfor %}
