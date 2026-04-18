@@ -18,9 +18,10 @@
  */
 
 .animated
-  animation: fade-in-down 0.6s
-  animation-delay: 0.3s
-  animation-fill-mode: both
+  @media (prefers-reduced-motion: no-preference)
+    animation: fade-in-down 0.6s
+    animation-delay: 0.3s
+    animation-fill-mode: both
 
 @keyframes fade-in-down
   0%

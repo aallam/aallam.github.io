@@ -1,0 +1,89 @@
+@use "variables" as tokens
+
+@media print
+  *,
+  *::before,
+  *::after
+    box-shadow: none !important
+    text-shadow: none !important
+
+  body
+    background: #fff
+    color: tokens.$color-text-strong
+    font-size: 12pt
+
+  .wrapper-normal,
+  .wrapper-large
+    width: 100%
+    max-width: none
+
+  .nav
+    display: none
+
+  .nav-home
+    display: none
+
+  .footer-main
+    display: none
+
+  .share
+    display: none
+
+  .social-links
+    display: none
+
+  .pagination
+    display: none
+
+  .related
+    display: none
+
+  .disqus
+    display: none
+
+  .breaker
+    display: none
+
+  .home,
+  .blog,
+  .projects,
+  .tags,
+  .page,
+  .post
+    margin-top: 0
+
+  .home > .list > .item > .url,
+  .blog > .list > .item > .url,
+  .projects > .list > .item > .url,
+  .tag-list > .list > .item > .url
+    background: transparent !important
+
+  a,
+  a:visited
+    color: tokens.$color-text-strong
+
+  .page p a[href^="http"]::after,
+  .post p a[href^="http"]::after,
+  .page li a[href^="http"]::after,
+  .post li a[href^="http"]::after
+    content: " (" attr(href) ")"
+    font-size: 90%
+    word-break: break-all
+
+  pre,
+  blockquote,
+  figure,
+  img
+    break-inside: avoid
+    page-break-inside: avoid
+
+  pre
+    overflow: visible
+    white-space: pre-wrap
+    border: 1px solid #d8d0c6
+
+  h1,
+  h2,
+  h3,
+  h4
+    page-break-after: avoid

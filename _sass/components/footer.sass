@@ -1,12 +1,12 @@
 @use "../base/variables" as tokens
 
 .footer-main
-    border-top: 1px solid tokens.$epsilon
+    border-top: 1px solid tokens.$color-border
     padding: tokens.$space-7 0
     margin: tokens.$space-7 0 0
     font-family: tokens.$fontUi
     font-size: 1.3rem
-    color: tokens.$gama
+    color: tokens.$color-text-muted
     font-weight: 400
     text-align: center
     position: relative
@@ -16,7 +16,7 @@
         content: " "
         width: 7px
         height: 7px
-        border: tokens.$epsilon 1px solid
+        border: tokens.$color-border 1px solid
         position: absolute
         top: -5px
         left: 50%
@@ -36,18 +36,18 @@
             transition: color .3s ease-in-out
 
         &:hover
-            color: tokens.$delta
+            color: tokens.$color-accent
 
     > .extra
-        color: tokens.$gama
+        color: tokens.$color-text-muted
         margin-top: 0
 
         > .link
-            color: tokens.$beta
+            color: tokens.$color-text-strong
             text-decoration: none
             border-bottom: 1px solid transparent
             transition: ease-in-out all .3s
             padding-bottom: 1px
 
             &:hover
-                border-color: tokens.$gama
+                border-color: tokens.$color-text-muted

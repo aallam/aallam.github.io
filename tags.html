@@ -42,7 +42,7 @@ description: "Browse posts by topic across software engineering, architecture, J
                 {% if group == null or group == post.group %}
                     <li class="item">
                         <a class="url" href="{{ site.url }}{{ post.url }}">
-                            <aside class="date"><time datetime="{{ post.date | date:"%d-%m-%Y" }}">{{ post.date | date: "%b %d %Y" }}</time></aside>
+                            <time class="date" datetime="{{ post.date | date:"%d-%m-%Y" }}">{{ post.date | date: "%b %d %Y" }}</time>
                             <h3 class="title">{{ post.title }}</h3>
                         </a>
                     </li>

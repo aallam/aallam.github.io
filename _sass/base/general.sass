@@ -4,12 +4,36 @@ body, html
   font-size: 62.5%
 
 :root
-  --color-ink-body: #{tokens.$alpha}
-  --color-ink-heading: #{tokens.$beta}
-  --color-ink-meta: #{tokens.$gama}
-  --color-accent: #{tokens.$delta}
-  --color-rule: #{tokens.$epsilon}
+  --color-ink-body: #{tokens.$color-text-subtle}
+  --color-ink-heading: #{tokens.$color-text-strong}
+  --color-ink-meta: #{tokens.$color-text-muted}
+  --color-accent: #{tokens.$color-accent}
+  --color-rule: #{tokens.$color-border}
   --color-paper: #fff
+  --code-comment: #999988
+  --code-heading: #999999
+  --code-output: #888888
+  --code-prompt: #555555
+  --code-name: #333333
+  --code-name-accent: teal
+  --code-name-builtins: #0086b3
+  --code-keyword-accent: #800080
+  --code-type: #445588
+  --code-number: #009999
+  --code-string: #dd1144
+  --code-string-symbol: #990073
+  --code-function: #990000
+  --code-tag: navy
+  --code-regex: #009926
+  --code-whitespace: #bbbbbb
+  --code-error-text: #a61717
+  --code-error-bg: #e3d2d2
+  --code-diff-text: #000000
+  --code-diff-delete-bg: #ffdddd
+  --code-diff-delete-highlight: #ffaaaa
+  --code-diff-insert-bg: #ddffdd
+  --code-diff-insert-highlight: #aaffaa
+  --code-generic-bg: #eaf2f5
   --mermaid-primary: #efe7ff
   --mermaid-primary-text: #20113a
   --mermaid-primary-border: #6a3fd4
@@ -22,13 +46,13 @@ body, html
 
 body
   font: 400 1.7rem/1.68 tokens.$fontSans
-  color: tokens.$alpha
+  color: tokens.$color-text-subtle
   -webkit-font-smoothing: antialiased
   text-rendering: optimizeLegibility
 
 h1, h2, h3, h4
   font-family: tokens.$fontDisplay
-  color: tokens.$beta
+  color: tokens.$color-text-strong
   font-weight: 500
   letter-spacing: -0.03em
   line-height: 1.08
@@ -49,25 +73,25 @@ h4
   letter-spacing: -0.02em
 
 a
-  color: tokens.$delta
+  color: tokens.$color-accent
   text-decoration: underline
   text-decoration-thickness: 0.08em
   text-underline-offset: 0.14em
 
 :where(a, button, [role="button"]):focus-visible
-  outline: 2px solid rgba(tokens.$delta, 0.24)
+  outline: 2px solid rgba(tokens.$color-accent, 0.24)
   outline-offset: 0.25rem
   border-radius: 2px
 
 p
   line-height: 1.72
-  color: tokens.$prose
+  color: tokens.$color-prose
   font-weight: 400
   margin-bottom: 1.95rem
 
 strong
   font-weight: 600
-  color: tokens.$beta
+  color: tokens.$color-text-strong
 
 ul,
 ol
@@ -77,7 +101,7 @@ ol
   li
     line-height: 1.72
     font-weight: 400
-    color: tokens.$prose
+    color: tokens.$color-prose
 
 img,
 pre,
@@ -97,7 +121,7 @@ figcaption
   width: 100%
   text-align: center
   font-size: 1.25rem
-  color: tokens.$gama
+  color: tokens.$color-text-muted
   font-family: tokens.$fontUi
   font-weight: 500
   letter-spacing: 0.08em
@@ -112,7 +136,7 @@ blockquote
   border-left: 2px solid #ddd6cb
 
   p
-    color: tokens.$beta
+    color: tokens.$color-text-strong
     font-size: 1.9rem
     line-height: 1.7
 
@@ -147,7 +171,7 @@ pre
   line-height: 2.1rem
   overflow: auto
   background: #fff
-  border: 1px solid tokens.$epsilon
+  border: 1px solid tokens.$color-border
   border-radius: 2px
 
 .wrapper-normal,

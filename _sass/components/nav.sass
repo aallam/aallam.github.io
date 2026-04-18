@@ -19,7 +19,7 @@
             align-items: center
             justify-content: center
             padding: 0.5rem 0 0.95rem
-            color: tokens.$alpha
+            color: tokens.$color-text-subtle
             font-family: tokens.$fontUi
             font-weight: 500
             font-size: 1.28rem
@@ -41,28 +41,28 @@
                 transition: transform 180ms ease, background 180ms ease
 
             &:hover
-                color: tokens.$beta
+                color: tokens.$color-text-strong
 
             &:hover:after
                 transform: scaleX(1)
 
             &:focus-visible
-                color: tokens.$beta
-                outline: 2px solid rgba(tokens.$delta, 0.18)
+                color: tokens.$color-text-strong
+                outline: 2px solid rgba(tokens.$color-accent, 0.18)
                 outline-offset: 0.7rem
                 border-radius: 2px
 
             &:focus-visible:after
                 transform: scaleX(1)
-                background: tokens.$beta
+                background: tokens.$color-text-strong
 
             &[aria-current="page"]
-                color: tokens.$beta
+                color: tokens.$color-text-strong
                 font-weight: 600
 
             &[aria-current="page"]:after
                 transform: scaleX(1)
-                background: tokens.$beta
+                background: tokens.$color-text-strong
 
 .nav
     position: absolute
