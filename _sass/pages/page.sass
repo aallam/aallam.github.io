@@ -37,6 +37,22 @@
         margin-top: 4.2rem
         margin-bottom: 1.4rem
 
+    > p
+        font-size: 1.8rem
+        line-height: 1.72
+        color: tokens.$color-prose
+        margin-bottom: 2rem
+
+        > a
+            color: tokens.$color-prose
+            text-decoration-thickness: 0.09em
+            text-underline-offset: 0.16em
+            transition: color .18s ease, text-decoration-color .18s ease
+
+            &:hover,
+            &:focus-visible
+                color: tokens.$color-accent
+
     > .about-meta
         list-style: none
         padding-left: 0
@@ -44,3 +60,13 @@
 
         > li
             margin-bottom: 1rem
+
+        a
+            color: tokens.$color-prose
+            text-decoration-thickness: 0.09em
+            text-underline-offset: 0.16em
+            transition: color .18s ease, text-decoration-color .18s ease
+
+            &:hover,
+            &:focus-visible
+                color: tokens.$color-accent

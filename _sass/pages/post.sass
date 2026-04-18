@@ -83,6 +83,37 @@
         a
             text-decoration: none
 
+    > p
+        line-height: 1.66
+        margin-bottom: 1.7rem
+
+    > ul,
+    > ol
+        margin-bottom: 1.75rem
+
+    > ul li,
+    > ol li
+        line-height: 1.66
+
+    > p a,
+    > ul a,
+    > ol a,
+    > blockquote a
+        color: tokens.$color-prose
+        text-decoration-thickness: 0.09em
+        text-underline-offset: 0.16em
+        transition: color .18s ease, text-decoration-color .18s ease
+
+    > p a:hover,
+    > p a:focus-visible,
+    > ul a:hover,
+    > ul a:focus-visible,
+    > ol a:hover,
+    > ol a:focus-visible,
+    > blockquote a:hover,
+    > blockquote a:focus-visible
+        color: tokens.$color-accent
+
     > .title-image
         max-height: 120px
         display: block
