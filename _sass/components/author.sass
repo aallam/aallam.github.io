@@ -1,72 +1,75 @@
 .author
+    display: flex
+    align-items: center
+    justify-content: space-between
+    gap: 2.4rem
     padding: 3rem 0
     border-bottom: 1px solid $epsilon
     border-top: 1px solid $epsilon
     max-width: 100%
     margin: 4rem auto 0
 
-    > .toleft > .selfie
-        width: 90%
+    @media #{$mobile}
+        display: block
+
+    @media #{$tablet}
+        display: block
+
+    > .identity
+        display: flex
+        align-items: center
+        gap: 1.8rem
+        min-width: 0
+        flex: 1
+
+        @media #{$mobile}
+            align-items: center
+            gap: 1.4rem
+
+        @media #{$tablet}
+            align-items: center
+            gap: 1.4rem
+
+    > .identity > .toleft > .selfie
+        width: 100%
         border-radius: 100%
 
-    > .toright > .name,
-    > .toright > .bio
-        width: 60%
-        display: inline-block
-
-    > .toright > .name
+    > .identity > .details > .name
         font-size: 2.4rem
         font-family: $fontDisplay
         font-weight: 500
         line-height: 1
         letter-spacing: -0.03em
-        margin: 6px 0 0
+        margin: 0 0 .35rem
 
-        @media #{$mobile}
-            width: 100%
-            display: block
-
-        @media #{$tablet}
-            width: 100%
-            display: block
-
-    > .toright > .bio
+    > .identity > .details > .bio
         font-family: $fontUi
         font-weight: 400
         color: $gama
         font-size: 1.45rem
         text-align: left
-        line-height: 1.65
+        line-height: 1.45
         margin: 0
 
-        @media #{$mobile}
-            width: 100%
-            display: block
-
-        @media #{$tablet}
-            width: 100%
-            display: block
-
-    > .toleft
-        width: 10%
-        display: inline-block
+    > .identity > .toleft
+        flex: 0 0 7.4rem
 
         @media #{$mobile}
-            width: 20%
+            flex-basis: 5.8rem
 
         @media #{$tablet}
-            width: 20%
+            flex-basis: 5.8rem
 
-    > .toright
-        width: 89%
-        display: inline-block
-        vertical-align: top
+    > .identity > .details
+        min-width: 0
+        flex: 1
+        position: relative
 
         @media #{$mobile}
-            width: 78%
+            top: -3px
 
         @media #{$tablet}
-            width: 78%
+            top: -3px
 
 .no-disqus
     border-bottom: none

@@ -1,27 +1,19 @@
 .share
-    float: right
-    width: 40%
     display: flex
     justify-content: flex-end
     align-items: center
-    flex-wrap: wrap
+    flex-wrap: nowrap
+    flex-shrink: 0
     gap: 1.2rem
-    position: relative
-    top: -2px
+    margin-left: auto
 
     @media #{$mobile}
-        width: 100%
         justify-content: flex-start
-        top: 0
-        float: none
-        margin-top: 5px
+        margin: .9rem 0 0 7.2rem
 
     @media #{$tablet}
-        width: 100%
         justify-content: flex-start
-        top: 0
-        float: none
-        margin-top: 5px
+        margin: .9rem 0 0 7.2rem
 
     > .share-x,
     > .share-bluesky,
@@ -35,10 +27,10 @@
         transition: color .15s ease, opacity .15s ease
 
         @media #{$mobile}
-            margin: 0 1rem 10px 0
+            margin: 0 1rem 0 0
 
         @media #{$tablet}
-            margin: 0 1rem 10px 0
+            margin: 0 1rem 0 0
 
         > .icon
             width: 18px

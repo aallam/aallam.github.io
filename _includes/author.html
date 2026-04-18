@@ -1,26 +1,28 @@
 <section class="author{% if site.disqus == false %} no-disqus{% endif %}">
     {% assign share_url = page.url | absolute_url %}
     {% capture share_text %}{{ page.title }} {{ share_url }}{% endcapture %}
-    <div class="toleft">
-        <img class="selfie" src="{% if site.external-image == true %}{{ site.picture }}{% else %}{{ site.url }}/{{ site.picture }}{% endif %}" alt="{{ site.name }}">
+    <div class="identity">
+        <div class="toleft">
+            <img class="selfie" src="{% if site.external-image == true %}{{ site.picture }}{% else %}{{ site.url }}/{{ site.picture }}{% endif %}" alt="{{ site.name }}">
+        </div>
+
+        <div class="details">
+            <h4 class="name">{{ site.name }}</h4>
+            <p class="bio">{{ site.author_bio }}</p>
+        </div>
     </div>
 
-    <div class="toright">
-        <h4 class="name">{{ site.name }}</h4>
-        <p class="bio">{{ site.author_bio }}</p>
+    <div class="share">
+        <a class="share-bluesky" href="https://bsky.app/intent/compose?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer" aria-label="Share on Bluesky" title="Share on Bluesky">
+            <svg class="icon icon-bsky"><use xlink:href="#icon-bsky"></use></svg>
+        </a>
 
-        <div class="share">
-            <a class="share-bluesky" href="https://bsky.app/intent/compose?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer" aria-label="Share on Bluesky" title="Share on Bluesky">
-                <svg class="icon icon-bsky"><use xlink:href="#icon-bsky"></use></svg>
-            </a>
+        <a class="share-x" href="https://x.com/intent/tweet?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer" aria-label="Share on X" title="Share on X">
+            <svg class="icon icon-x"><use xlink:href="#icon-x"></use></svg>
+        </a>
 
-            <a class="share-x" href="https://x.com/intent/tweet?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer" aria-label="Share on X" title="Share on X">
-                <svg class="icon icon-x"><use xlink:href="#icon-x"></use></svg>
-            </a>
-
-            <a class="share-linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url | uri_escape }}" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn" title="Share on LinkedIn">
-                <svg class="icon icon-linkedin"><use xlink:href="#icon-linkedin"></use></svg>
-            </a>
-        </div>
+        <a class="share-linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url | uri_escape }}" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+            <svg class="icon icon-linkedin"><use xlink:href="#icon-linkedin"></use></svg>
+        </a>
     </div>
 </section>
