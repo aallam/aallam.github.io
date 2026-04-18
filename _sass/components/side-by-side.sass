@@ -1,9 +1,11 @@
+@use "../base/variables" as tokens
+
 .side-by-side
-    @media #{$above}
+    @media #{tokens.$above}
         width: 130%
         margin: 6rem 0 6rem -15%
 
-    @media #{$below}
+    @media #{tokens.$below}
         width: 100%
         margin: 4rem 0
 
@@ -12,26 +14,26 @@
         display: inline-block
         width: 47.5%
 
-        @media #{$below}
+        @media #{tokens.$below}
             img
                 text-align: center
                 display: block
                 margin: 0 auto
 
     > .toleft
-        @media #{$above}
+        @media #{tokens.$above}
             margin-right: 2%
 
-        @media #{$below}
+        @media #{tokens.$below}
             width: 100%
             margin: 0 0 4rem 0
 
     > .toright
-        @media #{$above}
+        @media #{tokens.$above}
             margin-left: 2%
             vertical-align: top
 
-        @media #{$below}
+        @media #{tokens.$below}
             width: 100%
             margin: 0 0 4rem 0
 
@@ -39,5 +41,5 @@
     > .toright > p
         margin: 0 0 4rem 0
 
-        @media #{$below}
+        @media #{tokens.$below}
             margin: 0
