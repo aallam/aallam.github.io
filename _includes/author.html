@@ -10,13 +10,16 @@
         <p class="bio">{{ site.author_bio }}</p>
 
         <div class="share">
-            <span class="share-label">Share</span>
-            <a class="share-x" href="https://twitter.com/intent/tweet?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer">
-                <span>X</span>
+            <a class="share-bluesky" href="https://bsky.app/intent/compose?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer" aria-label="Share on Bluesky" title="Share on Bluesky">
+                <svg class="icon icon-bsky"><use xlink:href="#icon-bsky"></use></svg>
             </a>
 
-            <a class="share-bluesky" href="https://bsky.app/intent/compose?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer">
-                <span>Bluesky</span>
+            <a class="share-x" href="https://x.com/intent/tweet?text={{ share_text | strip | uri_escape }}" target="_blank" rel="noopener noreferrer" aria-label="Share on X" title="Share on X">
+                <svg class="icon icon-x"><use xlink:href="#icon-x"></use></svg>
+            </a>
+
+            <a class="share-linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url={{ share_url | uri_escape }}" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+                <svg class="icon icon-linkedin"><use xlink:href="#icon-linkedin"></use></svg>
             </a>
         </div>
     </div>
