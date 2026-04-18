@@ -1,15 +1,17 @@
+@use "variables" as tokens
+
 body, html
   font-size: 62.5%
 
 body
-  font: 400 1.7rem/1.68 $fontSans
-  color: $alpha
+  font: 400 1.7rem/1.68 tokens.$fontSans
+  color: tokens.$alpha
   -webkit-font-smoothing: antialiased
   text-rendering: optimizeLegibility
 
 h1, h2, h3, h4
-  font-family: $fontDisplay
-  color: $beta
+  font-family: tokens.$fontDisplay
+  color: tokens.$beta
   font-weight: 500
   letter-spacing: -0.03em
   line-height: 1.08
@@ -19,41 +21,41 @@ h1
 
 h2
   font-size: 3.6rem
-  margin-bottom: 1.4rem
+  margin-bottom: tokens.$space-4
 
 h3
   font-size: 2.9rem
-  margin-bottom: 1.2rem
+  margin-bottom: tokens.$space-3
 
 h4
   font-size: 2.2rem
   letter-spacing: -0.02em
 
 a
-  color: $delta
+  color: tokens.$delta
   text-decoration: underline
   text-decoration-thickness: 0.08em
   text-underline-offset: 0.14em
 
 p
   line-height: 1.72
-  color: $prose
+  color: tokens.$prose
   font-weight: 400
   margin-bottom: 1.95rem
 
 strong
   font-weight: 600
-  color: $beta
+  color: tokens.$beta
 
 ul,
 ol
   margin-bottom: 2rem
-  padding-left: 2.4rem
+  padding-left: tokens.$space-6
 
   li
     line-height: 1.72
     font-weight: 400
-    color: $prose
+    color: tokens.$prose
 
 img,
 pre,
@@ -73,13 +75,13 @@ figcaption
   width: 100%
   text-align: center
   font-size: 1.25rem
-  color: $gama
-  font-family: $fontUi
+  color: tokens.$gama
+  font-family: tokens.$fontUi
   font-weight: 500
   letter-spacing: 0.08em
   text-transform: uppercase
 
-  @media #{$mobile}
+  @media #{tokens.$mobile}
     font-size: 1.2rem
 
 blockquote
@@ -88,7 +90,7 @@ blockquote
   border-left: 2px solid #ddd6cb
 
   p
-    color: $beta
+    color: tokens.$beta
     font-size: 1.9rem
     line-height: 1.7
 
@@ -106,7 +108,7 @@ figure.highlight
 code,
 tt
   padding: 1px 0
-  font-family: $fontMonospace
+  font-family: tokens.$fontMonospace
   font-size: 1.3rem
   line-height: 20px
   background: #fff
@@ -118,12 +120,12 @@ pre
   margin: 0 0 1.75em 0
   width: 100%
   padding: 0.8rem 1.2rem
-  font-family: $fontMonospace
+  font-family: tokens.$fontMonospace
   font-size: 1.3rem
   line-height: 2.1rem
   overflow: auto
   background: #fff
-  border: 1px solid $epsilon
+  border: 1px solid tokens.$epsilon
   border-radius: 2px
 
 .wrapper-normal,
@@ -132,10 +134,10 @@ pre
   width: 96%
   margin: 0 auto
 
-  @media #{$mobile}
+  @media #{tokens.$mobile}
     width: 88%
 
-  @media #{$tablet}
+  @media #{tokens.$tablet}
     width: 88%
 
 .wrapper-normal

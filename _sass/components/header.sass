@@ -1,3 +1,5 @@
+@use "../base/variables" as tokens
+
 .header-home
     display: block
     margin: 0 auto
@@ -18,16 +20,16 @@
             opacity: .8
 
     > .title
-        font-family: $fontDisplay
+        font-family: tokens.$fontDisplay
         font-size: 6.8rem
         line-height: 0.93
         letter-spacing: -0.06em
         margin: 0 0 2.6rem
 
-        @media #{$mobile}
+        @media #{tokens.$mobile}
             font-size: 5rem
 
-        @media #{$tablet}
+        @media #{tokens.$tablet}
             font-size: 5.8rem
 
     > .social-links

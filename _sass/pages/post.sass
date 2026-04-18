@@ -1,3 +1,5 @@
+@use "../base/variables" as tokens
+
 .post
     margin-top: 125px
 
@@ -10,16 +12,16 @@
         letter-spacing: -0.05em
         font-weight: 500
 
-        @media #{$mobile}
+        @media #{tokens.$mobile}
             font-size: 5.2rem
 
-        @media #{$tablet}
+        @media #{tokens.$tablet}
             font-size: 6rem
 
     > .date,
     > .post-tags
-        color: $gama
-        font-family: $fontUi
+        color: tokens.$gama
+        font-family: tokens.$fontUi
         font-weight: 500
         font-size: 1.2rem
         text-transform: uppercase
@@ -34,7 +36,7 @@
         margin-bottom: 1.8rem
 
     > .archived
-        font-family: $fontUi
+        font-family: tokens.$fontUi
         font-weight: 500
         font-size: 1.2rem
         text-transform: uppercase
@@ -48,11 +50,11 @@
     > .post-tags > .item
         padding: 4px 10px
         border-radius: 999px
-        font-family: $fontUi
+        font-family: tokens.$fontUi
         font-size: 1.1rem
         font-weight: 500
-        background: $epsilon
-        color: $alpha
+        background: tokens.$epsilon
+        color: tokens.$alpha
         letter-spacing: 0.08em
         margin: 3px 1px
         text-decoration: none
@@ -61,11 +63,11 @@
     > .archived > .item
         padding: 4px 10px
         border-radius: 999px
-        font-family: $fontUi
+        font-family: tokens.$fontUi
         font-size: 1.1rem
         font-weight: 500
-        background: $beta
-        color: $gama
+        background: tokens.$beta
+        color: tokens.$gama
         letter-spacing: 0.08em
         margin: 3px 1px
         text-decoration: none

@@ -1,32 +1,34 @@
+@use "../base/variables" as tokens
+
 .author
     display: flex
     align-items: center
     justify-content: space-between
-    gap: 2.4rem
+    gap: tokens.$space-6
     padding: 3rem 0
-    border-bottom: 1px solid $epsilon
-    border-top: 1px solid $epsilon
+    border-bottom: 1px solid tokens.$epsilon
+    border-top: 1px solid tokens.$epsilon
     max-width: 100%
     margin: 4rem auto 0
 
-    @media #{$mobile}
+    @media #{tokens.$mobile}
         display: block
 
-    @media #{$tablet}
+    @media #{tokens.$tablet}
         display: block
 
     > .identity
         display: flex
         align-items: center
-        gap: 1.8rem
+        gap: tokens.$space-5
         min-width: 0
         flex: 1
 
-        @media #{$mobile}
+        @media #{tokens.$mobile}
             align-items: center
             gap: 1.4rem
 
-        @media #{$tablet}
+        @media #{tokens.$tablet}
             align-items: center
             gap: 1.4rem
 
@@ -36,16 +38,16 @@
 
     > .identity > .details > .name
         font-size: 2.4rem
-        font-family: $fontDisplay
+        font-family: tokens.$fontDisplay
         font-weight: 500
         line-height: 1
         letter-spacing: -0.03em
         margin: 0 0 .35rem
 
     > .identity > .details > .bio
-        font-family: $fontUi
+        font-family: tokens.$fontUi
         font-weight: 400
-        color: $gama
+        color: tokens.$gama
         font-size: 1.45rem
         text-align: left
         line-height: 1.45
@@ -54,10 +56,10 @@
     > .identity > .toleft
         flex: 0 0 7.4rem
 
-        @media #{$mobile}
+        @media #{tokens.$mobile}
             flex-basis: 5.8rem
 
-        @media #{$tablet}
+        @media #{tokens.$tablet}
             flex-basis: 5.8rem
 
     > .identity > .details
@@ -65,10 +67,10 @@
         flex: 1
         position: relative
 
-        @media #{$mobile}
+        @media #{tokens.$mobile}
             top: -3px
 
-        @media #{$tablet}
+        @media #{tokens.$tablet}
             top: -3px
 
 .no-disqus

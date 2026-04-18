@@ -1,3 +1,5 @@
+@use "../base/variables" as tokens
+
 .page
     margin-top: 125px
 
@@ -9,7 +11,7 @@
         line-height: 0.96
         letter-spacing: -0.05em
 
-        @media #{$mobile}
+        @media #{tokens.$mobile}
             font-size: 4.8rem
 
 .about
@@ -24,7 +26,7 @@
         object-fit: cover
         border-radius: 100%
 
-        @media #{$mobile}
+        @media #{tokens.$mobile}
             width: 48%
 
     > .about-portrait > .caption

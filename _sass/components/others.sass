@@ -1,6 +1,8 @@
+@use "../base/variables" as tokens
+
 .evidence
     background-image: linear-gradient(to bottom, rgba(39,243,106,0.15), rgba(39,243,106,0.15))
-    color: beta
+    color: tokens.$beta
 
 .star
     > .url > .title
@@ -13,12 +15,14 @@
 
 .icon
     display: inline-block
-    width: 17px
-    height: 17px
-    fill: #000
+    width: var(--icon-size, #{tokens.$icon-size-medium})
+    height: var(--icon-size, #{tokens.$icon-size-medium})
+    fill: currentColor
     text-align: center
-    color: #000
-    margin: 7px auto
+    color: inherit
+    margin: 0
+    vertical-align: middle
+    flex-shrink: 0
 
 .caption
     position: relative
@@ -38,11 +42,11 @@
     min-width: 130%
     margin: 5rem 0 5rem -15%
 
-    @media #{$mobile}
+    @media #{tokens.$mobile}
         min-width: 114%
         margin: 2rem 0 2rem -7%
 
-    @media #{$tablet}
+    @media #{tokens.$tablet}
         min-width: 114%
         margin: 2rem 0 2rem -7%
 
@@ -56,7 +60,7 @@
         width: 100%
         text-align: center
         display: block
-        color: $gama
+        color: tokens.$gama
         letter-spacing: 4px
         position: relative
         top: -8px

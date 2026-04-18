@@ -1,10 +1,12 @@
+@use "../base/variables" as tokens
+
 .nav,
 .nav-home
     > .list
         list-style: none
         display: inline-flex
         align-items: center
-        gap: 1.8rem
+        gap: tokens.$space-5
         margin: 0
         padding: 0
 
@@ -17,8 +19,8 @@
             align-items: center
             justify-content: center
             padding: 0.5rem 0 0.95rem
-            color: $alpha
-            font-family: $fontUi
+            color: tokens.$alpha
+            font-family: tokens.$fontUi
             font-weight: 500
             font-size: 1.28rem
             letter-spacing: 0.08em
@@ -39,28 +41,28 @@
                 transition: transform 180ms ease, background 180ms ease
 
             &:hover
-                color: $beta
+                color: tokens.$beta
 
             &:hover:after
                 transform: scaleX(1)
 
             &:focus-visible
-                color: $beta
-                outline: 2px solid rgba($delta, 0.18)
+                color: tokens.$beta
+                outline: 2px solid rgba(tokens.$delta, 0.18)
                 outline-offset: 0.7rem
                 border-radius: 2px
 
             &:focus-visible:after
                 transform: scaleX(1)
-                background: $beta
+                background: tokens.$beta
 
             &[aria-current="page"]
-                color: $beta
+                color: tokens.$beta
                 font-weight: 600
 
             &[aria-current="page"]:after
                 transform: scaleX(1)
-                background: $beta
+                background: tokens.$beta
 
 .nav
     position: absolute
@@ -83,7 +85,7 @@
             padding: 0.6rem 0 1rem
             font-size: 1.48rem
 
-@media #{$tablet}
+@media #{tokens.$tablet}
     .nav
         top: 2.1rem
         right: 2.2rem
@@ -97,7 +99,7 @@
             > .item > .link
                 font-size: 1.36rem
 
-@media #{$mobile}
+@media #{tokens.$mobile}
     .nav
         top: 1.6rem
         right: 1.7rem
