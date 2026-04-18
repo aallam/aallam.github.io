@@ -23,5 +23,5 @@ I write here about software engineering, with a focus on architecture, infrastru
 
 <ul class="about-meta">
   <li><strong>Email</strong> — <a href="mailto:mouaad@aallam.com">mouaad@aallam.com</a></li>
-  <li><strong>PGP</strong> — <a href="https://keyserver2.pgp.com/vkd/SubmitSearch.event?&&SearchCriteria=mouaad%40aallam.com">0x10A2422B</a>, fingerprint <code>369F 867F 6A06 5383 61AC B36E 5825 9B81 10A2 422B</code></li>
+  <li><strong>PGP</strong> — <a href="https://keyserver2.pgp.com/vkd/SubmitSearch.event?&&SearchCriteria=mouaad%40aallam.com">0x10A2422B</a></li>
 </ul>
