@@ -116,6 +116,8 @@ What does the execution layer actually look like if you want to use this pattern
 
 At a high level, it is a Node.js library for running guest JavaScript against host-defined tools and wrapped MCP servers, without hard-wiring the whole system to one runtime shape.
 
+That public surface is intentionally small: `@execbox/core` owns the execution contract and MCP adapters, `@execbox/quickjs` is the default starting point, `@execbox/remote` covers application-owned transport boundaries, and `@execbox/isolated-vm` is the alternate in-process runtime. For QuickJS specifically, the runtime boundary is mostly a host-mode choice inside `@execbox/quickjs`: stay inline, move off the main thread with `host: "worker"`, or move into a child process with `host: "process"`.
+
 The core model is intentionally small:
 
 1. host code defines tools, or discovers them from an MCP source,
@@ -162,7 +164,7 @@ MCP can appear on either side of that flow:
 - upstream, as a source of tools that are wrapped into the guest namespace,
 - downstream, as a surface that exposes code execution back out to MCP clients.
 
-Internally, that maps to a small set of packages such as `@execbox/core`, the executor packages, and `@execbox/protocol`, but the important user-facing idea is simpler: define capabilities once, choose the runtime boundary that fits the deployment, and keep the execution contract the same.
+Internally, that maps to `@execbox/core`, `@execbox/quickjs`, `@execbox/remote`, `@execbox/isolated-vm`, and the `@execbox/core/protocol` transport subpath used by hosted and remote flows. The user-facing idea is simpler: define capabilities once, start with `@execbox/quickjs`, and only move to a stronger host boundary or remote transport when the deployment actually needs it.
 
 ## Usage
 
@@ -206,7 +208,7 @@ const result = await executor.execute(
 );
 ```
 
-This keeps the API close to the MCP TypeScript SDK itself: the server is declared once, `zod` stays the schema language, and the same server can be exposed to guest code as a callable namespace.
+This keeps the API close to the MCP TypeScript SDK itself: the server is declared once, `zod` stays the schema language, and the same server can be exposed to guest code as a callable namespace. That same shape also works with `new QuickJsExecutor({ host: "worker" })` or `new QuickJsExecutor({ host: "process" })` when you want a stronger local boundary, without changing how capabilities are declared.
 
 ## Boundary
 
@@ -230,7 +232,7 @@ Anthropic and Cloudflare helped validate the same broad pattern:
 - loading only the definitions you need is a better scaling model,
 - generated code needs a proper execution boundary.
 
-What was missing in practice was a reusable layer that made those ideas portable across runtimes and MCP integration patterns instead of tying them to one agent host or one vendor platform.
+What was missing in practice was a reusable layer that made those ideas portable across runtimes and MCP integration patterns instead of tying them to one agent host or one vendor platform. In practice that means you can keep one capability model, start with the simplest QuickJS setup, and then move to worker-hosted, process-hosted, or transport-backed execution without rewriting the host/tool contract.
 
 That is what [`execbox`][1] is for.
 
