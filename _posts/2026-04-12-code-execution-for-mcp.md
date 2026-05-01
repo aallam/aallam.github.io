@@ -33,6 +33,23 @@ That loop is simple, but it scales poorly once the tool catalog or intermediate 
 - large payloads are copied and summarized repeatedly,
 - multi-step control flow becomes token-heavy.
 
+<pre class="mermaid">
+flowchart LR
+    M["Model"] --> T["Tool catalog in context"]
+    T --> C1["Call tool A"]
+    C1 --> R1["Return result to model"]
+    R1 --> C2["Call tool B"]
+    C2 --> R2["Return another result"]
+    R2 --> M
+
+    classDef model fill:#efe7ff,stroke:#6a3fd4,color:#20113a
+    classDef catalog fill:#fff3d6,stroke:#d1a11f,color:#4f3200
+    classDef tool fill:#d8f3ef,stroke:#1b8c7a,color:#0f3c36
+    class M model
+    class T catalog
+    class C1,R1,C2,R2 tool
+</pre>
+
 For tools that return large documents, search results, database rows, logs, or API payloads, the loop spends too much of the model budget on mechanical data movement. A compact programming surface lets the model call tool-like APIs, filter intermediate values locally, and return only the final result the host needs to see.
 
 ## Signals
@@ -52,6 +69,24 @@ Together, these posts point in the same direction: direct tool calling is useful
 The package map is intentionally small: `@execbox/core` owns the execution contract, provider resolution, and MCP adapters; `@execbox/quickjs` provides inline and worker-hosted QuickJS execution; and `@execbox/remote` provides a transport-backed executor for app-owned runner boundaries.
 
 The core flow stays the same across those packages: host code defines tools or discovers them from MCP, those tools become a deterministic guest namespace, guest code runs against that namespace, tool calls cross a host-controlled boundary, and results come back as JSON-compatible data. The same guest code shape can start with inline QuickJS, move to worker-hosted QuickJS, or run through a remote transport that the application owns.
+
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant App as Host application
+    participant NS as Resolved namespace
+    participant Guest as Guest runtime
+    participant Boundary as Host boundary
+    participant Systems as Systems / APIs / MCP servers
+
+    App->>NS: Define or discover capabilities
+    App->>Guest: Execute code with namespace
+    Guest->>Boundary: Call tool
+    Boundary->>Systems: Invoke capability
+    Systems-->>Boundary: Structured result
+    Boundary-->>Guest: Return JSON-safe value
+    Guest-->>App: Return execution result
+</pre>
 
 MCP can appear on either side of the flow. Upstream MCP servers can be wrapped into guest namespaces, and execbox can also expose code execution itself as an MCP server so a client gets a compact code-running surface instead of a large direct tool catalog.
 
