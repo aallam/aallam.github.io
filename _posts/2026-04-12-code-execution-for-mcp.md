@@ -1,8 +1,8 @@
 ---
-title: "Code execution for MCP agents"
+title: "Code execution for MCP"
 layout: post
 date: 2026-04-12 12:10
-description: "Why code execution helps MCP agents scale beyond direct tool loops, and how execbox keeps capability and runtime boundaries explicit."
+description: "Why code execution helps AI agents using MCP scale beyond direct tool loops, and how execbox keeps capability and runtime boundaries explicit."
 mermaid: true
 tag:
 - MCP
@@ -12,7 +12,7 @@ blog: true
 jemoji:
 ---
 
-There is a useful shift happening in MCP agent design: instead of asking the model to call one tool at a time, let it write small programs that call tools inside a controlled execution environment.
+There is a useful shift happening in agent systems that use MCP: instead of asking the model to call one tool at a time, let it write small programs that call tools inside a controlled execution environment.
 
 That changes the shape of the system. Tool definitions do not all have to sit in the model context. Intermediate results do not all have to be replayed through the model. Multi-step logic can run closer to the data it is manipulating.
 
