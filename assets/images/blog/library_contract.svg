@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="380" viewBox="0 90 1100 380" role="img" aria-labelledby="title desc">
+  <title id="title">Library contracts between maintainers and users</title>
+  <desc id="desc">A diagram showing maintainer choices turning into public API, behavior, docs, releases, and dependencies, which users build systems on.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#222222"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+    <style>
+      .label {
+        fill: #222222;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 28px;
+        font-weight: 650;
+      }
+      .small {
+        fill: #5f5a52;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 18px;
+        font-weight: 450;
+      }
+      .micro {
+        fill: #6f6a62;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+      }
+      .serif {
+        fill: #222222;
+        font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+        font-size: 42px;
+        font-weight: 500;
+      }
+    </style>
+  </defs>
+
+  <rect width="1100" height="620" fill="#ffffff"/>
+
+  <g filter="url(#shadow)">
+    <rect x="58" y="184" width="238" height="192" rx="14" fill="#f8f5ef" stroke="#ded5c8"/>
+    <text class="micro" x="177" y="224" text-anchor="middle">MAINTAINER CHOICES</text>
+    <text class="label" x="177" y="274" text-anchor="middle">Design</text>
+    <text class="small" x="177" y="308" text-anchor="middle">what to expose</text>
+    <text class="small" x="177" y="334" text-anchor="middle">what to keep private</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="380" y="136" width="340" height="288" rx="16" fill="#f7f7fb" stroke="#d9dae5"/>
+    <text class="micro" x="550" y="176" text-anchor="middle">PUBLIC CONTRACT</text>
+    <g>
+      <rect x="424" y="206" width="252" height="40" rx="20" fill="#efe7ff" stroke="#cdbff0"/>
+      <text class="small" x="550" y="232" text-anchor="middle">API surface</text>
+    </g>
+    <g>
+      <rect x="424" y="258" width="252" height="40" rx="20" fill="#dff3ef" stroke="#a8d7cf"/>
+      <text class="small" x="550" y="284" text-anchor="middle">Behavior and errors</text>
+    </g>
+    <g>
+      <rect x="424" y="310" width="252" height="40" rx="20" fill="#fff1d2" stroke="#e8ca75"/>
+      <text class="small" x="550" y="336" text-anchor="middle">Docs and examples</text>
+    </g>
+    <g>
+      <rect x="424" y="362" width="252" height="40" rx="20" fill="#fce4e4" stroke="#e8b3b3"/>
+      <text class="small" x="550" y="388" text-anchor="middle">Releases and deps</text>
+    </g>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="804" y="184" width="238" height="192" rx="14" fill="#f4f8f6" stroke="#cdded7"/>
+    <text class="micro" x="923" y="224" text-anchor="middle">USER SYSTEMS</text>
+    <text class="label" x="923" y="274" text-anchor="middle">Trust</text>
+    <text class="small" x="923" y="308" text-anchor="middle">adoption</text>
+    <text class="small" x="923" y="334" text-anchor="middle">upgrades</text>
+  </g>
+
+  <path d="M300 280 H356" stroke="#222222" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M724 280 H780" stroke="#222222" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+</svg>

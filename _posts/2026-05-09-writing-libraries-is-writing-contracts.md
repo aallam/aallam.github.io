@@ -19,6 +19,10 @@ That is the part that took me time to appreciate. A library can be small, elegan
 
 I have felt this across different kinds of projects: a larger API client such as [`openai-kotlin`](https://github.com/aallam/openai-kotlin), smaller focused Kotlin libraries, and newer runtime-boundary work like [`execbox`](https://github.com/aallam/execbox). The details are different, but the maintenance pressure is the same: once people depend on your library, you are not only publishing code. You are publishing expectations.
 
+<div class="text-center" markdown="1">
+![Library contracts between maintainers and users][0]{:width="90%"}
+</div>
+
 ## Public API is more than types
 
 It is tempting to think of public API as the list of exported symbols. Functions, classes, interfaces, modules, packages. That is only the visible part.
@@ -143,3 +147,5 @@ Users should be able to predict how the API behaves. They should be able to pred
 That predictability does not happen by accident. It comes from treating the public surface as a contract, keeping that contract small, documenting it clearly, changing it deliberately, and remembering that every dependency and release is part of the user's system too.
 
 Reusable code is the beginning. The real work is making it safe for other people to build on.
+
+[0]: {{ site.url }}/assets/images/blog/library_contract.svg
