@@ -54,13 +54,15 @@ For tools that return large documents, search results, database rows, logs, or A
 
 ## Signals
 
-Anthropic and Cloudflare have both described the same architecture pressure.
+Anthropic, Cloudflare, and the MCP client best practices have all described the same architecture pressure.
 
 Anthropic's post, [Code execution with MCP: Building more efficient agents](https://www.anthropic.com/engineering/code-execution-with-mcp), frames direct MCP usage around two scaling problems: tool definitions consume context, and intermediate results consume more context. Their answer is to let the model write code against tool-like APIs, load definitions on demand, and keep intermediate processing inside the execution environment.
 
 Cloudflare's post, [Code Mode: give agents an entire API in 1,000 tokens](https://blog.cloudflare.com/code-mode-mcp/), makes the same argument from the API side: a large tool surface can become a smaller typed SDK surface that the model uses from generated code. Cloudflare then followed with [Sandboxing AI agents, 100x faster](https://blog.cloudflare.com/dynamic-workers/), focused on where generated code should run.
 
-Together, these posts point in the same direction: direct tool calling is useful but expensive at scale, code execution can compress data movement, and the runtime cannot be an afterthought.
+The MCP docs call this pattern [Programmatic Tool Calling / Code Mode][2]: the model writes code, the code runs in a sandbox, and the host brokers MCP tool calls so only the final result needs to return to the model.
+
+Together, these posts and docs point in the same direction: direct tool calling is useful but expensive at scale, code execution can compress data movement, and the runtime cannot be an afterthought.
 
 ## Execbox
 
@@ -161,3 +163,4 @@ If you want to look at the implementation:
 
 [0]: {{ site.url }}/assets/images/blog/direct_vs_code_execution.svg
 [1]: https://github.com/aallam/execbox
+[2]: https://modelcontextprotocol.io/docs/develop/clients/client-best-practices#programmatic-tool-calling-/-code-mode
