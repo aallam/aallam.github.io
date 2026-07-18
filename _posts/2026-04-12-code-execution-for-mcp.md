@@ -26,9 +26,9 @@ This is the pattern [`execbox`](https://github.com/aallam/execbox) is built arou
 
 Direct MCP tool loops are a good default. The client exposes tools, the model picks one, the host executes it, the result goes back into context, and the model decides what to do next.
 
-That loop is simple, but it scales poorly once the tool catalog or intermediate data gets large:
+That loop is simple, but an eager implementation scales poorly once the tool catalog or intermediate data gets large:
 
-- every exposed tool definition consumes context,
+- every tool definition exposed up front consumes context,
 - every intermediate result passes back through the model,
 - large payloads are copied and summarized repeatedly,
 - multi-step control flow becomes token-heavy.
@@ -54,7 +54,7 @@ For tools that return large documents, search results, database rows, logs, or A
 
 ## Signals
 
-Anthropic, Cloudflare, and the MCP client best practices have all described the same architecture pressure.
+Posts from Anthropic and Cloudflare, along with the MCP client best practices, describe the same architecture pressure.
 
 Anthropic's post, [Code execution with MCP: Building more efficient agents](https://www.anthropic.com/engineering/code-execution-with-mcp), frames direct MCP usage around two scaling problems: tool definitions consume context, and intermediate results consume more context. Their answer is to let the model write code against tool-like APIs, load definitions on demand, and keep intermediate processing inside the execution environment.
 
@@ -62,15 +62,17 @@ Cloudflare's post, [Code Mode: give agents an entire API in 1,000 tokens](https:
 
 The MCP docs call this pattern [Programmatic Tool Calling / Code Mode][2]: the model writes code, the code runs in a sandbox, and the host brokers MCP tool calls so only the final result needs to return to the model.
 
-Together, these posts and docs point in the same direction: direct tool calling is useful but expensive at scale, code execution can compress data movement, and the runtime cannot be an afterthought.
+The two scaling pressures have related but distinct answers. Progressive discovery controls which tool definitions enter the model context, while programmatic tool calling controls how tools are invoked and where intermediate results are processed. They can be used independently or together.
+
+Together, these posts and docs point in the same direction: eager direct tool calling is useful but expensive at scale, code execution can compress data movement, and the runtime cannot be an afterthought.
 
 ## Execbox
 
 `execbox` is the library layer I wanted for that pattern. It is not an agent framework or hosted sandbox product; it is a set of Node.js packages that turn host capabilities into callable guest namespaces, then run guest JavaScript against those namespaces through a chosen executor.
 
-The package map is intentionally small: `@execbox/core` owns the execution contract, provider resolution, and MCP adapters; `@execbox/quickjs` provides inline and worker-hosted QuickJS execution; and `@execbox/remote` provides a transport-backed executor for app-owned runner boundaries.
+The package map is intentionally small: `@execbox/core` owns the execution contract, provider resolution, and MCP adapters; `@execbox/quickjs` provides inline and worker-hosted QuickJS execution.
 
-The core flow stays the same across those packages: host code defines tools or discovers them from MCP, those tools become a deterministic guest namespace, guest code runs against that namespace, tool calls cross a host-controlled boundary, and results come back as JSON-compatible data. The same guest code shape can start with inline QuickJS, move to worker-hosted QuickJS, or run through a remote transport that the application owns.
+The core flow stays the same across those packages: host code defines tools or discovers them from MCP, those tools become a deterministic guest namespace, guest code runs against that namespace, tool calls cross a host-controlled boundary, and results come back as JSON-compatible data. The same guest code shape can start with inline QuickJS and move to worker-hosted QuickJS without changing the provider contract.
 
 <pre class="mermaid">
 sequenceDiagram
@@ -139,19 +141,21 @@ try {
 }
 ```
 
-The runtime choice is separate from the provider shape. Use inline QuickJS for trusted, lowest-friction local execution. Use worker-hosted QuickJS when you want local execution off the main thread with worker lifecycle controls. Use `@execbox/remote` when the application owns a process, container, VM, or network boundary for the runtime and wants the same execution contract across that boundary.
+The runtime choice is separate from the provider shape. Use inline QuickJS for trusted, lowest-friction local execution. Use worker-hosted QuickJS when you want local execution off the main thread with worker lifecycle controls. Both use the same provider and execution contracts; the worker changes runtime placement and lifecycle, not the capability set.
 
 ## Boundaries
 
-The runtime is not the capability owner. The provider and tool surface is.
+The runtime does not own the capabilities. The provider and exposed tool surface define them.
 
-If guest code can call a tool that deletes data, sends email, or reaches a private system, then guest code has that authority. Moving execution from inline QuickJS to a worker or remote runner changes lifecycle and deployment properties, not what the exposed tools are allowed to do.
+If guest code can call a tool that deletes data, sends email, or reaches a private system, then guest code has that authority. Moving execution from inline QuickJS to a worker changes lifecycle and runtime placement, not what the exposed tools are allowed to do.
+
+That capability boundary is not a runtime authorization decision. The host still needs to evaluate each sandbox-originated tool call against the applicable user confirmation or categorical grant. Approving a generated script should not automatically authorize every call it makes.
 
 Execbox helps make that execution path controlled: fresh execution state per call, JSON-only tool and result boundaries, schema validation around host tool execution, bounded logs, timeout and memory controls, and abort propagation into in-flight host work.
 
 Those controls matter, but they do not make a dangerous tool safe to expose. They make it easier to expose only the tools you intend, run generated code through a stable contract, and choose the runtime placement that matches the deployment.
 
-That is the role of `execbox`: keep one capability model, support MCP tools and wrapped MCP servers, and let applications choose between inline QuickJS, worker-hosted QuickJS, and app-owned remote runner boundaries without rewriting the guest/tool contract.
+That is the role of `execbox`: keep one capability model, support MCP tools and wrapped MCP servers, and let applications choose between inline and worker-hosted QuickJS without rewriting the guest/tool contract.
 
 If you want to look at the implementation:
 

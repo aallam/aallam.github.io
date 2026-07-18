@@ -58,6 +58,8 @@ A good library usually has more internal machinery than public API. That is fine
 
 This is especially important when a project is young. Early versions are full of uncertainty. You may not know the right abstractions yet. You may not know whether users need a low-level primitive or a higher-level workflow. Publishing too much too early turns guesses into obligations.
 
+I saw this while preparing `execbox` for a stable library surface. Experimental runtime packages had accumulated around the core idea, so I removed them before 1.0 and kept two supported responsibilities: provider contracts in `@execbox/core` and QuickJS execution in `@execbox/quickjs`. That cleanup was disruptive in the short term, but it made the public promise smaller and clearer.
+
 The better default is to expose the smallest useful path, then let real usage pull more surface area out of the internals. When a pattern repeats, promote it. When users keep reaching around the API, understand why. When an option exists only because the implementation happened to have it, keep it private.
 
 Small surfaces also make documentation and examples better. A library that can be explained with a few concepts is easier to adopt, easier to debug, and easier to trust.
@@ -96,7 +98,7 @@ Deprecation is useful when it gives users time to move. It is less useful when i
 - when does the old path go away,
 - why is the change worth making.
 
-Semantic versioning helps here, but it is not enough by itself. A version number can tell users that a release may break them. It cannot tell them whether the change is understandable, whether the migration is realistic, or whether the maintainers respect their time.
+For projects that follow Semantic Versioning, version numbers help here, but they are not enough by themselves. SemVer treats the public API as unstable during `0.y.z` and uses major-version changes after `1.0` to signal incompatible API changes. Neither signal tells users whether the change is understandable, whether the migration is realistic, or whether the maintainers respect their time.
 
 Compatibility also includes softer promises: supported platforms, runtime versions, generated code shape, dependency ranges, serialization formats, package names, module paths, and error semantics. These are easy to treat as implementation details until users build on them.
 
@@ -104,7 +106,7 @@ The maintainer's job is not to avoid all change. It is to make change predictabl
 
 ## Dependencies become user dependencies
 
-Every dependency you add to a library becomes part of someone else's application.
+Every runtime dependency you expose, including its transitive dependencies, becomes part of someone else's application.
 
 That does not mean libraries should have no dependencies. Good dependencies can reduce bugs, improve standards compliance, and let maintainers focus on the library's actual purpose. But dependencies carry costs that are different in a library than in an application.
 
