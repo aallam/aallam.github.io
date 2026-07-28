@@ -6,7 +6,9 @@ layout: page
     <img class="title-image" src="{{ page.image }}" alt="{{ page.title }}">
 {% endif %}
 
-{% if page.archived %}
+{% if page.unlisted %}
+    <div class="archived"><span class="item">unlisted</span></div>
+{% elsif page.archived %}
     <div class="archived"><span class="item">archived</span></div>
 {% endif %}
 

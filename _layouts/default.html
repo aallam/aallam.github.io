@@ -13,6 +13,8 @@ layout: compress
 
     {% seo %}
 
+    {% if page.noindex %}<meta name=robots content="noindex, nofollow">{% endif %}
+
     {% include favicon.html %}
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

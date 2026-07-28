@@ -10,14 +10,14 @@ description: "Browse posts by topic across software engineering, architecture, J
 
     {% if tags_list.first[0] == null %}
         {% for tag in tags_list %}
-            {% assign visible_posts = site.tags[tag] | where_exp: "post", "post.archived != true" %}
+            {% assign visible_posts = site.tags[tag] | where_exp: "post", "post.archived != true and post.unlisted != true" %}
             {% if visible_posts.size > 0 %}
                 <a class="item" href="#{{ tag | slugify }}">{{ tag }}</a>
             {% endif %}
         {% endfor %}
     {% else %}
         {% for tag in tags_list %}
-            {% assign visible_posts = tag[1] | where_exp: "post", "post.archived != true" %}
+            {% assign visible_posts = tag[1] | where_exp: "post", "post.archived != true and post.unlisted != true" %}
             {% if visible_posts.size > 0 %}
                 <a class="item" href="#{{ tag[0] | slugify }}">{{ tag[0] }}</a>
             {% endif %}
@@ -31,7 +31,7 @@ description: "Browse posts by topic across software engineering, architecture, J
 
 <section class="tag-list">
     {% for tag in site.tags  %}
-    {% assign visible_posts = tag[1] | where_exp: "post", "post.archived != true" %}
+    {% assign visible_posts = tag[1] | where_exp: "post", "post.archived != true and post.unlisted != true" %}
     {% if visible_posts.size > 0 %}
     <h2 class="title" id="{{ tag[0] | slugify }}">#{{ tag[0] }}</h2>
 
