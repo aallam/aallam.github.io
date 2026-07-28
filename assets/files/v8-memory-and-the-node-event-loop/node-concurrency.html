@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<title>How Node.js Runs Your Code: Event Loop, Threads & Isolation</title>
+<meta name="robots" content="noindex, nofollow">
+<script>/*__defaultTheme*/document.documentElement.dataset.theme="light";</script>
+<style>
+  /* ============================================================
+     TOKENS - shared clean-technical identity with the V8 explainer,
+     with a task-type semantic palette for the concurrency model.
+     ============================================================ */
+  :root {
+    color-scheme: light dark;
+
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+    --bg:        light-dark(#eef1f6, #0b0f16);
+    --surface:   light-dark(#ffffff, #121824);
+    --surface-2: light-dark(#f3f5f9, #171f2e);
+    --sunken:    light-dark(#e7ebf2, #0d121c);
+    --ink:       light-dark(#1a2233, #e4e9f2);
+    --ink-soft:  light-dark(#4a5568, #9aa7bd);
+    --ink-faint: light-dark(#8592a6, #5f6d84);
+    --line:      light-dark(#d4dae5, #26314a);
+    --line-soft: light-dark(#e3e8f0, #1c2739);
+
+    --accent:      #4263eb;
+    --accent-ink:  #ffffff;
+    --accent-soft: light-dark(#e7ecfe, #1b2544);
+
+    /* task-type semantics */
+    --c-js:        #2f9e44;   /* synchronous JS on the stack */
+    --c-timer:     #f08c00;   /* setTimeout / setInterval (timers phase) */
+    --c-immediate: #7048e8;   /* setImmediate (check phase) */
+    --c-io:        #15aabf;   /* I/O completion callback (poll phase) */
+    --c-promise:   #e64980;   /* Promise microtask */
+    --c-nexttick:  #e8590c;   /* process.nextTick */
+    --c-pool:      #1971c2;   /* libuv thread-pool work */
+    --c-kernel:    #0ca678;   /* kernel async I/O */
+    --c-worker:    #9c36b5;   /* worker thread */
+    --c-close:     #868e96;   /* close callbacks */
+
+    --move-dur: .5s;
+    --ease: cubic-bezier(.22,.61,.28,1);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  :root[data-theme="dark"]  { color-scheme: dark; }
+  :root[data-theme="light"] { color-scheme: light; }
+  @media (prefers-reduced-motion: reduce) { :root { --move-dur: .001s; } }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font-sans); font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      linear-gradient(to right, color-mix(in oklab, var(--line) 40%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(to bottom, color-mix(in oklab, var(--line) 40%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;
+    mask-image: radial-gradient(ellipse 120% 90% at 50% 0%, #000 30%, transparent 85%);
+    opacity: .5;
+  }
+
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1560px; margin-inline: auto; min-height: 100dvh;
+    padding: clamp(12px, 2vw, 22px);
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 14px;
+  }
+
+  /* Fit the whole UI on screen: the app fills the viewport and any panel that
+     outgrows its box scrolls inside itself rather than pushing the footer away.
+     Below the two-column breakpoint we fall back to normal page scrolling. */
+  @media (min-width: 1081px) {
+    .stage > .panel { min-block-size: 0; overflow: hidden; }
+    .panel-scroll { flex: 1 1 auto; }
+    .app { height: 100dvh; min-height: 0; overflow: hidden; }
+    .stage { min-block-size: 0; }
+    /* `.stage >` raises specificity over the later .viz/.panel base rules */
+    .stage > .viz, .stage > .procs, .panel-scroll {
+      min-block-size: 0; overflow-y: auto; overscroll-behavior: contain;
+      scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+    }
+  }
+  .viz::-webkit-scrollbar, .panel::-webkit-scrollbar, .procs::-webkit-scrollbar { width: 9px; }
+  .viz::-webkit-scrollbar-thumb, .panel::-webkit-scrollbar-thumb, .procs::-webkit-scrollbar-thumb {
+    background: var(--line); border-radius: 20px; border: 2px solid var(--surface);
+  }
+  .viz::-webkit-scrollbar-track, .panel::-webkit-scrollbar-track, .procs::-webkit-scrollbar-track { background: transparent; }
+
+  /* ---------- top bar ---------- */
+  .topbar { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 13px; margin-inline-end: auto; }
+  .brand .glyph {
+    inline-size: 42px; block-size: 42px; display: grid; place-items: center;
+    border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--line);
+  }
+  .brand .glyph svg { inline-size: 24px; block-size: 24px; }
+  .brand h1 { font-size: clamp(1.02rem, 1.6vw, 1.28rem); line-height: 1.15; margin: 0; letter-spacing: -.01em; }
+  .brand p {
+    margin: 2px 0 0; font-family: var(--font-mono); font-size: .72rem; letter-spacing: .02em;
+    color: var(--ink-faint); text-transform: uppercase;
+  }
+
+  .tracker { display: flex; align-items: center; list-style: none; margin: 0; padding: 0; }
+  .tracker li { display: flex; align-items: center; }
+  .tracker button {
+    --dot: 26px; display: grid; place-items: center; inline-size: var(--dot); block-size: var(--dot);
+    border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface);
+    color: var(--ink-faint); font-family: var(--font-mono); font-size: .74rem; cursor: pointer;
+    transition: transform .2s var(--ease), border-color .2s, color .2s, background .2s;
+  }
+  .tracker button:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--ink); }
+  .tracker li[aria-current="step"] button { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .tracker .rung { inline-size: 16px; block-size: 1.5px; background: var(--line); }
+  @media (max-width: 900px) { .tracker .rung { inline-size: 7px; } .tracker button { --dot: 22px; } }
+
+  .icon-btn {
+    display: inline-grid; place-items: center; inline-size: 40px; block-size: 40px;
+    border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface);
+    color: var(--ink); cursor: pointer; transition: border-color .2s, transform .15s var(--ease);
+  }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .icon-btn svg { inline-size: 20px; block-size: 20px; }
+
+  /* ---------- stage ---------- */
+  .stage { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; min-block-size: 0; }
+  @media (max-width: 1080px) { .stage { grid-template-columns: 1fr; } .panel { order: 3; } }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: 0 1px 2px color-mix(in oklab, var(--ink) 5%, transparent);
+  }
+  .section-label { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+
+  /* ---------- runtime visualization ---------- */
+  .viz { padding: 14px; display: flex; flex-direction: column; gap: 12px; min-block-size: 560px; }
+
+  .thread-band {
+    border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+    background: var(--sunken); padding: 10px 12px 12px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .band-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .band-title { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+  .band-title b { color: var(--accent); }
+  .band-meta { font-family: var(--font-mono); font-size: .62rem; color: var(--ink-faint); }
+
+  /* event-loop phase strip */
+  .loop-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .phase {
+    position: relative; border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--surface) 70%, var(--sunken)); padding: 6px 7px 7px;
+    display: flex; flex-direction: column; gap: 6px; min-block-size: 88px;
+    transition: border-color .25s, box-shadow .25s, background .25s;
+  }
+  .phase .pname { font-family: var(--font-mono); font-size: .6rem; font-weight: 600; letter-spacing: .02em; color: var(--ink-soft); display: flex; align-items: center; gap: 5px; }
+  .phase .pnum { color: var(--ink-faint); }
+  .phase .tray { display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; flex: 1 1 auto; min-block-size: 24px; overflow: hidden; }
+  .phase.internal { opacity: .5; background: transparent; border-style: dashed; }
+  .phase.active { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); background: color-mix(in oklab, var(--accent-soft) 60%, var(--surface)); }
+  .phase.active .pname { color: var(--accent); }
+  .phase.poll { grid-column: span 1; }
+  .phase.waiting::after {
+    content: "⏳ waiting for I/O"; position: absolute; inset-block-end: 4px; inset-inline: 6px;
+    font-family: var(--font-mono); font-size: .54rem; color: var(--c-io); text-align: center;
+  }
+  .loop-arrow { display: flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--font-mono); font-size: .6rem; color: var(--ink-faint); }
+  .loop-arrow svg { inline-size: 14px; block-size: 14px; }
+
+  /* mid row: call stack + microtasks */
+  .mid { display: grid; grid-template-columns: 220px 1fr; gap: 12px; }
+  @media (max-width: 620px){ .mid { grid-template-columns: 1fr; } }
+  .subcard { border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: var(--sunken); padding: 9px 10px; display: flex; flex-direction: column; gap: 7px; }
+  .subcard .sc-head { display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+  .subcard .sc-title { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+  .subcard .sc-note { font-family: var(--font-mono); font-size: .56rem; color: var(--ink-faint); }
+
+  .callstack { min-block-size: 128px; }
+  .stack-area { display: flex; flex-direction: column-reverse; gap: 4px; flex: 1 1 auto; justify-content: flex-start; min-block-size: 96px; padding: 4px; border-radius: 5px; background: color-mix(in oklab, var(--surface) 55%, var(--sunken)); position: relative; }
+  .stack-area::before { content: "▽ base"; position: absolute; inset-block-end: 3px; inset-inline-start: 6px; font-family: var(--font-mono); font-size: .54rem; color: var(--ink-faint); }
+  .stack-area.blocked { box-shadow: inset 0 0 0 2px color-mix(in oklab, var(--c-nexttick) 60%, transparent); }
+
+  .microlanes { display: flex; flex-direction: column; gap: 8px; }
+  .lane { display: flex; flex-direction: column; gap: 5px; }
+  .lane .l-title { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .04em; color: var(--ink-soft); display:flex; align-items:center; gap:6px; }
+  .lane .l-title .swatch { inline-size: 9px; block-size: 9px; border-radius: 3px; }
+  .lane .tray { display: flex; flex-wrap: wrap; gap: 4px; min-block-size: 28px; padding: 5px 6px; border-radius: 5px; border: 1.5px dashed var(--line); background: color-mix(in oklab, var(--surface) 55%, var(--sunken)); align-content: flex-start; overflow: hidden; }
+
+  /* offload band */
+  .offload { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 720px){ .offload { grid-template-columns: 1fr; } }
+  .zone { border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: var(--sunken); padding: 9px 10px; display:flex; flex-direction:column; gap:7px; min-block-size: 118px; transition: border-color .25s, box-shadow .25s; }
+  .zone.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .zone .z-head { display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+  .zone .z-title { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+  .zone .z-note { font-family: var(--font-mono); font-size: .55rem; color: var(--ink-faint); }
+  .band-note { margin: 2px 0 0; font-family: var(--font-mono); font-size: .58rem; line-height: 1.5; color: var(--ink-faint); }
+  .pool-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; flex: 1 1 auto; }
+  .pool-lane { border: 1px dashed var(--line); border-radius: 5px; min-block-size: 56px; padding: 4px; display:flex; flex-direction:column; gap:4px; align-items:center; background: color-mix(in oklab, var(--surface) 45%, var(--sunken)); }
+  .pool-lane .ln { font-family: var(--font-mono); font-size: .5rem; color: var(--ink-faint); }
+  .zone .tray { display:flex; flex-wrap:wrap; gap:4px; flex:1 1 auto; align-content:flex-start; min-block-size: 40px; overflow: hidden; }
+  .worker-box { border: 1.5px solid color-mix(in oklab, var(--c-worker) 40%, var(--line)); border-radius: 5px; padding: 5px 6px; display:flex; flex-direction:column; gap:4px; background: color-mix(in oklab, var(--c-worker) 8%, var(--surface)); }
+  .worker-box .wb-title { font-family: var(--font-mono); font-size: .54rem; color: var(--c-worker); font-weight: 600; }
+  .worker-box .tray { min-block-size: 26px; }
+
+  /* chips */
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: 6px;
+    font-family: var(--font-mono); font-size: .62rem; font-weight: 600; white-space: nowrap;
+    color: #fff; border: 1px solid rgba(0,0,0,.28); box-shadow: 0 1px 1px rgba(0,0,0,.15);
+    will-change: transform;
+  }
+  /* animates the independent `scale` property so it never clobbers the FLIP transform */
+  .chip.pop { animation: chip-pop .28s var(--ease); }
+  @keyframes chip-pop { from { scale: .3; opacity: 0; } }
+  @media (prefers-reduced-motion: reduce){ .chip.pop { animation: none; } }
+  .chip.dying { opacity: 0; scale: .5; transition: opacity .3s, scale .3s; }
+  .chip.dim { opacity: .45; filter: grayscale(.4); }
+  .chip.run { box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 70%, transparent), 0 1px 3px rgba(0,0,0,.25); }
+  .chip .badge { font-size: .5rem; opacity: .85; }
+  .chip[data-type="js"]        { background: var(--c-js); }
+  .chip[data-type="timer"]     { background: var(--c-timer); }
+  .chip[data-type="immediate"] { background: var(--c-immediate); }
+  .chip[data-type="io"]        { background: var(--c-io); }
+  .chip[data-type="promise"]   { background: var(--c-promise); }
+  .chip[data-type="nexttick"]  { background: var(--c-nexttick); }
+  .chip[data-type="pool"]      { background: var(--c-pool); }
+  .chip[data-type="kernel"]    { background: var(--c-kernel); }
+  .chip[data-type="worker"]    { background: var(--c-worker); }
+  .chip[data-type="close"]     { background: var(--c-close); }
+
+  /* ---------- process/cluster view ---------- */
+  .procs { display: none; padding: 16px 18px; }
+  .stage[data-view="procs"] .viz { display: none; }
+  .stage[data-view="procs"] .procs { display: block; }
+  .procs h3 { margin: 0 0 3px; font-size: 1rem; }
+  .procs .lead { margin: 0 0 16px; color: var(--ink-soft); font-size: .88rem; max-inline-size: 64ch; }
+  .cluster { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .listener { border: 1.5px dashed var(--accent); border-radius: var(--radius-sm); padding: 10px 12px; background: var(--accent-soft); display:flex; align-items:center; gap:12px; }
+  .listener .lbl { font-family: var(--font-mono); font-size: .72rem; }
+  .conn-rail { position: relative; block-size: 30px; flex: 1 1 auto; border-radius: 20px; background: color-mix(in oklab, var(--surface) 60%, var(--sunken)); overflow: hidden; }
+  .conn { position: absolute; inset-block-start: 8px; inline-size: 14px; block-size: 14px; border-radius: 50%; background: var(--accent); }
+  .anim-run .conn { animation: conn-move 3.2s linear infinite; }
+  @keyframes conn-move { from { left: -16px; } to { left: 100%; } }
+  @media (prefers-reduced-motion: reduce){ .anim-run .conn { animation: none; left: 45%; } }
+  .proc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .proc {
+    border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: var(--sunken);
+    padding: 11px 12px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .proc.primary { border-color: var(--accent); }
+  .proc .p-title { font-family: var(--font-mono); font-size: .68rem; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .proc .p-title .pill { font-size: .5rem; padding: 1px 6px; border-radius: 20px; border: 1px solid currentColor; }
+  .proc .p-body { display: flex; flex-direction: column; gap: 5px; }
+  .proc .p-row { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: .58rem; color: var(--ink-soft); }
+  .proc .mini-iso { border-radius: 4px; border: 1px dashed var(--line); padding: 4px 6px; font-family: var(--font-mono); font-size: .54rem; color: var(--ink-faint); }
+  .proc .heap-dot { inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--c-worker); }
+
+  /* ---------- side panel ---------- */
+  .panel { padding: 16px; display: flex; flex-direction: column; gap: 15px; min-block-size: 0; }
+  .narr .kicker {
+    display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: .64rem;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--accent); padding: 3px 9px; border-radius: 20px; background: var(--accent-soft);
+  }
+  .narr h2 { font-size: 1.14rem; margin: 12px 0 6px; letter-spacing: -.01em; text-wrap: balance; }
+  .narr p { margin: 0 0 8px; color: var(--ink-soft); font-size: .88rem; }
+  .narr p strong { color: var(--ink); font-weight: 600; }
+  .narr code { font-family: var(--font-mono); font-size: .82em; background: var(--surface-2); border: 1px solid var(--line-soft); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+
+  /* The panel splits into a scrolling region plus a pinned live-beat strip, so a long
+     step description can never push the current narration out of view. */
+  .panel-scroll { display: flex; flex-direction: column; gap: 15px; min-block-size: 0; }
+  .panel-scroll::-webkit-scrollbar { width: 9px; }
+  .panel-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 20px; border: 2px solid var(--surface); }
+  .panel-scroll::-webkit-scrollbar-track { background: transparent; }
+  .beatbox { flex: none; }
+  /* live "beat" callout - explains what's happening at the current animation step */
+  .beatbox { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); border-radius: var(--radius-sm); background: var(--surface-2); padding: 9px 11px; }
+  .beat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .beat-prog { font-family: var(--font-mono); font-size: .6rem; color: var(--accent); font-weight: 600; letter-spacing: .04em; }
+  .beat-note { margin: 5px 0 0; font-size: .86rem; color: var(--ink); line-height: 1.45; }
+  .beat-note.hint { color: var(--ink-faint); }
+  .btn.adv { border-color: color-mix(in oklab, var(--accent) 45%, var(--line)); color: color-mix(in oklab, var(--accent) 82%, var(--ink)); font-weight: 600; }
+  .btn.adv.waiting { animation: advpulse 1.25s ease-in-out infinite; border-color: var(--accent); }
+  @keyframes advpulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 3px var(--accent-soft); } }
+  @media (prefers-reduced-motion: reduce){ .btn.adv.waiting { animation: none; } }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat { background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); padding: 7px 10px; }
+  .stat .k { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); }
+  .stat .v { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 600; line-height: 1.15; font-variant-numeric: tabular-nums; margin-top: 2px; display: flex; align-items: baseline; gap: 4px; }
+  .stat .v small { font-size: .58rem; color: var(--ink-faint); font-weight: 400; }
+  .stat .v.phase-v { font-size: .84rem; color: var(--accent); }
+
+  .legend { margin-top: auto; }
+  .legend ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 5px 10px; }
+  .legend li { display: flex; align-items: center; gap: 7px; font-size: .72rem; color: var(--ink-soft); font-family: var(--font-mono); }
+  .legend .sw { inline-size: 11px; block-size: 11px; border-radius: 3px; flex: none; border: 1px solid rgba(0,0,0,.25); }
+
+  /* ---------- transport ----------
+     Two deliberate rows: controls, then a full-width status ticker. Keeps the
+     speed control from wrapping and gives the ticker room to read. */
+  .transport { display: flex; flex-direction: column; gap: 9px; padding: 10px 14px; }
+  .tp-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .transport .group { display: flex; align-items: center; gap: 7px; flex: 0 1 auto; flex-wrap: wrap; min-inline-size: 0; }
+  .transport .push { margin-inline-start: auto; }
+  .tp-row.ops { border-block-start: 1px solid var(--line-soft); padding-block-start: 9px; }
+  .tp-label { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); flex: none; }
+  @media (max-width: 700px) { .transport .push { margin-inline-start: 0; } }
+  .btn {
+    font-family: var(--font-sans); font-size: .8rem; font-weight: 550; display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    cursor: pointer; white-space: nowrap; transition: border-color .2s, transform .15s var(--ease), background .2s;
+  }
+  .btn svg { inline-size: 14px; block-size: 14px; }
+  .btn:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.op { font-family: var(--font-mono); font-size: .72rem; padding: 7px 9px; }
+  .btn.op .dot { inline-size: 8px; block-size: 8px; border-radius: 2px; flex: none; }
+  .step-readout { font-family: var(--font-mono); font-size: .72rem; color: var(--ink-faint); min-inline-size: 84px; text-align: center; }
+  .step-readout b { color: var(--ink); }
+  .speed { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: .7rem; color: var(--ink-faint); flex: none; }
+  .speed input[type="range"] { inline-size: 84px; accent-color: var(--accent); }
+  .ticker {
+    font-family: var(--font-mono); font-size: .72rem; color: var(--ink-soft);
+    display: flex; align-items: baseline; gap: 8px;
+    flex: 0 0 auto; min-inline-size: 0;
+    border-block-start: 1px solid var(--line-soft); padding-block-start: 8px;
+  }
+  .ticker .dot { position: relative; top: -1px; }
+  .ticker #tickerText { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ticker .dot { inline-size: 7px; block-size: 7px; border-radius: 50%; background: var(--accent); flex: none; }
+  .ticker.busy .dot { animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+
+  :where(button, input, a):focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .visually-hidden:where(:not(:focus-within,:active)) { position:absolute!important; clip-path: inset(50%)!important; inline-size:1px!important; block-size:1px!important; overflow:hidden!important; white-space:nowrap!important; }
+</style>
+
+<div class="app">
+  <!-- ===== TOP BAR ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="glyph" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 8.5 6"/><path d="M17 8h3.5V4.5"/>
+        </svg>
+      </span>
+      <div>
+        <h1>How Node.js Runs Your Code</h1>
+        <p>Event loop · Thread pool · Workers · Isolation</p>
+      </div>
+    </div>
+    <nav aria-label="Explainer steps"><ol class="tracker" id="tracker"></ol></nav>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle light or dark theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ===== STAGE ===== -->
+  <div class="stage" id="stage" data-view="viz">
+    <!-- runtime visualization -->
+    <section class="viz card" aria-label="Node.js runtime visualization">
+      <!-- MAIN THREAD -->
+      <div class="thread-band" id="mainThread">
+        <div class="band-head">
+          <span class="band-title">Main thread - <b>one V8 isolate</b>, one event loop</span>
+          <span class="band-meta" id="threadMeta">your JavaScript runs here</span>
+        </div>
+
+        <!-- event loop phase strip -->
+        <div class="loop-strip" id="loopStrip">
+          <div class="phase" id="ph-pending" data-phase="pending">
+            <span class="pname"><span class="pnum">1</span> pending</span>
+            <div class="tray" data-slots="q-pending"></div>
+          </div>
+          <div class="phase internal" id="ph-idle" data-phase="idle">
+            <span class="pname"><span class="pnum">2</span> idle/prep</span>
+            <div class="tray"></div>
+          </div>
+          <div class="phase poll" id="ph-poll" data-phase="poll">
+            <span class="pname"><span class="pnum">3</span> poll · I/O</span>
+            <div class="tray" data-slots="q-poll"></div>
+          </div>
+          <div class="phase" id="ph-check" data-phase="check">
+            <span class="pname"><span class="pnum">4</span> check</span>
+            <div class="tray" data-slots="q-check"></div>
+          </div>
+          <div class="phase" id="ph-close" data-phase="close">
+            <span class="pname"><span class="pnum">5</span> close</span>
+            <div class="tray" data-slots="q-close"></div>
+          </div>
+          <div class="phase" id="ph-timers" data-phase="timers">
+            <span class="pname"><span class="pnum">6</span> timers</span>
+            <div class="tray" data-slots="q-timers"></div>
+          </div>
+        </div>
+        <div class="loop-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+          one iteration, then back to&nbsp;<b>pending</b>. Since libuv&nbsp;1.45 (Node&nbsp;20) timers run at the <b>end</b> of an iteration
+        </div>
+
+        <!-- call stack + microtasks -->
+        <div class="mid">
+          <div class="subcard callstack">
+            <div class="sc-head"><span class="sc-title">Call stack</span><span class="sc-note">LIFO · 1 at a time</span></div>
+            <div class="stack-area" id="stackArea" data-slots="stack"></div>
+          </div>
+          <div class="subcard">
+            <div class="sc-head"><span class="sc-title">Between-callback queues</span><span class="sc-note">drained before the loop advances</span></div>
+            <div class="microlanes">
+              <div class="lane">
+                <span class="l-title"><span class="swatch" style="background:var(--c-nexttick)"></span> process.nextTick queue (Node) · drains first</span>
+                <div class="tray" data-slots="mq-nexttick"></div>
+              </div>
+              <div class="lane">
+                <span class="l-title"><span class="swatch" style="background:var(--c-promise)"></span> microtask queue (V8: Promise, await) · second</span>
+                <div class="tray" data-slots="mq-promise"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OFFLOAD BAND -->
+      <div class="offload">
+        <div class="zone" id="z-pool" data-zone="pool">
+          <div class="z-head"><span class="z-title">libuv thread pool</span><span class="z-note" id="poolMeta">×4 · process&#8209;global</span></div>
+          <div class="pool-slots" id="poolSlots">
+            <div class="pool-lane" data-slots="pool-0"><span class="ln">thread 1</span></div>
+            <div class="pool-lane" data-slots="pool-1"><span class="ln">thread 2</span></div>
+            <div class="pool-lane" data-slots="pool-2"><span class="ln">thread 3</span></div>
+            <div class="pool-lane" data-slots="pool-3"><span class="ln">thread 4</span></div>
+          </div>
+        </div>
+        <div class="zone" id="z-kernel" data-zone="kernel">
+          <div class="z-head"><span class="z-title">Kernel async I/O</span><span class="z-note">epoll · kqueue · IOCP</span></div>
+          <div class="tray" data-slots="kernel"></div>
+        </div>
+        <div class="zone" id="z-worker" data-zone="worker">
+          <div class="z-head"><span class="z-title">Worker threads</span><span class="z-note">own isolate + loop</span></div>
+          <div class="worker-box"><span class="wb-title">Worker #1 · separate V8 isolate</span><div class="tray" data-slots="worker"></div></div>
+        </div>
+      </div>
+      <p class="band-note">Three unrelated sets of threads: V8's own GC/JIT helpers, libuv's process&#8209;global pool of 4, and any worker threads you spawn. Only worker threads run your JavaScript.</p>
+    </section>
+
+    <!-- process / cluster view (step 8) -->
+    <section class="procs card" id="procs" aria-hidden="true">
+      <h3>Processes &amp; cluster: the strongest boundary</h3>
+      <p class="lead">Worker threads share one process, so a native fault or OOM takes them all down. To use every CPU core for a network server with a real failure boundary, you run multiple <strong>processes</strong> instead, via <code>child_process</code> / <code>cluster</code>. Each is a separate Node.js instance with its own heap and GC.</p>
+      <div class="cluster">
+        <div class="listener anim-run">
+          <span class="lbl"><strong>Primary</strong> · listens on <code>:3000</code></span>
+          <div class="conn-rail"><div class="conn"></div></div>
+          <span class="lbl">round-robin →</span>
+        </div>
+        <div class="proc-grid">
+          <div class="proc primary">
+            <span class="p-title">Primary process <span class="pill">cluster.isPrimary</span></span>
+            <div class="p-body">
+              <div class="p-row"><span class="heap-dot"></span> own V8 isolate + event loop</div>
+              <div class="mini-iso">accepts connections, distributes via IPC</div>
+            </div>
+          </div>
+          <div class="proc">
+            <span class="p-title">Worker process 1</span>
+            <div class="p-body">
+              <div class="p-row"><span class="heap-dot"></span> own isolate · own heap · own loop</div>
+              <div class="mini-iso">receives connections over IPC</div>
+            </div>
+          </div>
+          <div class="proc">
+            <span class="p-title">Worker process 2</span>
+            <div class="p-body">
+              <div class="p-row"><span class="heap-dot"></span> own isolate · own heap · own loop</div>
+              <div class="mini-iso">a crash here doesn't take down the others</div>
+            </div>
+          </div>
+          <div class="proc">
+            <span class="p-title">Worker process 3</span>
+            <div class="p-body">
+              <div class="p-row"><span class="heap-dot"></span> own isolate · own heap · own loop</div>
+              <div class="mini-iso">memory fully separate - IPC only</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- side panel -->
+    <aside class="panel card" aria-label="Explanation and statistics">
+     <!-- Everything except the live beat scrolls, so the beat is never pushed off. -->
+     <div class="panel-scroll">
+      <div class="narr">
+        <span class="kicker" id="kicker">Step 1 / 8</span>
+        <h2 id="narrTitle">One thread, one call stack</h2>
+        <div id="narrBody"><p>Loading…</p></div>
+      </div>
+      <div>
+        <span class="section-label">Runtime state</span>
+        <div class="stats" style="margin-top:8px">
+          <div class="stat"><div class="k">Loop phase</div><div class="v phase-v"><span id="s-phase">idle</span></div></div>
+          <div class="stat"><div class="k">Loop ticks</div><div class="v"><span id="s-ticks">0</span></div></div>
+          <div class="stat"><div class="k">Stack depth</div><div class="v"><span id="s-stack">0</span></div></div>
+          <div class="stat"><div class="k">Offloaded</div><div class="v"><span id="s-offload">0</span> <small>in flight</small></div></div>
+          <div class="stat"><div class="k">Microtasks</div><div class="v"><span id="s-micro">0</span> <small>pending</small></div></div>
+          <div class="stat"><div class="k">Callbacks run</div><div class="v"><span id="s-done">0</span></div></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="section-label">Task legend</span>
+        <ul>
+          <li><span class="sw" style="background:var(--c-js)"></span> sync JS</li>
+          <li><span class="sw" style="background:var(--c-timer)"></span> setTimeout</li>
+          <li><span class="sw" style="background:var(--c-immediate)"></span> setImmediate</li>
+          <li><span class="sw" style="background:var(--c-io)"></span> I/O callback</li>
+          <li><span class="sw" style="background:var(--c-nexttick)"></span> nextTick</li>
+          <li><span class="sw" style="background:var(--c-promise)"></span> Promise</li>
+          <li><span class="sw" style="background:var(--c-pool)"></span> pool work</li>
+          <li><span class="sw" style="background:var(--c-kernel)"></span> kernel I/O</li>
+          <li><span class="sw" style="background:var(--c-worker)"></span> worker</li>
+          <li><span class="sw" style="background:var(--c-close)"></span> close cb</li>
+        </ul>
+      </div>
+     </div>
+
+      <div class="beatbox" id="beatbox">
+        <div class="beat-head"><span class="section-label">Now playing</span><span class="beat-prog" id="beatProg">Beat 1</span></div>
+        <p class="beat-note hint" id="beatNote">Press <b>▸ Advance</b> to step through, or <b>Play</b> to autoplay.</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ===== TRANSPORT ===== -->
+  <footer class="transport card">
+   <div class="tp-row">
+    <div class="group">
+      <button class="icon-btn" id="prevBtn" type="button" aria-label="Previous step" title="Previous step (←)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button class="btn primary" id="playBtn" type="button">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5.5v13l11-6.5z"/></svg>
+        <span id="playLabel">Play tour</span>
+      </button>
+      <button class="icon-btn" id="nextBtn" type="button" aria-label="Next step" title="Next step (→)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <button class="icon-btn" id="replayBtn" type="button" aria-label="Replay this step" title="Replay this step (R)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+      </button>
+      <span class="step-readout">Step <b id="stepNum">1</b> / 8</span>
+      <button class="btn adv" id="advBtn" type="button" title="Advance one beat (↓ or Enter) · back = ↑">Advance ▸</button>
+    </div>
+
+    <label class="speed push">Speed <input type="range" id="speed" min="0.25" max="1.5" step="0.25" value="0.75" aria-label="Animation speed (lower is slower)"> <span id="speedVal">0.75×</span></label>
+   </div>
+
+   <div class="tp-row ops">
+    <span class="tp-label">Simulate</span>
+    <div class="group" id="opGroup">
+      <button class="btn op" data-op="sync" type="button"><span class="dot" style="background:var(--c-js)"></span>run script</button>
+      <button class="btn op" data-op="timeout" type="button"><span class="dot" style="background:var(--c-timer)"></span>setTimeout</button>
+      <button class="btn op" data-op="immediate" type="button"><span class="dot" style="background:var(--c-immediate)"></span>setImmediate</button>
+      <button class="btn op" data-op="fs" type="button"><span class="dot" style="background:var(--c-pool)"></span>fs.readFile</button>
+      <button class="btn op" data-op="net" type="button"><span class="dot" style="background:var(--c-kernel)"></span>https.get</button>
+      <button class="btn op" data-op="promise" type="button"><span class="dot" style="background:var(--c-promise)"></span>Promise</button>
+      <button class="btn op" data-op="nexttick" type="button"><span class="dot" style="background:var(--c-nexttick)"></span>nextTick</button>
+      <button class="btn op" data-op="worker" type="button"><span class="dot" style="background:var(--c-worker)"></span>Worker</button>
+    </div>
+
+    <button class="btn push" id="resetBtn" type="button">Reset</button>
+   </div>
+
+   <div class="ticker" id="ticker" role="status" aria-live="polite"><span class="dot"></span><span id="tickerText">Ready. Fire an operation or play the tour.</span></div>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage");
+  const slotEls = {};
+  document.querySelectorAll("[data-slots]").forEach(el => slotEls[el.dataset.slots] = el);
+  const region = (k) => slotEls[k];
+
+  const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- timing ----------
+  const S = {
+    speed: 0.75, busy: false, loopRunning: false, playing: false, step: 0,
+    epoch: 0, // bumped on every clear/replay/navigate to cancel in-flight async work
+    nav: 0,   // navigation token - detects when a newer gotoStep supersedes an older one
+    // beat engine: step-by-step walk-through of a step's animation
+    beatIdx: -1, beatTotal: 0, beatResolver: null, beatTarget: null, stepDone: false, instant: false,
+    ticks: 0, done: 0, phase: "sleeping",
+    // queues (arrays of task objects {chip, effect, label})
+    qTimers: [], qPending: [], qPoll: [], qCheck: [], qClose: [],
+    mtNextTick: [], mtPromise: [],
+    // pending timers not yet due: {task, readyTick}
+    timers: [],
+    // offload
+    pool: { max: 4, lanes: [false, false, false, false], backlog: [] },
+    offload: 0, // count in flight (pool + kernel + worker)
+    draining: false,
+  };
+  const wait = (ms) => new Promise(r => setTimeout(r, (prefersReduced || S.instant) ? (S.instant ? 0 : Math.min(ms, 30)) : ms / S.speed));
+  function setMoveDur(){ document.documentElement.style.setProperty("--move-dur", (prefersReduced ? .001 : .62 / S.speed) + "s"); }
+
+  // ---------- chips + FLIP motion ----------
+  let uid = 0;
+  function makeChip(type, label, badge) {
+    const c = document.createElement("div");
+    c.className = "chip pop"; c.dataset.type = type; c.dataset.id = ++uid;
+    c.innerHTML = `<span>${label}</span>` + (badge ? `<span class="badge">${badge}</span>` : "");
+    return c;
+  }
+  // FLIP move an existing chip into a container
+  function flip(chip, container) {
+    if (!container || !chip || !chip.isConnected) return; // never resurrect a cleared chip
+    const first = chip.getBoundingClientRect();
+    container.appendChild(chip);
+    if (prefersReduced || S.instant) return;
+    const last = chip.getBoundingClientRect();
+    const dx = first.left - last.left, dy = first.top - last.top;
+    if (!dx && !dy) return;
+    chip.style.transition = "none";
+    chip.style.transform = `translate(${dx}px, ${dy}px)`;
+    requestAnimationFrame(() => {
+      chip.style.transition = `transform var(--move-dur) var(--ease)`;
+      chip.style.transform = "";
+    });
+  }
+  function spawnChip(type, label, container, badge) {
+    const c = makeChip(type, label, badge);
+    (container || document.body).appendChild(c);
+    return c;
+  }
+  async function killChip(chip) {
+    chip.classList.add("dying");
+    await wait(280);
+    chip.remove();
+  }
+
+  // ---------- stats / focus ----------
+  function stats() {
+    $("s-phase").textContent = S.phase;
+    $("s-ticks").textContent = S.ticks;
+    $("s-stack").textContent = region("stack").childElementCount;
+    $("s-offload").textContent = S.offload;
+    $("s-micro").textContent = S.mtNextTick.length + S.mtPromise.length;
+    $("s-done").textContent = S.done;
+  }
+  const phaseEls = {
+    pending: $("ph-pending"), idle: $("ph-idle"), poll: $("ph-poll"),
+    check: $("ph-check"), close: $("ph-close"), timers: $("ph-timers"),
+  };
+  function setActivePhase(p) {
+    Object.values(phaseEls).forEach(el => el.classList.remove("active"));
+    if (phaseEls[p]) phaseEls[p].classList.add("active");
+    S.phase = p; stats();
+  }
+  function setWaiting(on){ $("ph-poll").classList.toggle("waiting", !!on); }
+  const zoneEls = { pool: $("z-pool"), kernel: $("z-kernel"), worker: $("z-worker") };
+  function focusZones(keys){ Object.values(zoneEls).forEach(e=>e.classList.remove("focus")); (keys||[]).forEach(k=> zoneEls[k] && zoneEls[k].classList.add("focus")); }
+  function tick(msg, busy){ $("tickerText").textContent = msg; $("ticker").classList.toggle("busy", !!busy); }
+
+  // ---------- execute one callback on the stack ----------
+  async function execChip(task, opts = {}) {
+    const c = task.chip;
+    if (!c || !c.isConnected) return;      // stale task from a cleared run
+    const ep = S.epoch;
+    flip(c, region("stack"));
+    c.classList.add("run");
+    stats();
+    await wait(opts.fast ? 480 : 720);
+    if (ep !== S.epoch || !c.isConnected) return;
+    if (task.effect) { try { await task.effect(); } catch (e) {} }
+    if (ep !== S.epoch) return;
+    c.classList.remove("run");
+    S.done++;
+    await killChip(c);
+    stats();
+  }
+
+  // ---------- microtask draining (nextTick fully, then promises) ----------
+  async function drainMicro() {
+    if (S.draining) return;
+    S.draining = true;
+    try {
+      let guard = 0;
+      while (S.mtNextTick.length || S.mtPromise.length) {
+        while (S.mtNextTick.length) {
+          if (guard++ > 40) { starveWarn(); return; }
+          await execChip(S.mtNextTick.shift(), { fast: true });
+        }
+        // V8 drains the ENTIRE microtask queue in one checkpoint, including
+        // microtasks queued during the drain, before Node returns to nextTick.
+        while (S.mtPromise.length) {
+          if (guard++ > 40) return;
+          await execChip(S.mtPromise.shift(), { fast: true });
+        }
+      }
+    } finally { S.draining = false; }
+  }
+  function starveWarn(){
+    tick("⚠ nextTick starvation - the queue keeps refilling, so the loop can never reach poll (I/O is starved).", true);
+    region("stack").classList.add("blocked");
+    S.mtNextTick.length = 0; // stop the sim from spinning forever
+  }
+
+  // ---------- the event loop ----------
+  // libuv's current iteration order (timers moved to the end in libuv 1.45 / Node 20).
+  // idle/prepare is internal and has no user-visible queue, so it is not simulated.
+  const PHASES = ["pending", "poll", "check", "close", "timers"];
+  function hasWork() {
+    return S.qTimers.length || S.qPending.length || S.qPoll.length || S.qCheck.length || S.qClose.length ||
+           S.mtNextTick.length || S.mtPromise.length || S.timers.length || S.offload > 0;
+  }
+  function immediatesPending(){ return S.qCheck.length > 0; }
+
+  async function runQueue(arr, phase) {
+    const ep = S.epoch;
+    // snapshot: callbacks added during this phase wait for the next iteration
+    const batch = arr.splice(0);
+    for (const task of batch) {
+      if (ep !== S.epoch) return;
+      if (task.chip && task.chip.isConnected) task.chip.classList.remove("dim");
+      await execChip(task);
+      await drainMicro();
+    }
+  }
+
+  async function runLoop() {
+    if (S.loopRunning) return;
+    S.loopRunning = true;
+    const ep = S.epoch;
+    let safety = 0;
+    // drain any microtasks queued by top-level sync code before first tick
+    await drainMicro();
+    while (hasWork() && ep === S.epoch && safety++ < 500) {
+      S.ticks++; stats();
+      for (const phase of PHASES) {
+        if (ep !== S.epoch) { S.loopRunning = false; return; }
+        setActivePhase(phase);
+        if (phase === "timers") {
+          // move due timers into the timers queue
+          const due = S.timers.filter(t => t.readyTick <= S.ticks);
+          S.timers = S.timers.filter(t => t.readyTick > S.ticks);
+          for (const t of due) { flip(t.task.chip, region("q-timers")); t.task.chip.classList.remove("dim"); S.qTimers.push(t.task); }
+          if (due.length) await wait(120);
+          await runQueue(S.qTimers, phase);
+        } else if (phase === "pending") {
+          await runQueue(S.qPending, phase);
+        } else if (phase === "poll") {
+          // poll blocking logic
+          if (!S.qPoll.length && !immediatesPending() && S.offload > 0) {
+            setWaiting(true); tick("poll phase: queue empty, no setImmediate scheduled → the loop blocks here waiting for I/O.", true);
+            let w = 0;
+            while (!S.qPoll.length && S.offload > 0 && w++ < 120) await wait(120);
+            setWaiting(false);
+          }
+          await runQueue(S.qPoll, phase);
+        } else if (phase === "check") {
+          await runQueue(S.qCheck, phase);
+        } else if (phase === "close") {
+          await runQueue(S.qClose, phase);
+        }
+        if (!hasWork()) break;
+      }
+    }
+    S.loopRunning = false;
+    if (ep !== S.epoch) return;
+    setActivePhase("sleeping");
+    if (!S.busy) tick("Loop idle - no pending work. Fire an operation to wake it.", false);
+  }
+  function kickLoop(){ if (!S.loopRunning) runLoop(); }
+
+  // ============================================================
+  //  OPERATION REGISTRATION (used by tour + free simulator)
+  // ============================================================
+  function opSync(label = "main()", effect) {
+    // synchronous code runs immediately on the stack (outside/independent of the loop model)
+    const task = { chip: spawnChip("js", label, region("stack")), effect };
+    task.chip.classList.add("run");
+    stats();
+    const ep = S.epoch;
+    (async () => {
+      await wait(720);
+      if (ep !== S.epoch) return;
+      if (effect) { try { await effect(); } catch(e){} }
+      task.chip.classList.remove("run");
+      await killChip(task.chip); stats();
+      kickLoop();
+    })();
+  }
+  function opTimeout(label = "setTimeout cb", delay = 0, effect) {
+    const chip = spawnChip("timer", label, region("q-timers"), "⏱");
+    chip.classList.add("dim");
+    // Timers run at the end of an iteration, so a 0 ms timer scheduled mid-iteration
+    // becomes due in this same iteration rather than the next one.
+    const readyTick = S.ticks + (delay <= 0 ? 0 : Math.max(1, Math.round(delay / 400)));
+    S.timers.push({ task: { chip, effect, label }, readyTick });
+    kickLoop();
+  }
+  function opImmediate(label = "setImmediate cb", effect) {
+    const chip = spawnChip("immediate", label, region("q-check"));
+    S.qCheck.push({ chip, effect, label }); kickLoop();
+  }
+  function opPromise(label = "Promise .then", effect) {
+    const chip = spawnChip("promise", label, region("mq-promise"));
+    S.mtPromise.push({ chip, effect, label });
+    stats(); kickLoop();
+  }
+  function opNextTick(label = "nextTick cb", effect) {
+    const chip = spawnChip("nexttick", label, region("mq-nexttick"));
+    S.mtNextTick.push({ chip, effect, label });
+    stats(); kickLoop();
+  }
+  async function opFs(label = "fs.readFile", effect) {
+    // thread-pool work: runs on a free thread (max 4), then callback → poll
+    S.offload++; stats();
+    const ep = S.epoch;
+    const workChip = spawnChip("pool", label, zoneEls.pool, "⚙");
+    const run = async (lane) => {
+      if (ep !== S.epoch) return;
+      S.pool.lanes[lane] = true;
+      workChip.classList.remove("dim");
+      flip(workChip, region("pool-" + lane));
+      await wait(1600);
+      if (ep !== S.epoch) return;
+      await killChip(workChip);
+      S.pool.lanes[lane] = false; S.offload--;
+      const cb = spawnChip("io", label + " cb", region("q-poll"));
+      S.qPoll.push({ chip: cb, effect, label });
+      stats(); kickLoop();
+      if (S.pool.backlog.length) { const next = S.pool.backlog.shift(); next(S.pool.lanes.indexOf(false)); }
+    };
+    const free = S.pool.lanes.indexOf(false);
+    if (free !== -1) run(free);
+    else { workChip.classList.add("dim"); S.pool.backlog.push(run); }
+    kickLoop();
+  }
+  async function opNet(label = "https.get", effect) {
+    // kernel async I/O: parked in epoll/kqueue/IOCP, no thread-pool thread used
+    S.offload++; stats();
+    const ep = S.epoch;
+    const k = spawnChip("kernel", label, region("kernel"), "⇄");
+    kickLoop();
+    await wait(2000);
+    if (ep !== S.epoch) return;
+    await killChip(k);
+    S.offload--;
+    const cb = spawnChip("io", label + " res", region("q-poll"));
+    S.qPoll.push({ chip: cb, effect, label });
+    stats(); kickLoop();
+  }
+  async function opWorker(label = "worker.postMessage", effect) {
+    // message to a worker (its own isolate + loop); computes; posts back → poll
+    S.offload++; stats();
+    const ep = S.epoch;
+    const msg = spawnChip("worker", label, region("worker"), "→");
+    kickLoop();
+    await wait(1900);
+    if (ep !== S.epoch) return;
+    await killChip(msg);
+    S.offload--;
+    const cb = spawnChip("worker", "onmessage", region("q-poll"));
+    S.qPoll.push({ chip: cb, effect, label });
+    stats(); kickLoop();
+  }
+
+  const OPS = {
+    sync: () => opSync("main()", () => { }),
+    timeout: () => opTimeout("setTimeout cb", 0),
+    immediate: () => opImmediate("setImmediate cb"),
+    fs: () => opFs("fs.readFile"),
+    net: () => opNet("https.get"),
+    promise: () => opPromise("Promise .then"),
+    nexttick: () => opNextTick("nextTick cb"),
+    worker: () => opWorker("worker msg"),
+  };
+
+  // ---------- reset ----------
+  function clearAll() {
+    S.epoch++;            // cancel any in-flight loop / offload / exec callbacks
+    S.loopRunning = false;
+    if (S.beatResolver) { const r = S.beatResolver; S.beatResolver = null; r(); }
+    S.beatIdx = -1; S.stepDone = false; S.instant = false; S.beatTarget = null;
+    setAdvanceWaiting(false);
+    document.querySelectorAll(".chip").forEach(c => c.remove());
+    Object.assign(S, {
+      qTimers: [], qPending: [], qPoll: [], qCheck: [], qClose: [],
+      mtNextTick: [], mtPromise: [], timers: [], offload: 0, done: 0, ticks: 0,
+    });
+    S.pool.lanes = [false, false, false, false]; S.pool.backlog = []; S.draining = false;
+    document.querySelector(".stack-area")?.classList.remove("blocked");
+    setActivePhase("sleeping"); setWaiting(false); focusZones([]); stats();
+  }
+
+  // ============================================================
+  //  GUIDED TOUR
+  // ============================================================
+  // Cancelable step helpers: they throw CANCELLED as soon as the step's epoch is
+  // superseded (by navigating, replaying, or resetting), so a running step animation
+  // aborts immediately instead of finishing.
+  const CANCELLED = { cancelled: true };
+  function sWait(ms, ep) { return wait(ms).then(() => { if (S.epoch !== ep) throw CANCELLED; }); }
+  async function sIdle(ep, max = 120) {
+    let i = 0;
+    while ((S.loopRunning || hasWork()) && i++ < max) { await wait(150); if (S.epoch !== ep) throw CANCELLED; }
+    if (S.epoch !== ep) throw CANCELLED;
+  }
+
+  // ---------- beat engine (step-by-step walk-through of a step's animation) ----------
+  /**
+   * Renders the current beat's explanation and progress.
+   * @param {string} note Text to display.
+   * @param {boolean} [hint] Style as a dimmed hint rather than narration.
+   */
+  function showBeat(note, hint) {
+    const el = $("beatNote"); el.textContent = note || ""; el.classList.toggle("hint", !!hint);
+    const seen = Math.max(1, S.beatIdx + 1);
+    // beatTotal is learned once a step has been played through, so it only
+    // appears as a denominator on replays rather than showing a wrong total.
+    $("beatProg").textContent = "Beat " + seen + (S.beatTotal > seen ? " / " + S.beatTotal : "");
+  }
+  function setAdvanceWaiting(on) { $("advBtn").classList.toggle("waiting", !!on); }
+
+  // A checkpoint in a step's animation: pauses for the user (manual) or auto-continues (playing).
+  async function beat(ep, note) {
+    if (S.epoch !== ep) throw CANCELLED;
+    S.beatIdx++;
+    showBeat(note, false);
+    // fast catch-up to a target beat (used when stepping backward)
+    if (S.beatTarget != null && S.beatIdx < S.beatTarget) { S.instant = true; return; }
+    if (S.beatTarget != null && S.beatIdx >= S.beatTarget) { S.beatTarget = null; S.instant = false; }
+    if (S.playing) { await sWait(1500, ep); return; }
+    setAdvanceWaiting(true);
+    await new Promise((resolve, reject) => {
+      S.beatResolver = () => { S.beatResolver = null; setAdvanceWaiting(false); (S.epoch !== ep) ? reject(CANCELLED) : resolve(); };
+    });
+    if (S.epoch !== ep) throw CANCELLED;
+  }
+
+  const STEPS = [
+    {
+      title: "One thread, one call stack",
+      view: "viz",
+      body: `<p>Node runs <strong>your JavaScript on a single thread</strong>. Function calls push frames onto the <strong>call stack</strong> and it runs <strong>one thing at a time</strong> - there is no parallel JS here.</p>
+        <p>That's the catch: a <strong>slow synchronous</strong> operation (a big loop, <code>JSON.parse</code> of megabytes, <code>fs.readFileSync</code>) <em>blocks the whole thread</em>, and every pending client and callback waits behind it. This is why "don't block the event loop" is Node's golden rule.</p>
+        <p>A <strong>garbage-collection pause</strong> stalls this same thread, which is exactly why V8 works so hard to keep GC off it. (See the companion V8 memory explainer.)</p>
+        <p>Watch a synchronous function occupy the stack while nothing else can run.</p>`,
+      run: async (ep) => { focusZones([]);
+        await beat(ep, "Node calls a synchronous function - its frame is pushed onto the single call stack.");
+        const c = spawnChip("js", "parseHugeJSON()", region("stack")); c.classList.add("run"); stats();
+        await beat(ep, "While it runs, the one thread is busy - no timer, promise, or I/O callback can run. They all wait behind it.");
+        await beat(ep, "It returns and pops off the stack, freeing the thread for the event loop.");
+        c.classList.remove("run"); S.done++; await killChip(c); stats(); },
+    },
+    {
+      title: "The event loop & its phases",
+      view: "viz",
+      body: `<p>So how is Node concurrent with one thread? A <strong>loop</strong> (provided by the C library <strong>libuv</strong>) keeps iterating while referenced async work remains, and each iteration passes through fixed <strong>phases</strong> in order:</p>
+        <p><strong>pending</strong> (deferred system callbacks) → <em>idle/prepare</em> (internal) → <strong>poll</strong> (I/O callbacks; may wait here) → <strong>check</strong> (<code>setImmediate</code>) → <strong>close</strong> (<code>'close'</code> callbacks) → <strong>timers</strong> (due <code>setTimeout</code>/<code>setInterval</code>).</p>
+        <p>Each phase handles its own category of ready work, generally until its queue is empty or an internal limit makes the loop advance.</p>
+        <p><em>Note: since <strong>libuv 1.45</strong> (Node 20) timers run at the <strong>end</strong> of an iteration; older diagrams (and Node's own guide) put timers first. As a repeating cycle the order is the same - only the iteration boundary moved.</em></p>`,
+      run: async (ep) => {
+        await beat(ep, "The event loop runs in iterations. Each one visits fixed phases in order, so let's walk a single iteration.");
+        setActivePhase("pending"); await beat(ep, "1. pending callbacks - a few deferred system callbacks, such as a TCP socket reporting ECONNREFUSED.");
+        setActivePhase("idle"); await beat(ep, "2. idle / prepare - libuv's own internal bookkeeping. Nothing of yours runs here.");
+        setActivePhase("poll"); await beat(ep, "3. poll - the heart of the loop: it runs I/O callbacks, and this is where the loop waits when there is nothing ready.");
+        setActivePhase("check"); await beat(ep, "4. check - runs setImmediate callbacks, immediately after poll.");
+        setActivePhase("close"); await beat(ep, "5. close - runs certain handle-close callbacks.");
+        setActivePhase("timers"); await beat(ep, "6. timers - runs setTimeout / setInterval callbacks whose threshold has elapsed. Since libuv 1.45 (Node 20) this happens at the END of the iteration, not the start.");
+        setActivePhase("sleeping"); await beat(ep, "Then it loops back and repeats, for as long as referenced async work keeps the loop alive. With nothing left, the loop exits and the process ends."); },
+    },
+    {
+      title: "Non-blocking I/O - offloading",
+      view: "viz",
+      body: `<p>"Single-threaded" is about <em>your JS</em>, not I/O. When you call something slow, Node <strong>registers a callback and returns immediately</strong>, delegating the waiting elsewhere:</p>
+        <p>• <strong>Sockets</strong> (TCP/HTTP) → the <strong>OS</strong> readiness mechanism (<code>epoll</code>/<code>kqueue</code>/<code>IOCP</code>). No pool thread is tied up per socket.<br>
+        • <strong>Files</strong>, <code>dns.lookup()</code>, <strong>async zlib</strong> and certain <strong>crypto</strong> calls → libuv's <strong>thread pool</strong>.</p>
+        <p>When the work finishes, its callback is queued into the <strong>poll</strong> phase and runs back on the main thread. Watch <code>fs.readFile</code> and <code>https.get</code> leave, then return.</p>`,
+      run: async (ep) => { focusZones(["pool","kernel"]);
+        await beat(ep, "Two slow calls are made. Node doesn't wait: it registers callbacks and offloads the work, returning immediately.");
+        opFs("fs.readFile"); await beat(ep, "fs.readFile goes to the libuv thread pool, because file I/O has no portable async kernel API.");
+        opNet("https.get"); await beat(ep, "https.get is driven by the OS readiness mechanism instead, so no pool thread is occupied by the socket. (Resolving the hostname via dns.lookup would still use the pool.)");
+        await beat(ep, "Meanwhile the JS thread has nothing to do for either call. Now we let the work finish…");
+        await sIdle(ep); focusZones([]); await beat(ep, "Each completion queued its callback into the poll phase, where it ran on the main thread. No JavaScript ever blocked waiting."); },
+    },
+    {
+      title: "The libuv thread pool",
+      view: "viz",
+      body: `<p>The thread pool is a small set of <strong>C/C++ worker threads</strong> (default <strong>4</strong>, set by <code>UV_THREADPOOL_SIZE</code>, max 1024) for work with no portable async kernel API: most async <strong>fs</strong>, <code>dns.lookup()</code>, async <strong>zlib</strong>, and specific <strong>crypto</strong> calls such as <code>pbkdf2</code>, <code>scrypt</code>, <code>randomBytes</code> and key generation. Native addons can queue work here too.</p>
+        <p><strong>Socket I/O does NOT use it</strong>, and neither does <code>dns.resolve*()</code>, which does its own network queries. This is why Node holds tens of thousands of sockets with just 4 pool threads.</p>
+        <p>The pool is <strong>process-global</strong>: every event loop in the process, including worker threads, shares the same 4 threads. Spawning workers does not multiply it.</p>
+        <p>The gotcha: fire more pool-backed tasks than threads and they <strong>queue</strong>. Watch 6 <code>fs</code> reads: only 4 run at once, two wait for a free thread.</p>`,
+      run: async (ep) => { focusZones(["pool"]);
+        await beat(ep, "Fire six fs.readFile calls at the same time.");
+        for (let i = 0; i < 6; i++) opFs("fs.readFile #" + (i + 1));
+        await beat(ep, "The pool has only 4 threads, so four reads run in parallel while #5 and #6 wait in the backlog. This is “pool exhaustion”, and one long task effectively shrinks the pool by one.");
+        await beat(ep, "Sockets would not queue here. Note the pool is process-global: worker threads share these same 4 threads, so spawning workers does not give you more.");
+        await sIdle(ep); focusZones([]); await beat(ep, "As threads free up the queued reads run, and every callback returns to the poll phase. Raise UV_THREADPOOL_SIZE, or move the work to a worker, if this is your bottleneck."); },
+    },
+    {
+      title: "Scheduling: timers vs setImmediate",
+      view: "viz",
+      body: `<p><code>setTimeout(fn, 0)</code> lands in the <strong>timers</strong> phase; <code>setImmediate(fn)</code> lands in <strong>check</strong>. Their order depends on <em>where you schedule them</em>:</p>
+        <p>• In the <strong>main module</strong>: order is <strong>non-deterministic</strong>. <code>setTimeout(fn, 0)</code> is clamped to <strong>1 ms</strong>, so it is a race on whether that millisecond has elapsed by the time the loop first looks at timers.<br>
+        • <strong>Inside an I/O callback</strong>: <strong>deterministic</strong>, <code>setImmediate</code> always wins, because you are already in <strong>poll</strong> and <strong>check</strong> is the very next phase.</p>
+        <p>About waiting: when the <strong>poll</strong> queue is empty but referenced I/O is still outstanding, the loop <em>waits</em> here, bounded by the nearest due timer. It does not wait at all if a <code>setImmediate</code> is queued, and if no referenced work remains the loop <strong>exits</strong> instead.</p>`,
+      run: async (ep) => {
+        await beat(ep, "Inside an fs callback we schedule BOTH a setTimeout(0) and a setImmediate.");
+        opFs("fs.readFile", async () => { opImmediate("setImmediate ✓"); opTimeout("setTimeout", 0); });
+        await beat(ep, "The fs callback runs in the poll phase, and the very next phase is check…");
+        await sIdle(ep); await beat(ep, "…so setImmediate runs first. The timer runs afterwards in the timers phase, which now sits at the end of the same iteration. Scheduled from inside I/O, check always comes before timers."); },
+    },
+    {
+      title: "Microtasks: nextTick & Promises",
+      view: "viz",
+      body: `<p>Two queues sit <em>outside</em> the phases. Whenever a callback hands control back to Node, both are drained before the loop moves on (since Node 11 that happens between individual timer/immediate callbacks too, not just between phases):</p>
+        <p><strong>1. The <code>process.nextTick</code> queue</strong> - Node's own queue, drained first and completely.<br>
+        <strong>2. The V8 microtask queue</strong> (<code>.then</code>, <code>await</code>, <code>queueMicrotask</code>) - drained second, also completely.</p>
+        <p><em>Beware the name:</em> <code>process.nextTick</code> does <strong>not</strong> wait for the next loop iteration. It runs before the loop advances at all. <code>setImmediate</code> is the one that fires on the next iteration.</p>
+        <p>The nextTick-before-Promise rule holds at a normal <strong>CommonJS</strong> callback boundary. In <strong>top-level ESM</strong> it inverts: the module body is itself evaluated inside a microtask drain, so promise callbacks scheduled there run <em>before</em> <code>nextTick</code>.</p>
+        <p>Also beware <strong>starvation</strong>: recursively scheduling <code>nextTick</code> never lets the loop reach poll, freezing all I/O.</p>`,
+      run: async (ep) => {
+        await beat(ep, "Schedule a setTimeout(0), a Promise.then, and a process.nextTick, all in the same callback.");
+        opTimeout("setTimeout", 0); opPromise("Promise .then"); opNextTick("nextTick");
+        await beat(ep, "Both queues jump ahead of the loop: the ENTIRE nextTick queue drains first, then the whole microtask queue, before any phase advances.");
+        await sIdle(ep); await beat(ep, "Order: nextTick → Promise → setTimeout (timers). Two caveats: in top-level ESM the promise would run before nextTick, and recursive nextTick can starve the loop completely."); },
+    },
+    {
+      title: "Worker threads - real parallelism",
+      view: "viz",
+      body: `<p>For <strong>CPU-bound JS</strong>, which you cannot offload to the kernel, use <code>worker_threads</code> (stable since Node 12.11). Each worker is a <strong>separate V8 isolate</strong> with its own heap, its own event loop, and its own nextTick and microtask queues.</p>
+        <p>Because the heaps are separate, ordinary JS objects can never be shared. Three ways across the boundary: <code>postMessage</code> <strong>structured-clones</strong> a copy; a <strong>transfer list</strong> moves an <code>ArrayBuffer</code>'s ownership with <em>no copy</em>; a <strong>SharedArrayBuffer</strong> maps the same bytes into both isolates, coordinated with <code>Atomics</code>.</p>
+        <p>Each worker has its own heap, so it is also GC'd independently: a worker's collection does not pause the main thread. But they share the <strong>process-global</strong> libuv pool.</p>
+        <p>Watch a message travel to a worker, get computed, and the reply return to the main loop.</p>`,
+      run: async (ep) => { focusZones(["worker"]);
+        await beat(ep, "The main thread posts a message to a worker - a separate V8 isolate with its own heap and event loop.");
+        opWorker("compute(msg)");
+        await beat(ep, "The worker runs the CPU-heavy work in parallel while the main thread stays responsive. This message was structured-cloned; a transfer list would move an ArrayBuffer with no copy, and a SharedArrayBuffer would share the bytes outright.");
+        await sIdle(ep); focusZones([]); await beat(ep, "The worker posts its result back; the reply is delivered to the main loop's poll phase and handled there."); },
+    },
+    {
+      title: "Processes & cluster - full isolation",
+      view: "procs",
+      body: `<p>Worker threads are <em>not</em> a full isolation boundary. An ordinary uncaught exception only terminates that worker and fires its <code>'error'</code> event, but a native fault or process-wide OOM takes everything down with it (bound per worker via <code>resourceLimits</code>).</p>
+        <p>For a stronger boundary and multi-core scaling of a server, run <strong>separate processes</strong> with <code>child_process</code> / <code>cluster</code>. A <strong>primary</strong> process (<code>cluster.isPrimary</code>, renamed from <code>isMaster</code> in Node 16) forks however many workers you ask for, commonly one per <code>os.availableParallelism()</code>.</p>
+        <p>Under the default off-Windows <code>SCHED_RR</code> policy the primary owns the listening socket and passes accepted connections to workers over <strong>IPC</strong>, round-robin. Windows defaults to letting the OS distribute them instead.</p>
+        <p>Each process gets its own V8 isolate, heap, event loop, and <code>--max-old-space-size</code> budget, so a GC pause in one never stalls another. They still share OS resources such as files, sockets and system limits, so isolation is strong but not absolute.</p>`,
+      run: async (ep) => {
+        await beat(ep, "The primary process listens on the port and forks worker processes; you choose how many, commonly one per os.availableParallelism().");
+        await beat(ep, "Each worker is a separate Node instance with its own V8 isolate, heap, and event loop, in its own memory space, and its own independent GC.");
+        await beat(ep, "Under the default round-robin policy the primary accepts connections and hands them to workers over IPC. A crashed worker can be replaced without taking the others down, though they still share OS-level resources."); },
+    },
+  ];
+
+  // ---------- step controller ----------
+  const tracker = $("tracker");
+  STEPS.forEach((_, i) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button"); b.type = "button"; b.textContent = i + 1;
+    b.setAttribute("aria-label", "Go to step " + (i + 1));
+    b.addEventListener("click", () => gotoStep(i));
+    li.appendChild(b); tracker.appendChild(li);
+    if (i < STEPS.length - 1) { const r = document.createElement("li"); r.className = "rung"; r.setAttribute("aria-hidden","true"); tracker.appendChild(r); }
+  });
+
+  function renderChrome(i) {
+    const s = STEPS[i];
+    $("kicker").textContent = `Step ${i + 1} / ${STEPS.length}`;
+    $("narrTitle").textContent = s.title;
+    $("narrBody").innerHTML = s.body;
+    $("stepNum").textContent = i + 1;
+    $("nextBtn").disabled = i >= STEPS.length - 1;
+    $("prevBtn").disabled = i <= 0;
+    [...tracker.querySelectorAll("li")].filter(li => !li.classList.contains("rung"))
+      .forEach((li, idx) => li.setAttribute("aria-current", idx === i ? "step" : "false"));
+    stage.dataset.view = s.view || "viz";
+  }
+
+  // Only the operation buttons are disabled while a scripted step animates;
+  // navigation (prev/next/step dots/replay/reset/keys) is always live and interrupts.
+  function setOps(on) { document.querySelectorAll("#opGroup .op").forEach(b => b.disabled = !on); }
+
+  async function gotoStep(i, opts = {}) {
+    const target = Math.max(0, Math.min(STEPS.length - 1, i));
+    const myNav = ++S.nav;   // supersedes any in-flight navigation
+    S.epoch++;               // cancel a running loop / offload / step animation immediately
+    S.loopRunning = false;
+    if (S.beatResolver) { const r = S.beatResolver; S.beatResolver = null; r(); } // wake a paused beat so its run can cancel
+    S.step = target;
+    renderChrome(target);
+    clearAll();              // fresh state (also bumps epoch)
+    S.beatIdx = -1; S.stepDone = false; S.instant = false;
+    S.beatTarget = (opts.toBeat != null ? opts.toBeat : null);
+    S.beatTotal = STEPS[target].beats || 0;
+    setOps(false); S.busy = true; setAdvanceWaiting(false);
+    showBeat("Ready - press ▸ Advance to step through, or Play to autoplay.", true);
+    const ep = S.epoch;
+    const s = STEPS[target];
+    if (s.run) { try { await s.run(ep); } catch (e) { /* CANCELLED (interrupted) or benign */ } }
+    if (myNav !== S.nav) return;   // a newer navigation took over - leave state to it
+    // Remember how many beats this step actually has, so replays can show "N / total".
+    STEPS[target].beats = S.beatIdx + 1;
+    S.instant = false; S.busy = false; S.stepDone = true; setOps(true); setAdvanceWaiting(false);
+    if (S.playing && target < STEPS.length - 1) {
+      try { await wait(1200); } catch (e) {}
+      if (myNav === S.nav && S.playing) gotoStep(target + 1);
+    } else if (target >= STEPS.length - 1 && S.playing) {
+      stopPlay();
+    } else if (!S.playing) {
+      showBeat(target >= STEPS.length - 1
+        ? "End of the tour - use ← or the step dots to revisit any section."
+        : "Step complete - press ▸ Advance (or →) for the next section.", true);
+    }
+  }
+
+  function startPlay(){
+    if (S.playing) return;
+    S.playing = true; $("playLabel").textContent = "Pause";
+    $("playIcon").innerHTML = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>';
+    if (S.beatResolver) { S.beatResolver(); return; }        // resume the paused beat, now in auto mode
+    if (S.stepDone) gotoStep(S.step >= STEPS.length - 1 ? 0 : S.step + 1);  // finished → roll on (or restart at end)
+    // else: mid-animation - it continues, and upcoming beats auto-advance
+  }
+  function stopPlay(){ S.playing = false; $("playLabel").textContent = "Play tour"; $("playIcon").innerHTML = '<path d="M7 5.5v13l11-6.5z"/>'; }
+
+  // advance/rewind the animation one beat within the current step
+  function advanceBeat(){
+    stopPlay();
+    if (S.beatResolver) { S.beatResolver(); return; }   // resolve current beat → play the next segment
+    if (S.stepDone) gotoStep(S.step + 1);               // step finished → next section
+    // else mid-segment: ignore
+  }
+  function backBeat(){
+    stopPlay();
+    if (S.beatIdx > 0) gotoStep(S.step, { toBeat: S.beatIdx - 1 });   // replay this step, pausing one beat earlier
+    else gotoStep(S.step - 1);                                        // at the first beat → previous section
+  }
+  $("advBtn").addEventListener("click", advanceBeat);
+
+  $("playBtn").addEventListener("click", () => S.playing ? stopPlay() : startPlay());
+  $("nextBtn").addEventListener("click", () => { stopPlay(); gotoStep(S.step + 1); });
+  $("prevBtn").addEventListener("click", () => { stopPlay(); gotoStep(S.step - 1); });
+  $("replayBtn").addEventListener("click", () => { stopPlay(); gotoStep(S.step, { replay: true }); });
+  $("resetBtn").addEventListener("click", () => { stopPlay(); clearAll(); tick("Cleared. Fire an operation or play the tour.", false); });
+
+  document.querySelectorAll("#opGroup .op").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (S.busy) return;
+      stopPlay();
+      if (stage.dataset.view !== "viz") stage.dataset.view = "viz";
+      const op = btn.dataset.op;
+      OPS[op] && OPS[op]();
+      tick(`Fired ${btn.textContent.trim()} - follow the chip through the loop.`, true);
+    });
+  });
+
+  $("speed").addEventListener("input", (e) => { S.speed = parseFloat(e.target.value); $("speedVal").textContent = S.speed + "×"; setMoveDur(); });
+
+  $("themeBtn").addEventListener("click", () => {
+    const root = document.documentElement;
+    const cur = root.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    root.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+  });
+
+  // ---------- keyboard navigation ----------
+  addEventListener("keydown", (e) => {
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    if (t && t.tagName === "BUTTON" && (e.key === " " || e.key === "Enter")) return; // let the focused button's own activation handle it
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case "ArrowDown": case "Enter": e.preventDefault(); advanceBeat(); break;   // next beat
+      case "ArrowUp": e.preventDefault(); backBeat(); break;                        // previous beat
+      case "ArrowRight": case "PageDown": e.preventDefault(); stopPlay(); gotoStep(S.step + 1); break;  // next section
+      case "ArrowLeft":  case "PageUp":   e.preventDefault(); stopPlay(); gotoStep(S.step - 1); break;  // previous section
+      case "Home": e.preventDefault(); stopPlay(); gotoStep(0); break;
+      case "End":  e.preventDefault(); stopPlay(); gotoStep(STEPS.length - 1); break;
+      case " ": e.preventDefault(); S.playing ? stopPlay() : startPlay(); break;
+      case "r": case "R": e.preventDefault(); stopPlay(); gotoStep(S.step); break;
+    }
+  });
+
+  // ---------- boot ----------
+  setMoveDur();
+  renderChrome(0);
+  stats();
+  requestAnimationFrame(() => gotoStep(0));
+})();
+</script>

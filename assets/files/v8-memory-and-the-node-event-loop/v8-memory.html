@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<title>How V8 Manages Memory: An Interactive Explainer</title>
+<meta name="robots" content="noindex, nofollow">
+<script>/*__defaultTheme*/document.documentElement.dataset.theme="light";</script>
+<style>
+  /* ============================================================
+     TOKENS - cool blueprint neutrals + a semantic generation palette.
+     Theme resolves via color-scheme; light-dark() follows it, and the
+     toggle stamps data-theme to force color-scheme in both directions.
+     ============================================================ */
+  :root {
+    color-scheme: light dark;
+
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+    /* grounds & ink - grey biased toward the indigo accent */
+    --bg:        light-dark(#eef1f6, #0b0f16);
+    --surface:   light-dark(#ffffff, #121824);
+    --surface-2: light-dark(#f3f5f9, #171f2e);
+    --sunken:    light-dark(#e7ebf2, #0d121c);
+    --ink:       light-dark(#1a2233, #e4e9f2);
+    --ink-soft:  light-dark(#4a5568, #9aa7bd);
+    --ink-faint: light-dark(#8592a6, #5f6d84);
+    --line:      light-dark(#d4dae5, #26314a);
+    --line-soft: light-dark(#e3e8f0, #1c2739);
+
+    --accent:      #4263eb;
+    --accent-ink:  #ffffff;
+    --accent-soft: light-dark(#e7ecfe, #1b2544);
+
+    /* generational / space semantics (data encoding, not the accent) */
+    --gen-young:  #15aabf;   /* nursery */
+    --gen-inter:  #f08c00;   /* survived one scavenge */
+    --gen-old:    #7048e8;   /* old generation */
+    --gen-large:  #e64980;   /* large-object space */
+    --gen-code:   #2f9e44;   /* code space */
+    --gen-ro:     #5c7cfa;   /* read-only space */
+    --dead:       light-dark(#c3cad6, #3b465c);
+
+    /* tri-color marking (literal to the algorithm) */
+    --mark-grey:  #8a94a6;
+    --mark-black: light-dark(#0c1017, #05070b);
+    --mark-white-border: var(--accent);
+
+    --move-dur: .62s;
+    --ease: cubic-bezier(.22,.61,.28,1);
+
+    --radius: 10px;
+    --radius-sm: 6px;
+    --cell: 20px;
+    --gap: 5px;
+  }
+  :root[data-theme="dark"]  { color-scheme: dark; }
+  :root[data-theme="light"] { color-scheme: light; }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root { --move-dur: .001s; }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* faint blueprint grid on the page ground */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background:
+      linear-gradient(to right, color-mix(in oklab, var(--line) 40%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(to bottom, color-mix(in oklab, var(--line) 40%, transparent) 1px, transparent 1px) 0 0 / 28px 28px;
+    mask-image: radial-gradient(ellipse 120% 90% at 50% 0%, #000 30%, transparent 85%);
+    opacity: .5;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 1500px;
+    margin-inline: auto;
+    min-height: 100dvh;
+    padding: clamp(12px, 2vw, 22px);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 14px;
+  }
+
+  /* Fit the whole UI on screen: the app fills the viewport and any panel that
+     outgrows its box scrolls inside itself instead of pushing the footer away.
+     Below the two-column breakpoint we fall back to normal page scrolling. */
+  @media (min-width: 1121px) {
+    .stage > .panel { min-block-size: 0; overflow: hidden; }
+    .panel-scroll { flex: 1 1 auto; }
+    .app { height: 100dvh; min-height: 0; overflow: hidden; }
+    .stage { min-block-size: 0; }
+    /* `.stage >` raises specificity over the later base rules */
+    .stage > .heap-wrap, .stage > .roots, .stage > .orinoco, .panel-scroll {
+      min-block-size: 0; overflow-y: auto; overscroll-behavior: contain;
+      scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+    }
+  }
+  .heap-wrap::-webkit-scrollbar, .panel::-webkit-scrollbar,
+  .roots::-webkit-scrollbar, .orinoco::-webkit-scrollbar { width: 9px; }
+  .heap-wrap::-webkit-scrollbar-thumb, .panel::-webkit-scrollbar-thumb,
+  .roots::-webkit-scrollbar-thumb, .orinoco::-webkit-scrollbar-thumb {
+    background: var(--line); border-radius: 20px; border: 2px solid var(--surface);
+  }
+  .heap-wrap::-webkit-scrollbar-track, .panel::-webkit-scrollbar-track,
+  .roots::-webkit-scrollbar-track, .orinoco::-webkit-scrollbar-track { background: transparent; }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 13px; margin-inline-end: auto; }
+  .brand .glyph {
+    inline-size: 42px; block-size: 42px;
+    display: grid; place-items: center;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: 0 1px 0 color-mix(in oklab, var(--ink) 6%, transparent);
+  }
+  .brand .glyph svg { inline-size: 24px; block-size: 24px; }
+  .brand h1 {
+    font-size: clamp(1.02rem, 1.6vw, 1.28rem);
+    line-height: 1.15;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+  .brand p {
+    margin: 2px 0 0;
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    letter-spacing: .02em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  /* scene tracker */
+  .tracker { display: flex; align-items: center; gap: 0; list-style: none; margin: 0; padding: 0; }
+  .tracker li { display: flex; align-items: center; gap: 0; }
+  .tracker button {
+    --dot: 26px;
+    display: grid; place-items: center;
+    inline-size: var(--dot); block-size: var(--dot);
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+    font-size: .74rem;
+    cursor: pointer;
+    transition: transform .2s var(--ease), border-color .2s, color .2s, background .2s;
+  }
+  .tracker button:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--ink); }
+  .tracker li[aria-current="step"] button {
+    background: var(--accent); border-color: var(--accent); color: var(--accent-ink);
+  }
+  .tracker .rung { inline-size: 20px; block-size: 1.5px; background: var(--line); }
+  @media (max-width: 860px) { .tracker .rung { inline-size: 8px; } .tracker button { --dot: 22px; } }
+
+  .icon-btn {
+    display: inline-grid; place-items: center;
+    inline-size: 40px; block-size: 40px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .15s var(--ease);
+  }
+  .icon-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .icon-btn svg { inline-size: 20px; block-size: 20px; }
+
+  /* ---------- main stage ---------- */
+  .stage {
+    display: grid;
+    grid-template-columns: 168px minmax(0, 1fr) 320px;
+    gap: 14px;
+    min-block-size: 0;
+  }
+  @media (max-width: 1120px) {
+    .stage { grid-template-columns: 1fr; }
+    .roots { flex-direction: row !important; flex-wrap: wrap; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px color-mix(in oklab, var(--ink) 5%, transparent);
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: .66rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- roots rail ---------- */
+  .roots {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .roots > .section-label { margin-bottom: 2px; }
+  .root-node {
+    border: 1px dashed var(--line);
+    border-radius: var(--radius-sm);
+    padding: 9px 10px;
+    background: var(--surface-2);
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .root-node .rn-title {
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .root-node .rn-title::before {
+    content: ""; inline-size: 8px; block-size: 8px; border-radius: 2px;
+    background: var(--accent);
+  }
+  .root-node p { margin: 5px 0 0; font-size: .74rem; color: var(--ink-soft); line-height: 1.4; }
+  .roots.tracing .root-node { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .roots .rail-note {
+    margin-top: auto;
+    font-size: .72rem;
+    color: var(--ink-faint);
+    line-height: 1.45;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 10px;
+  }
+
+  /* ---------- heap canvas ---------- */
+  .heap-wrap { position: relative; min-block-size: 500px; }
+  .heap {
+    position: relative;
+    block-size: 100%;
+    min-block-size: 500px;
+    padding: 14px;
+    display: grid;
+    grid-template-rows: minmax(150px, 1.15fr) minmax(120px, .95fr) minmax(140px, 1.1fr);
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  .region {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--sunken);
+    padding: 8px;
+    min-block-size: 0;
+    transition: border-color .3s, box-shadow .3s, background .3s;
+  }
+  .region.dim { opacity: .34; filter: saturate(.5); }
+  .region.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .region-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 8px; margin-bottom: 6px;
+  }
+  .region-name {
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .region-meta { font-family: var(--font-mono); font-size: .66rem; color: var(--ink-faint); }
+  .region-slots { position: relative; min-block-size: 40px; flex: 1 1 auto; }
+
+  .new-space { gap: 8px; }
+  .new-space > .region-head { margin-bottom: 2px; }
+  .semis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1 1 auto; }
+  .semi {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius-sm);
+    padding: 7px 8px;
+    background: color-mix(in oklab, var(--sunken) 70%, var(--surface));
+    min-block-size: 96px;
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .semi .region-slots { min-block-size: 0; }
+  .semi.is-from { border-style: solid; border-color: color-mix(in oklab, var(--gen-young) 55%, var(--line)); }
+  .semi.is-to   { border-style: dashed; }
+  .semi .tag {
+    align-self: flex-start;
+    font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em;
+    text-transform: uppercase; padding: 1px 6px; border-radius: 20px;
+    border: 1px solid var(--line);
+    color: var(--ink-faint);
+  }
+  .semi.is-from .tag { color: var(--gen-young); border-color: color-mix(in oklab, var(--gen-young) 45%, var(--line)); }
+
+  .lower-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* allocation pointer */
+  .alloc-pointer {
+    position: absolute;
+    inline-size: 2px;
+    background: var(--gen-young);
+    top: 0;
+    block-size: var(--cell);
+    transform: translate(-9999px, 0);
+    transition: transform var(--move-dur) var(--ease);
+    box-shadow: 0 0 6px var(--gen-young);
+    pointer-events: none;
+  }
+  .alloc-pointer::after {
+    content: "▸ alloc";
+    position: absolute; top: -15px; left: 3px;
+    font-family: var(--font-mono); font-size: .58rem; white-space: nowrap;
+    color: var(--gen-young);
+  }
+  .alloc-pointer.hidden { opacity: 0; }
+
+  /* object cells layer */
+  .objects {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .cell {
+    position: absolute;
+    inline-size: var(--cell); block-size: var(--cell);
+    border-radius: 4px;
+    top: 0; left: 0;
+    transform: translate(-9999px, -9999px);
+    transition: transform var(--move-dur) var(--ease), opacity .35s ease, background .3s, border-color .3s, box-shadow .3s;
+    border: 1.5px solid transparent;
+    display: grid; place-items: center;
+    will-change: transform;
+  }
+  .cell::after { /* age pip */
+    content: "";
+    inline-size: 5px; block-size: 5px; border-radius: 50%;
+    background: rgba(255,255,255,.9);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .cell[data-age="1"]::after { opacity: .95; }
+  .cell.gen-young { background: var(--gen-young); border-color: color-mix(in oklab, var(--gen-young) 70%, #000); }
+  .cell.gen-old   { background: var(--gen-old);   border-color: color-mix(in oklab, var(--gen-old) 70%, #000); }
+  .cell.gen-large { background: var(--gen-large); border-color: color-mix(in oklab, var(--gen-large) 70%, #000); border-radius: 4px; }
+  .cell.gen-code  { background: var(--gen-code);  border-color: color-mix(in oklab, var(--gen-code) 70%, #000); }
+  .cell.gen-ro    { background: var(--gen-ro);    border-color: color-mix(in oklab, var(--gen-ro) 70%, #000); }
+  /* survived one scavenge - must follow gen-young to win the cascade */
+  .cell.cell-inter { background: var(--gen-inter); border-color: color-mix(in oklab, var(--gen-inter) 70%, #000); }
+
+  .cell.large { inline-size: calc(var(--cell) * 2.6); }
+
+  .cell.dying { opacity: 0; transform-origin: center; }
+  .cell.doomed { box-shadow: 0 0 0 2px color-mix(in oklab, var(--dead) 80%, #000); filter: grayscale(.5) brightness(.8); }
+  /* Pop-in animates the INDEPENDENT `scale` property, never `transform` - animating
+     transform here would override the inline translate that positions the cell and
+     make it fly in from the layer's origin. */
+  .cell.pop { animation: pop .34s var(--ease); }
+  @keyframes pop { from { scale: .2; opacity: 0; } }
+  /* A cell's first placement jumps straight to its slot instead of sliding in
+     from the off-screen parking position. */
+  .cell.placing { transition: none; }
+  @media (prefers-reduced-motion: reduce) { .cell.pop { animation: none; } }
+
+  /* tri-color marking states */
+  .cell.mark-white { background: transparent !important; border: 1.5px dashed var(--mark-white-border) !important; }
+  .cell.mark-white::after { opacity: 0; }
+  .cell.mark-grey  { background: var(--mark-grey) !important; border-color: color-mix(in oklab, var(--mark-grey) 60%, #000) !important; }
+  .cell.mark-black { background: var(--mark-black) !important; border-color: var(--ink-faint) !important; }
+  .cell.mark-grey::after, .cell.mark-black::after { opacity: 0; }
+
+  /* SVG wires (roots → objects, remembered set) */
+  #wires { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: visible; }
+  #wires path { fill: none; stroke-linecap: round; }
+
+  /* ---------- side panel ---------- */
+  .panel { padding: 16px; display: flex; flex-direction: column; gap: 16px; min-block-size: 0; }
+  .narr .kicker {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: .66rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent);
+    padding: 3px 9px; border-radius: 20px; background: var(--accent-soft);
+  }
+  .narr h2 { font-size: 1.16rem; margin: 12px 0 6px; letter-spacing: -.01em; text-wrap: balance; }
+  .narr p { margin: 0 0 8px; color: var(--ink-soft); font-size: .9rem; }
+  .narr p strong { color: var(--ink); font-weight: 600; }
+  .narr code {
+    font-family: var(--font-mono); font-size: .82em;
+    background: var(--surface-2); border: 1px solid var(--line-soft);
+    padding: 1px 5px; border-radius: 4px; color: var(--ink);
+  }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat {
+    background: var(--surface-2); border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm); padding: 8px 10px;
+  }
+  .stat .k { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); }
+  .stat .v {
+    font-family: var(--font-mono); font-size: 1.28rem; font-weight: 600; line-height: 1.1;
+    font-variant-numeric: tabular-nums; margin-top: 2px;
+    display: flex; align-items: baseline; gap: 4px;
+  }
+  .stat .v small { font-size: .62rem; color: var(--ink-faint); font-weight: 400; }
+
+  .legend { margin-top: auto; }
+  .legend ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 5px 10px; }
+  .legend li { display: flex; align-items: center; gap: 7px; font-size: .74rem; color: var(--ink-soft); font-family: var(--font-mono); }
+  .legend .sw { inline-size: 12px; block-size: 12px; border-radius: 3px; flex: none; border: 1.5px solid rgba(0,0,0,.25); }
+  .sw.young { background: var(--gen-young); } .sw.old { background: var(--gen-old); }
+  .sw.inter { background: var(--gen-inter); } .sw.large { background: var(--gen-large); }
+  .sw.code { background: var(--gen-code); } .sw.ro { background: var(--gen-ro); }
+  .sw.wht { background: transparent; border: 1.5px dashed var(--accent); }
+  .sw.gry { background: var(--mark-grey); } .sw.blk { background: var(--mark-black); }
+
+  /* ---------- transport ----------
+     Three deliberate rows: tour controls, heap operations, status ticker - so
+     nothing wraps into an overflowing jumble at any width. */
+  .transport { display: flex; flex-direction: column; gap: 9px; padding: 10px 14px; }
+  .tp-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .tp-row.ops { border-block-start: 1px solid var(--line-soft); padding-block-start: 9px; }
+  .transport .group { display: flex; align-items: center; gap: 8px; flex: 0 1 auto; flex-wrap: wrap; min-inline-size: 0; }
+  .transport .push { margin-inline-start: auto; }
+  .tp-label { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); flex: none; }
+  @media (max-width: 700px) { .transport .push { margin-inline-start: 0; } }
+
+  .btn {
+    font-family: var(--font-sans); font-size: .82rem; font-weight: 550;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 14px; border-radius: var(--radius-sm);
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    cursor: pointer; white-space: nowrap;
+    transition: border-color .2s, background .2s, transform .15s var(--ease), color .2s;
+  }
+  .btn svg { inline-size: 15px; block-size: 15px; }
+  .btn:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.primary:hover:not(:disabled) { background: color-mix(in oklab, var(--accent) 88%, #000); }
+  .btn.solid-young { border-color: color-mix(in oklab, var(--gen-young) 50%, var(--line)); color: color-mix(in oklab, var(--gen-young) 75%, var(--ink)); }
+  .btn.solid-old { border-color: color-mix(in oklab, var(--gen-old) 50%, var(--line)); color: color-mix(in oklab, var(--gen-old) 78%, var(--ink)); }
+
+  .step-readout {
+    font-family: var(--font-mono); font-size: .74rem; color: var(--ink-faint);
+    min-inline-size: 92px; text-align: center;
+  }
+  .step-readout b { color: var(--ink); }
+
+  .speed { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: .7rem; color: var(--ink-faint); }
+  .speed input[type="range"] { inline-size: 92px; accent-color: var(--accent); }
+
+  :where(button, input, a):focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* status ticker (aria-live) - flexes to fill the middle and shrinks instead of
+     pushing the speed control onto a new line when a long message appears */
+  .ticker {
+    font-family: var(--font-mono); font-size: .72rem;
+    color: var(--ink-soft); min-block-size: 1.2em;
+    display: flex; align-items: baseline; gap: 8px;
+    flex: 0 0 auto; min-inline-size: 0;
+    border-block-start: 1px solid var(--line-soft); padding-block-start: 8px;
+  }
+  .ticker #tickerText {
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .ticker .dot { inline-size: 7px; block-size: 7px; border-radius: 50%; background: var(--accent); flex: none; position: relative; top: -1px; }
+  .speed { flex: none; }
+
+  /* The panel splits into a scrolling region plus a pinned live-beat strip, so a long
+     step description can never push the current narration out of view. */
+  .panel-scroll { display: flex; flex-direction: column; gap: 15px; min-block-size: 0; }
+  .panel-scroll::-webkit-scrollbar { width: 9px; }
+  .panel-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 20px; border: 2px solid var(--surface); }
+  .panel-scroll::-webkit-scrollbar-track { background: transparent; }
+  .beatbox { flex: none; }
+  /* live "beat" callout - explains what's happening at the current animation step */
+  .beatbox { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); border-radius: var(--radius-sm); background: var(--surface-2); padding: 9px 11px; }
+  .beat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .beat-prog { font-family: var(--font-mono); font-size: .6rem; color: var(--accent); font-weight: 600; letter-spacing: .04em; }
+  .beat-note { margin: 5px 0 0; font-size: .86rem; color: var(--ink); line-height: 1.45; }
+  .beat-note.hint { color: var(--ink-faint); }
+  .btn.adv { border-color: color-mix(in oklab, var(--accent) 45%, var(--line)); color: color-mix(in oklab, var(--accent) 82%, var(--ink)); font-weight: 600; }
+  .btn.adv.waiting { animation: advpulse 1.25s ease-in-out infinite; border-color: var(--accent); }
+  @keyframes advpulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 3px var(--accent-soft); } }
+  @media (prefers-reduced-motion: reduce){ .btn.adv.waiting { animation: none; } }
+  .ticker.busy .dot { animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+
+  /* ---------- Orinoco overlay (step 6) ---------- */
+  .orinoco { display: none; padding: 18px 20px; }
+  .stage[data-view="orinoco"] .heap-wrap,
+  .stage[data-view="orinoco"] .roots { display: none; }
+  .stage[data-view="orinoco"] .orinoco { display: block; }
+  .stage[data-view="orinoco"] { grid-template-columns: minmax(0,1fr) 320px; }
+
+  .orinoco h3 { margin: 0 0 3px; font-size: 1rem; }
+  .orinoco .lead { margin: 0 0 16px; color: var(--ink-soft); font-size: .88rem; max-inline-size: 62ch; }
+  .lane {
+    display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: center;
+    padding: 12px 0; border-top: 1px solid var(--line-soft);
+  }
+  .lane:first-of-type { border-top: 0; }
+  .lane .lane-label .lt { font-weight: 600; font-size: .9rem; }
+  .lane .lane-label .ld { font-size: .74rem; color: var(--ink-faint); font-family: var(--font-mono); }
+  .thread { position: relative; margin-bottom: 6px; }
+  .thread:last-child { margin-bottom: 0; }
+  .thread .tname { font-family: var(--font-mono); font-size: .6rem; color: var(--ink-faint); margin-bottom: 3px; letter-spacing: .06em; }
+  .track {
+    position: relative; block-size: 20px; border-radius: 5px;
+    background: var(--sunken); border: 1px solid var(--line-soft); overflow: hidden;
+  }
+  .seg { position: absolute; top: 0; block-size: 100%; }
+  .seg.js    { background: color-mix(in oklab, var(--gen-code) 55%, var(--surface)); }
+  .seg.pause { background: color-mix(in oklab, var(--gen-large) 70%, var(--surface)); }
+  .seg.mark  { background: color-mix(in oklab, var(--gen-old) 55%, var(--surface)); }
+  .runner {
+    position: absolute; top: -2px; block-size: calc(100% + 4px); inline-size: 3px;
+    background: var(--accent); border-radius: 2px;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .stw .track .seg.pause { animation: none; }
+  .orinoco .caption { font-family: var(--font-mono); font-size: .72rem; color: var(--ink-soft); margin-top: 4px; }
+
+  .anim-run .runner { animation: sweep 3.4s linear infinite; }
+  @keyframes sweep { from { left: 0; } to { left: 100%; } }
+  @media (prefers-reduced-motion: reduce) { .anim-run .runner { animation: none; left: 50%; } }
+
+  .visually-hidden:where(:not(:focus-within,:active)) {
+    position: absolute !important; clip-path: inset(50%) !important;
+    inline-size: 1px !important; block-size: 1px !important;
+    overflow: hidden !important; white-space: nowrap !important;
+  }
+
+  @media (max-width: 1120px) {
+    .heap-wrap { min-block-size: 520px; }
+    .panel { order: 3; }
+  }
+</style>
+
+<div class="app">
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="glyph" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2"/>
+          <path d="M3 9h18M8 4v16M13 9v11"/>
+        </svg>
+      </span>
+      <div>
+        <h1>How V8 Manages Memory</h1>
+        <p>Heap spaces · Scavenger · Mark&#8209;Sweep&#8209;Compact</p>
+      </div>
+    </div>
+
+    <nav aria-label="Explainer steps">
+      <ol class="tracker" id="tracker"></ol>
+    </nav>
+
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle light or dark theme">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ============ STAGE ============ -->
+  <div class="stage" id="stage" data-view="heap">
+    <!-- roots rail -->
+    <aside class="roots card" id="roots" aria-label="Garbage-collection roots">
+      <span class="section-label">GC Roots</span>
+      <div class="root-node">
+        <span class="rn-title">Call stack</span>
+        <p>Local variables in active frames.</p>
+      </div>
+      <div class="root-node">
+        <span class="rn-title">Globals</span>
+        <p>The global object &amp; module scope.</p>
+      </div>
+      <div class="root-node">
+        <span class="rn-title">Handles</span>
+        <p>C++ references held by the engine.</p>
+      </div>
+      <p class="rail-note">Anything reachable from a root, at <em>any</em> number of hops, is <strong>live</strong>. Everything else is garbage.</p>
+    </aside>
+
+    <!-- heap canvas -->
+    <section class="heap-wrap">
+      <div class="heap card" id="heap">
+        <!-- NEW SPACE -->
+        <div class="region new-space" id="r-new" data-region="new">
+          <div class="region-head">
+            <span class="region-name">New space · Young generation</span>
+            <span class="region-meta" id="meta-new">semi&#8209;space copying</span>
+          </div>
+          <div class="semis">
+            <div class="semi is-from" id="semi-a" data-region="young-a">
+              <span class="tag" id="tag-a">From&#8209;space</span>
+              <div class="region-slots" data-slots="young-a"></div>
+            </div>
+            <div class="semi is-to" id="semi-b" data-region="young-b">
+              <span class="tag" id="tag-b">To&#8209;space</span>
+              <div class="region-slots" data-slots="young-b"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OLD SPACE -->
+        <div class="region" id="r-old" data-region="old">
+          <div class="region-head">
+            <span class="region-name">Old space · Old generation</span>
+            <span class="region-meta">mark&#8209;compact · promoted objects + hidden classes</span>
+          </div>
+          <div class="region-slots" data-slots="old"></div>
+        </div>
+
+        <!-- LOWER ROW -->
+        <div class="lower-row">
+          <div class="region" id="r-large" data-region="large">
+            <div class="region-head"><span class="region-name">Large&#8209;object</span></div>
+            <div class="region-slots" data-slots="large"></div>
+          </div>
+          <div class="region" id="r-code" data-region="code">
+            <div class="region-head"><span class="region-name">Code</span></div>
+            <div class="region-slots" data-slots="code"></div>
+          </div>
+          <div class="region" id="r-ro" data-region="ro">
+            <div class="region-head"><span class="region-name">Read&#8209;only</span></div>
+            <div class="region-slots" data-slots="ro"></div>
+          </div>
+        </div>
+
+        <svg id="wires" aria-hidden="true"></svg>
+        <div class="objects" id="objects" aria-hidden="true">
+          <div class="alloc-pointer hidden" id="allocPtr"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orinoco overlay (shares the center column) -->
+    <section class="orinoco card" id="orinoco" aria-hidden="true">
+      <h3>Orinoco: getting GC work off the main thread</h3>
+      <p class="lead">A naïve collector stops the world: JS freezes while it works, causing visible jank. V8's <strong>Orinoco</strong> collector moves most of that work off the main thread and shortens what remains. Short pauses still happen.</p>
+
+      <div class="lane stw">
+        <div class="lane-label"><div class="lt">Stop&#8209;the&#8209;world</div><div class="ld">the naïve baseline</div></div>
+        <div>
+          <div class="thread"><div class="tname">Main thread</div>
+            <div class="track">
+              <div class="seg js" style="left:0;width:22%"></div>
+              <div class="seg pause" style="left:22%;width:56%" title="one long GC pause"></div>
+              <div class="seg js" style="left:78%;width:22%"></div>
+            </div>
+          </div>
+          <div class="caption">One long pause blocks everything - hundreds of ms of jank.</div>
+        </div>
+      </div>
+
+      <div class="lane">
+        <div class="lane-label"><div class="lt">Incremental</div><div class="ld">split into small steps</div></div>
+        <div>
+          <div class="thread"><div class="tname">Main thread</div>
+            <div class="track" id="incTrack"></div>
+          </div>
+          <div class="caption">Marking is broken into small scheduled steps interleaved between JS work; V8 picks their size dynamically.</div>
+        </div>
+      </div>
+
+      <div class="lane">
+        <div class="lane-label"><div class="lt">Concurrent</div><div class="ld">GC on background threads</div></div>
+        <div>
+          <div class="thread anim-run"><div class="tname">Main thread - runs JS</div>
+            <div class="track"><div class="seg js" style="left:0;width:100%"></div><div class="runner"></div></div>
+          </div>
+          <div class="thread"><div class="tname">Helper thread</div>
+            <div class="track"><div class="seg mark" style="left:0;width:100%"></div></div>
+          </div>
+          <div class="caption">Most marking runs on helpers <em>while JS keeps executing</em>. V8's launch benchmarks measured roughly 65&#8209;70% less main&#8209;thread marking, though the gain is workload&#8209;dependent.</div>
+        </div>
+      </div>
+
+      <div class="lane">
+        <div class="lane-label"><div class="lt">Parallel</div><div class="ld">many threads, together</div></div>
+        <div>
+          <div class="thread"><div class="tname">Main thread (paused briefly)</div>
+            <div class="track"><div class="seg mark" style="left:0;width:100%"></div></div>
+          </div>
+          <div class="thread"><div class="tname">Helper 1</div><div class="track"><div class="seg mark" style="left:0;width:100%"></div></div></div>
+          <div class="thread"><div class="tname">Helper 2</div><div class="track"><div class="seg mark" style="left:0;width:100%"></div></div></div>
+          <div class="caption">The Scavenger splits its work across cores with dynamic work&#8209;stealing; major&#8209;GC evacuation and pointer updating also run in parallel, to finish the short pause faster.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- side panel -->
+    <aside class="panel card" aria-label="Explanation and statistics">
+     <!-- Everything except the live beat scrolls, so the beat is never pushed off. -->
+     <div class="panel-scroll">
+      <div class="narr">
+        <span class="kicker" id="kicker">Step 1 / 6</span>
+        <h2 id="narrTitle">The V8 heap</h2>
+        <div id="narrBody"><p>Loading…</p></div>
+      </div>
+
+      <div>
+        <span class="section-label">Live heap state</span>
+        <div class="stats" style="margin-top:8px">
+          <div class="stat"><div class="k">Young objects</div><div class="v"><span id="s-young">0</span></div></div>
+          <div class="stat"><div class="k">Old objects</div><div class="v"><span id="s-old">0</span></div></div>
+          <div class="stat"><div class="k">Minor GCs</div><div class="v"><span id="s-minor">0</span> <small>scavenge</small></div></div>
+          <div class="stat"><div class="k">Major GCs</div><div class="v"><span id="s-major">0</span> <small>mark&#8209;sweep</small></div></div>
+          <div class="stat"><div class="k">Promoted</div><div class="v"><span id="s-promoted">0</span> <small>→ old</small></div></div>
+          <div class="stat"><div class="k">Reclaimed</div><div class="v"><span id="s-freed">0</span> <small>objects</small></div></div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span class="section-label">Legend</span>
+        <ul>
+          <li><span class="sw young"></span> Nursery (age 0)</li>
+          <li><span class="sw old"></span> Old gen</li>
+          <li><span class="sw inter"></span> Intermediate</li>
+          <li><span class="sw large"></span> Large obj</li>
+          <li><span class="sw code"></span> Code</li>
+          <li><span class="sw ro"></span> Read&#8209;only</li>
+          <li><span class="sw wht"></span> White · unmarked</li>
+          <li><span class="sw gry"></span> Grey · queued</li>
+          <li><span class="sw blk"></span> Black · scanned</li>
+        </ul>
+      </div>
+     </div>
+
+      <div class="beatbox" id="beatbox">
+        <div class="beat-head"><span class="section-label">Now playing</span><span class="beat-prog" id="beatProg">Beat 1</span></div>
+        <p class="beat-note hint" id="beatNote">Press <b>▸ Advance</b> to step through, or <b>Play</b> to autoplay.</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ============ TRANSPORT ============ -->
+  <footer class="transport card">
+   <div class="tp-row">
+    <div class="group">
+      <button class="icon-btn" id="prevBtn" type="button" aria-label="Previous step" title="Previous step (←)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button class="btn primary" id="playBtn" type="button">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5.5v13l11-6.5z"/></svg>
+        <span id="playLabel">Play tour</span>
+      </button>
+      <button class="icon-btn" id="nextBtn" type="button" aria-label="Next step" title="Next step (→)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <button class="icon-btn" id="replayBtn" type="button" aria-label="Replay this step" title="Replay this step (R)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+      </button>
+      <span class="step-readout">Step <b id="stepNum">1</b> / 6</span>
+      <button class="btn adv" id="advBtn" type="button" title="Advance one beat (↓ or Enter) · back = ↑">Advance ▸</button>
+    </div>
+
+    <label class="speed push">Speed
+      <input type="range" id="speed" min="0.25" max="1.5" step="0.25" value="0.75" aria-label="Animation speed (lower is slower)">
+      <span id="speedVal">0.75×</span>
+    </label>
+   </div>
+
+   <div class="tp-row ops">
+    <span class="tp-label">Heap ops</span>
+    <div class="group">
+      <button class="btn solid-young" id="allocBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Allocate
+      </button>
+      <button class="btn solid-young" id="minorBtn" type="button">Minor GC</button>
+      <button class="btn solid-old" id="majorBtn" type="button">Major GC</button>
+    </div>
+    <button class="btn push" id="resetBtn" type="button">Reset</button>
+   </div>
+
+   <div class="ticker" id="ticker" role="status" aria-live="polite"><span class="dot"></span><span id="tickerText">Ready.</span></div>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- element refs ----------
+  const $ = (id) => document.getElementById(id);
+  const heap = $("heap"), objectsLayer = $("objects"), wires = $("wires");
+  const stage = $("stage"), rootsEl = $("roots");
+  const allocPtr = $("allocPtr");
+  const slotEls = {};
+  document.querySelectorAll("[data-slots]").forEach(el => slotEls[el.dataset.slots] = el);
+
+  const stat = {
+    young: $("s-young"), old: $("s-old"), minor: $("s-minor"),
+    major: $("s-major"), promoted: $("s-promoted"), freed: $("s-freed"),
+  };
+
+  const CELL = 20, GAP = 5, STEP = CELL + GAP;
+  const prefersReduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- state ----------
+  let uid = 0;
+  const S = {
+    objects: [],       // {id, gen, region, age, size, el, dead, marked}
+    fromIdx: 0,         // 0 => young-a is from-space, 1 => young-b
+    step: 0,
+    playing: false,
+    busy: false,
+    speed: 0.75,
+    epoch: 0,   // bumped on navigate/replay/reset - cancels in-flight animations
+    nav: 0,     // navigation token - detects when a newer gotoStep supersedes an older one
+    // beat engine: step-by-step walk-through of a step's animation
+    beatIdx: -1, beatTotal: 0, beatResolver: null, beatTarget: null, stepDone: false, instant: false,
+    counts: { minor: 0, major: 0, promoted: 0, freed: 0 },
+  };
+
+  const region = (key) => slotEls[key];
+  const youngFrom = () => (S.fromIdx === 0 ? "young-a" : "young-b");
+  const youngTo   = () => (S.fromIdx === 0 ? "young-b" : "young-a");
+
+  // ---------- timing ----------
+  // wait() is epoch-aware: if the animation was superseded while we slept, it throws
+  // CANCELLED so the running sequence unwinds immediately at its next await.
+  const CANCELLED = { cancelled: true };
+  const wait = (ms) => {
+    const ep = S.epoch;
+    const ms2 = S.instant ? 0 : (prefersReduced ? Math.min(ms, 40) : ms / S.speed);
+    return new Promise(r => setTimeout(r, ms2)).then(() => { if (S.epoch !== ep) throw CANCELLED; });
+  };
+  function setMoveDur() {
+    document.documentElement.style.setProperty("--move-dur", (prefersReduced ? 0.001 : 0.62 / S.speed) + "s");
+  }
+
+  // ---------- beat engine ----------
+  /**
+   * Renders the current beat's explanation and progress.
+   * @param {string} note Text to display.
+   * @param {boolean} [hint] Style as a dimmed hint rather than narration.
+   */
+  function showBeat(note, hint) {
+    const el = $("beatNote"); el.textContent = note || ""; el.classList.toggle("hint", !!hint);
+    const seen = Math.max(1, S.beatIdx + 1);
+    // beatTotal is learned by playing a step through, so the denominator only
+    // appears on replays rather than showing a guessed total.
+    $("beatProg").textContent = "Beat " + seen + (S.beatTotal > seen ? " / " + S.beatTotal : "");
+  }
+  function setAdvanceWaiting(on) { $("advBtn").classList.toggle("waiting", !!on); }
+
+  // A checkpoint: pauses for the user (manual) or auto-continues (while playing).
+  async function beat(ep, note) {
+    if (ep == null) return;                  // free-simulator calls run without beats
+    if (S.epoch !== ep) throw CANCELLED;
+    S.beatIdx++;
+    showBeat(note, false);
+    if (S.beatTarget != null && S.beatIdx < S.beatTarget) { S.instant = true; return; }
+    if (S.beatTarget != null && S.beatIdx >= S.beatTarget) { S.beatTarget = null; S.instant = false; }
+    if (S.playing) { await wait(1500); return; }
+    setAdvanceWaiting(true);
+    await new Promise((resolve, reject) => {
+      S.beatResolver = () => { S.beatResolver = null; setAdvanceWaiting(false); (S.epoch !== ep) ? reject(CANCELLED) : resolve(); };
+    });
+    if (S.epoch !== ep) throw CANCELLED;
+  }
+
+  // ---------- object creation ----------
+  function makeObject(gen, regionKey, opts = {}) {
+    const o = {
+      id: ++uid, gen, region: regionKey,
+      age: opts.age || 0, size: opts.size || 1,
+      dead: false, marked: null, el: document.createElement("div"),
+    };
+    // `placing` suppresses the move transition until the first layout() has put the
+    // cell in its slot, so freshly created cells never slide in from off-screen.
+    o.el.className = "cell placing gen-" + gen + (opts.size === 2 ? " large" : "");
+    o.el.dataset.age = o.age;
+    o.el.dataset.id = o.id;
+    objectsLayer.appendChild(o.el);
+    S.objects.push(o);
+    // Only individually allocated objects pop in; bulk seeding stays quiet.
+    if (opts.pop) requestAnimationFrame(() => o.el.classList.add("pop"));
+    return o;
+  }
+
+  function removeObject(o) {
+    const i = S.objects.indexOf(o);
+    if (i >= 0) S.objects.splice(i, 1);
+    o.el.remove();
+  }
+
+  // ---------- layout: place every cell into its region's slot grid ----------
+  function layout() {
+    const canvas = heap.getBoundingClientRect();
+    const groups = {};
+    const justPlaced = [];
+    for (const o of S.objects) (groups[o.region] ||= []).push(o);
+
+    for (const key in groups) {
+      const slots = region(key);
+      if (!slots) continue;
+      const r = slots.getBoundingClientRect();
+      const ox = r.left - canvas.left, oy = r.top - canvas.top;
+      // large objects stack one per row so their extra width never overlaps a neighbour
+      const cols = key === "large" ? 1 : Math.max(1, Math.floor((r.width + GAP) / STEP));
+      const maxRows = Math.max(1, Math.floor((r.height + GAP) / STEP));
+      groups[key].forEach((o, i) => {
+        const col = i % cols;
+        // safety net: if a space is ever over capacity, keep cells inside the region
+        const row = Math.min(Math.floor(i / cols), maxRows - 1);
+        o.x = ox + col * STEP;
+        o.y = oy + row * STEP;
+        o.el.style.transform = `translate(${o.x}px, ${o.y}px)`;
+        if (o.el.classList.contains("placing")) justPlaced.push(o.el);
+      });
+    }
+    // Re-enable movement transitions one frame after the initial placement lands.
+    if (justPlaced.length) {
+      requestAnimationFrame(() => justPlaced.forEach(el => el.classList.remove("placing")));
+    }
+    positionAllocPointer();
+  }
+
+  // allocPtr lives in the objects layer, so it shares the cells' canvas coordinate space
+  function positionAllocPointer() {
+    if (allocPtr.classList.contains("hidden")) return;
+    const canvas = heap.getBoundingClientRect();
+    const key = youngFrom();
+    const slots = region(key);
+    const r = slots.getBoundingClientRect();
+    const ox = r.left - canvas.left, oy = r.top - canvas.top;
+    const cols = Math.max(1, Math.floor((r.width + GAP) / STEP));
+    const n = countIn(key);
+    const col = n % cols, row = Math.floor(n / cols);
+    allocPtr.style.transform = `translate(${ox + col * STEP}px, ${oy + row * STEP}px)`;
+  }
+
+  // ---------- stats & focus ----------
+  function updateStats() {
+    stat.young.textContent = S.objects.filter(o => o.gen === "young").length;
+    stat.old.textContent   = S.objects.filter(o => o.gen === "old").length;
+    stat.minor.textContent = S.counts.minor;
+    stat.major.textContent = S.counts.major;
+    stat.promoted.textContent = S.counts.promoted;
+    stat.freed.textContent = S.counts.freed;
+  }
+
+  const regionCard = {
+    "new": $("r-new"), "young-a": $("semi-a"), "young-b": $("semi-b"),
+    old: $("r-old"), large: $("r-large"), code: $("r-code"), ro: $("r-ro"),
+  };
+  function focus(keys) {
+    Object.values(regionCard).forEach(el => el.classList.remove("focus", "dim"));
+    if (!keys) return;
+    const set = new Set(keys);
+    for (const k in regionCard) {
+      if (set.has(k)) regionCard[k].classList.add("focus");
+    }
+  }
+
+  function tick(msg, busy) {
+    $("tickerText").textContent = msg;
+    $("ticker").classList.toggle("busy", !!busy);
+  }
+
+  // ---------- semi-space labels & flip ----------
+  function refreshSemiLabels() {
+    const aFrom = S.fromIdx === 0;
+    $("semi-a").classList.toggle("is-from", aFrom);
+    $("semi-a").classList.toggle("is-to", !aFrom);
+    $("semi-b").classList.toggle("is-from", !aFrom);
+    $("semi-b").classList.toggle("is-to", aFrom);
+    $("tag-a").textContent = aFrom ? "From-space" : "To-space";
+    $("tag-b").textContent = aFrom ? "To-space" : "From-space";
+  }
+
+  // ---------- wires (roots → objects, remembered set) ----------
+  function clearWires() { wires.innerHTML = ""; }
+  function drawWire(x1, y1, x2, y2, color, dash) {
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const mx = (x1 + x2) / 2;
+    p.setAttribute("d", `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`);
+    p.setAttribute("stroke", color);
+    p.setAttribute("stroke-width", "1.6");
+    if (dash) p.setAttribute("stroke-dasharray", dash);
+    p.style.opacity = "0";
+    p.style.transition = "opacity .4s ease";
+    wires.appendChild(p);
+    requestAnimationFrame(() => (p.style.opacity = "1"));
+    return p;
+  }
+  function rootAnchor() {
+    const canvas = heap.getBoundingClientRect();
+    const rr = rootsEl.getBoundingClientRect();
+    // anchor at right edge / middle of roots rail, expressed in heap-canvas coords
+    return { x: rr.right - canvas.left, y: rr.top + rr.height / 2 - canvas.top };
+  }
+
+  // ============================================================
+  //  GC OPERATIONS
+  // ============================================================
+  const SURVIVE = 0.34; // generational hypothesis: most young objects die
+
+  // Narrate: as a pausing beat when walking a step, else as a ticker message.
+  async function say(ep, note, busy = true) {
+    if (ep != null) await beat(ep, note);
+    else tick(note, busy);
+  }
+
+  // ---- Minor GC: the Scavenger (Cheney semi-space copy) ----
+  async function runScavenge({ silent, ep } = {}) {
+    const fromKey = youngFrom(), toKey = youngTo();
+    focus(["new", "young-a", "young-b"]);
+    allocPtr.classList.add("hidden");
+
+    const fromObjs = S.objects.filter(o => o.region === fromKey);
+    if (fromObjs.length === 0) { tick("New space empty - nothing to scavenge.", false); return; }
+
+    // decide survivors
+    fromObjs.forEach(o => { o.dead = Math.random() > SURVIVE; });
+    fromObjs.filter(o => o.dead).forEach(o => o.el.classList.add("doomed"));
+    await say(ep, "Scavenge starts: live young objects are found from the roots plus the remembered set of old→young references, so the whole old generation never has to be traced. Greyed-out cells turned out to be unreachable.");
+    await wait(750);
+
+    // dead objects are simply not copied - they vanish
+    const dead = fromObjs.filter(o => o.dead);
+    dead.forEach(o => { o.el.classList.add("dying"); });
+    await say(ep, `${dead.length} dead objects are never individually traced or copied. Their half of New space is reclaimed wholesale when the semi-spaces flip.`);
+    await wait(500);
+    dead.forEach(removeObject);
+    S.counts.freed += dead.length;
+
+    // survivors: age up, then promote (2nd survival) or copy to to-space
+    const survivors = fromObjs.filter(o => !o.dead);
+    let promoted = 0;
+    for (const o of survivors) {
+      o.el.classList.remove("doomed");
+      o.age += 1;
+      if (o.age >= 2) {
+        o.gen = "old"; o.region = "old";
+        o.el.className = "cell gen-old";
+        S.counts.promoted += 1; promoted++;
+      } else {
+        o.region = toKey;
+        o.gen = "young";
+        o.el.className = "cell gen-young cell-inter";
+      }
+      o.el.dataset.age = o.age;
+    }
+    layout();
+    await say(ep, `${survivors.length} survivors are evacuated (copied) into To-space; a forwarding pointer redirects old references.` +
+      (promoted ? ` ${promoted} had already survived once, so they're promoted to Old space instead.` : ""));
+    await wait(700);
+
+    // flip semi-spaces
+    S.fromIdx ^= 1;
+    refreshSemiLabels();
+    S.counts.minor += 1;
+    updateStats();
+    focus(null);
+    await say(ep, "Finally the roles flip: To-space becomes the new From-space. Total cost was proportional to the survivors, not to how much was allocated.");
+    if (!silent && ep == null) tick(`Scavenge complete. Semi-spaces flipped - To-space is now From-space. (${survivors.length} kept, ${dead.length} freed)`, false);
+
+    // Promotions may have filled the old generation - a full old space is what triggers a major GC.
+    if (countIn("old") > slotCapacity("old")) {
+      tick("Old space crossed its allocation limit → V8 starts a Major GC.", true);
+      await wait(600);
+      await runMajor({ silent: true, ep });
+    }
+  }
+
+  // ---- Major GC: Mark-Sweep-Compact. Collects Old space AND Large-object space. ----
+  async function runMajor({ silent, ep } = {}) {
+    // Large-object space is part of the old generation, so it is collected here too.
+    const collectable = () => S.objects.filter(o => o.gen === "old" || o.gen === "large");
+    if (collectable().length === 0) {
+      tick("Nothing to collect - promote objects to Old space first (run a couple of Minor GCs).", false);
+      return;
+    }
+    const hasLarge = S.objects.some(o => o.gen === "large");
+    focus(hasLarge ? ["old", "large"] : ["old"]);
+    rootsEl.classList.add("tracing");
+
+    // ---- MARK ----
+    collectable().forEach(o => { o.el.classList.add("mark-white"); o.marked = "white"; });
+    await say(ep, "Mark phase. Every old and large object starts WHITE, meaning “not yet known to be reachable.” (New space is traced in the same collection; we're showing only the old-generation work.)");
+    await wait(650);
+
+    // Reachability is transitive, so build an actual object graph: a few objects are
+    // referenced directly by roots, the rest hang off those in a chain. Objects with
+    // no incoming edge are the garbage.
+    const list = collectable();
+    const live = list.filter(() => Math.random() <= 0.6);
+    list.forEach(o => (o.dead = !live.includes(o)));
+    const rootSet = live.slice(0, Math.min(2, live.length));   // directly root-referenced
+    const chained = live.slice(rootSet.length);                 // reached only via others
+    const parentOf = new Map();
+    chained.forEach((o, i) => parentOf.set(o, i < rootSet.length ? rootSet[i] : chained[i - rootSet.length]));
+
+    clearWires();
+    const anchor = rootAnchor();
+    const centre = (o) => ({ x: o.x + CELL / 2, y: o.y + CELL / 2 });
+
+    // Wave 1: only the root-referenced objects go grey.
+    rootSet.forEach(o => {
+      const c = centre(o);
+      drawWire(anchor.x, anchor.y, c.x, c.y, "var(--accent)", "5 4");
+      o.el.classList.remove("mark-white"); o.el.classList.add("mark-grey"); o.marked = "grey";
+    });
+    await say(ep, `The roots reference ${rootSet.length} of these objects directly, so those turn GREY: discovered, but their own fields not scanned yet. Grey is the marking worklist. Everything else is still white.`);
+    await wait(300);
+
+    // Wave 2+: pop a grey object, scan its fields, grey whatever it points to, blacken it.
+    // This is what makes reachability transitive rather than root-only.
+    let frontier = rootSet.slice();
+    while (frontier.length) {
+      const next = [];
+      for (const parent of frontier) {
+        for (const child of chained.filter(c => parentOf.get(c) === parent)) {
+          const a = centre(parent), b = centre(child);
+          drawWire(a.x, a.y, b.x, b.y, "var(--accent)", "4 3");
+          child.el.classList.remove("mark-white"); child.el.classList.add("mark-grey"); child.marked = "grey";
+          next.push(child);
+          await wait(140);
+        }
+        parent.el.classList.remove("mark-grey"); parent.el.classList.add("mark-black"); parent.marked = "black";
+        await wait(120);
+      }
+      frontier = next;
+    }
+    await say(ep, "Scanning a grey object's fields greys whatever it points to, then the scanned object turns BLACK. That is how reachability spreads: an object stays alive because something reachable points at it, however many hops away the roots are.");
+    await wait(300);
+
+    // any stragglers (defensive: keep colours consistent)
+    live.forEach(o => {
+      if (o.marked !== "black") { o.el.classList.remove("mark-grey", "mark-white"); o.el.classList.add("mark-black"); o.marked = "black"; }
+    });
+    clearWires();
+    rootsEl.classList.remove("tracing");
+    await say(ep, "Marking ends when no grey objects remain. The invariant “no black object points to a white one” is what guarantees nothing live was missed.");
+    await wait(400);
+
+    // ---- SWEEP ----
+    const dead = list.filter(o => o.dead);
+    const deadLarge = dead.filter(o => o.gen === "large").length;
+    dead.forEach(o => o.el.classList.add("dying"));
+    await say(ep, `Sweep: marking is done, so anything still WHITE is unreachable, ${dead.length} objects` +
+      (deadLarge ? ` (including ${deadLarge} large object${deadLarge > 1 ? "s" : ""}, reclaimed here in the sweep)` : "") + ". Their memory returns to the free-lists.");
+    await wait(550);
+    dead.forEach(removeObject);
+    S.counts.freed += dead.length;
+    layout();
+    await wait(500);
+
+    // ---- COMPACT ----
+    live.forEach(o => { o.el.classList.remove("mark-black", "mark-white", "mark-grey"); o.marked = null; });
+    layout(); // re-packs remaining objects contiguously
+    await say(ep, "Compact: sweeping leaves gaps, so V8 picks its most fragmented pages and evacuates the live objects off them onto fresh pages. Large objects are excluded, since they are never relocated.");
+    await wait(700);
+
+    S.counts.major += 1;
+    updateStats();
+    focus(null);
+    if (ep == null) tick(`Major GC complete. ${live.length} objects retained, ${dead.length} reclaimed & compacted.`, false);
+  }
+
+  // ---- Allocation via bump pointer; auto-scavenges when From-space fills ----
+  async function runAllocate(n = 6, { silent, ep } = {}) {
+    allocPtr.classList.remove("hidden");
+    focus(["new", youngFrom()]);
+    let made = 0;
+    for (let i = 0; i < n; i++) {
+      // From-space full → a bump-pointer hit triggers a Scavenge to make room
+      if (countIn(youngFrom()) >= slotCapacity(youngFrom())) {
+        await say(ep, "The bump pointer hit the end of From-space - that's exactly what triggers a Minor GC.");
+        await wait(450);
+        await runScavenge({ silent: true, ep });
+        allocPtr.classList.remove("hidden");
+        focus(["new", youngFrom()]);
+      }
+      // occasionally a large object is allocated straight into Large-object space
+      if (Math.random() < 0.09 && countIn("large") < slotCapacity("large")) {
+        makeObject("large", "large", { size: 2, pop: true });
+      } else {
+        makeObject("young", youngFrom(), { pop: true });
+      }
+      made++;
+      layout();
+      await wait(170);
+    }
+    if (!silent && ep == null) tick(`Allocated ${made} objects via the bump pointer.`, false);
+  }
+
+  function countIn(key) { return S.objects.filter(o => o.region === key).length; }
+  function slotCapacity(key) {
+    const slots = region(key);
+    if (!slots) return 99;
+    const r = slots.getBoundingClientRect();
+    const cols = key === "large" ? 1 : Math.max(1, Math.floor((r.width + GAP) / STEP));
+    const rows = Math.max(1, Math.floor((r.height + GAP) / STEP));
+    return cols * rows;
+  }
+
+  // ============================================================
+  //  SEED / RESET
+  // ============================================================
+  function clearAll() {
+    S.objects.slice().forEach(removeObject);
+    clearWires();
+    S.fromIdx = 0;
+    refreshSemiLabels();
+    S.counts = { minor: 0, major: 0, promoted: 0, freed: 0 };
+    updateStats();
+  }
+
+  function seedBaseline() {
+    clearAll();
+    // a realistic snapshot: nursery churn, some old survivors, code, read-only, a big object
+    for (let i = 0; i < 9; i++) makeObject("young", "young-a");
+    for (let i = 0; i < 10; i++) makeObject("old", "old");
+    for (let i = 0; i < 4; i++) makeObject("code", "code");
+    for (let i = 0; i < 3; i++) makeObject("ro", "ro");
+    makeObject("large", "large", { size: 2 });
+    updateStats();
+    layout();
+  }
+
+  // ============================================================
+  //  STEPS (guided tour)
+  // ============================================================
+  const STEPS = [
+    {
+      title: "The V8 heap is split into spaces",
+      focus: null,
+      body: `<p>Most JavaScript <strong>objects</strong> V8 creates live on the <strong>heap</strong>, which is divided into purpose-built <strong>spaces</strong>. Two things notably do <em>not</em>: small integers are encoded directly in the value itself and are never allocated, and <code>ArrayBuffer</code> / <code>Buffer</code> bytes live in <strong>external</strong> memory outside the heap (which is why <code>--max-old-space-size</code> does not bound them).</p>
+        <p>The key split follows the <strong>generational hypothesis</strong>: <em>most objects die young</em>. So freshly-created objects go in a small <strong>New space</strong> (young generation) collected constantly and cheaply, while the rare survivors graduate to a large <strong>Old space</strong> collected far less often.</p>
+        <p>Alongside them: <span style="color:var(--gen-large)">Large-object</span> space (objects bigger than ~half a page, never moved), <span style="color:var(--gen-code)">Code</span> space (JIT machine code), and immortal <span style="color:var(--gen-ro)">Read-only</span> space. <em>(A separate space for “Maps”, meaning V8's internal hidden classes rather than JavaScript's <code>Map</code>, was merged into Old space around 2022. Real V8 has roughly a dozen spaces today, including trusted and cross-isolate shared ones; these five carry the concepts.)</em></p>
+        <p><strong>Node.js</strong> embeds a version-specific build of this heap and collector, <strong>one heap per isolate</strong>. You tune it with flags like <code>--max-old-space-size</code> and <code>--max-semi-space-size</code>.</p>`,
+      run: async (ep) => {
+        focus(null); allocPtr.classList.add("hidden");
+        await beat(ep, "This is a snapshot of a live heap. Each square is one object, coloured by which space it lives in.");
+        focus(["new", "young-a", "young-b"]);
+        await beat(ep, "New space (the young generation) is small and split into two equal halves - From-space and To-space. Almost all objects are born here.");
+        focus(["old"]);
+        await beat(ep, "Old space is much larger and holds the few objects that survived long enough to be promoted. It's collected far less often.");
+        focus(["large", "code", "ro"]);
+        await beat(ep, "Then the specialised spaces: Large-object (too big to copy), Code (JIT machine code), and Read-only (immortal shared data).");
+        focus(null);
+        await beat(ep, "Two collectors run over this heap: a Minor GC that collects the young generation, and a Major GC that traces the whole heap while concentrating its sweeping and compaction in Old space. Let's see how objects get here first.");
+      },
+    },
+    {
+      title: "Allocation is a bump pointer",
+      focus: ["new", "young-a"],
+      body: `<p>New objects are placed in the active semi-space (<strong>From-space</strong>) using a <strong>bump pointer</strong>: allocation is just “advance a pointer by the object's size.” Objects that have not yet survived a collection are the <strong>nursery</strong>; those that survived one become <strong>intermediate</strong>.</p>
+        <p>That is only a few machine instructions - which is exactly <em>why</em> a young-generation heap can be collected so affordably. When the bump pointer hits the end of the space, a <strong>Minor GC</strong> fires automatically.</p>
+        <p>Watch the <span style="color:var(--gen-young)">cyan cells</span> stream in behind the moving <code>▸ alloc</code> pointer.</p>`,
+      run: async (ep) => {
+        allocPtr.classList.remove("hidden"); focus(["new", youngFrom()]);
+        await beat(ep, "The ▸ alloc marker is the bump pointer: it sits at the boundary between used and free memory in From-space.");
+        await runAllocate(4, { silent: true, ep: null });
+        await beat(ep, "Each new object is placed at the pointer, then the pointer advances by that object's size - only a few machine instructions. No free-list search.");
+        await runAllocate(4, { silent: true, ep: null });
+        await beat(ep, "Because allocation is this cheap, V8 can afford to allocate constantly - and to collect this space very frequently. When the pointer reaches the end, a Minor GC fires.");
+      },
+    },
+    {
+      title: "Minor GC - the Scavenger",
+      focus: ["new", "young-a", "young-b"],
+      body: `<p>The young generation is collected by the <strong>Scavenger</strong>, using <strong>semi-space copying</strong> in the Cheney tradition. New space is two halves: <strong>From-space</strong> and <strong>To-space</strong>. (V8's implementation is parallel, driven by worklists with work-stealing, rather than Cheney's original to-space scan queue.)</p>
+        <p>On a scavenge, live objects are <strong>copied</strong> (evacuated) from From-space into To-space, and a forwarding pointer redirects old references. <strong>Dead objects are never individually traced or copied</strong>; their half is reclaimed in bulk when the roles <strong>flip</strong>.</p>
+        <p>Live young objects are found from the <strong>roots</strong> plus a <strong>remembered set</strong> of old→young pointers (kept by a write barrier), so the Scavenger never traces the whole old-generation object graph. The copying cost is proportional to the <em>survivors</em> rather than to everything allocated, and most objects are dead, so it's fast. It is still a brief <strong>stop-the-world</strong> pause, just a parallel one.</p>`,
+      run: async (ep) => {
+        if (countIn(youngFrom()) < 5) await runAllocate(7, { silent: true });
+        await runScavenge({ ep });
+      },
+    },
+    {
+      title: "Promotion - surviving twice",
+      focus: ["new", "young-a", "young-b", "old"],
+      body: `<p>An object that survives a <strong>second</strong> scavenge is <strong>promoted</strong>: instead of being copied within the young generation again, it's evacuated into <strong>Old space</strong>.</p>
+        <p>V8 doesn't keep a per-object counter for this. It marks a position in the semi-space (an <em>age mark</em>) and promotes whatever sits below it, meaning objects that were already there before the last scavenge. Allocation-site pretenuring and space pressure can promote things earlier, so treat "survives twice" as the common path rather than a hard rule.</p>
+        <p>This is the generational hypothesis paying off: the few objects that live long enough get moved out of the hot, frequently-collected nursery so scavenges stay cheap.</p>
+        <p>Watch objects age (a pip appears after one survival) and jump to the <span style="color:var(--gen-old)">violet</span> Old space on the next.</p>`,
+      run: async (ep) => {
+        if (countIn(youngFrom()) < 5) await runAllocate(7, { silent: true });
+        await beat(ep, "Here's a fresh nursery. V8 distinguishes objects that were already here before the last scavenge using an age mark in the semi-space.");
+        await runScavenge({ silent: true });
+        await beat(ep, "After one scavenge the survivors turned amber - age 1, the “intermediate” generation. They're still in New space, just in the other semi-space.");
+        if (countIn(youngFrom()) < 3) await runAllocate(4, { silent: true });
+        await beat(ep, "Now a second scavenge runs. Anything that survives this one has proven it's long-lived…");
+        await runScavenge({ silent: true });
+        await beat(ep, "…so instead of being copied inside New space again, it's promoted into Old space (violet). This keeps the nursery small, which is what keeps scavenges cheap.");
+      },
+    },
+    {
+      title: "Major GC - Mark-Compact",
+      focus: ["old"],
+      body: `<p>Old space is collected by <strong>Mark-Compact</strong> (older material calls it Mark-Sweep-Compact). A major GC is a <em>full</em> collection that traces the whole live heap; its heavy lifting is in Old space, which is what's shown here. It runs in three phases:</p>
+        <p><strong>Mark</strong>: starting from the roots, V8 does a <strong>tri-color</strong> traversal: objects are <span style="border-bottom:1.5px dashed var(--accent)">white</span> (unseen), <span style="color:var(--mark-grey)">grey</span> (queued on the worklist), or <strong>black</strong> (fully scanned). Crucially this is <em>transitive</em>: scanning a grey object greys everything it references, so objects stay alive by being reachable at any depth, not just by being named by a root. The invariant <em>“no black points to white”</em> guarantees nothing live is missed.</p>
+        <p><strong>Sweep</strong>: whatever is still white is dead, and its memory returns to the free-lists. This is also where unreachable <strong>large objects</strong> are reclaimed. <strong>Compact</strong>: to fight fragmentation V8 evacuates the live objects off its most fragmented pages onto fresh ones. Large objects are never part of that, because they are never relocated.</p>`,
+      run: async (ep) => {
+        if (S.objects.filter(o => o.gen === "old").length < 8) {
+          // build up old space quickly (unnarrated setup)
+          for (let k = 0; k < 3; k++) { await runAllocate(7, { silent: true }); await runScavenge({ silent: true }); }
+        }
+        await runMajor({ ep });
+      },
+    },
+    {
+      title: "Orinoco - off the main thread",
+      focus: null,
+      view: "orinoco",
+      body: `<p>Done naïvely, GC <strong>stops the world</strong>: JavaScript freezes for the whole collection, which users feel as jank. In Node that pause lands squarely on the event loop, delaying every pending callback.</p>
+        <p>V8's <strong>Orinoco</strong> collector reduces main-thread GC work three ways, shown on the left:</p>
+        <p><strong>Incremental</strong> marking splits the work into small scheduled steps between JS turns. <strong>Concurrent</strong> marking runs on <em>helper threads while JS keeps executing</em>. <strong>Parallel</strong> collection uses several threads at once to finish the unavoidable pauses faster.</p>
+        <p>This shrinks pauses rather than eliminating them: the Scavenger is still a stop-the-world collection, and parts of major-GC finalisation and compaction need short pauses too.</p>
+        <p><strong>Write barriers</strong> are what make it safe, and they serve two distinct jobs: the <em>generational</em> barrier records old→young references in remembered sets for the minor GC, while the <em>marking</em> barrier records graph changes so concurrent marking cannot miss an object that becomes reachable mid-flight.</p>`,
+      run: async (ep) => {
+        await beat(ep, "Top lane: the naïve approach. One long stop-the-world pause - JavaScript is frozen for the entire collection, which users feel as jank.");
+        await beat(ep, "Incremental: the same marking work is sliced into many ~1 ms chunks, interleaved between JS turns, so no single pause is long.");
+        await beat(ep, "Concurrent: marking moves onto helper threads that run WHILE JavaScript keeps executing - cutting main-thread marking by roughly two-thirds.");
+        await beat(ep, "Parallel: the unavoidable short pauses (the Scavenger, compaction) are split across several threads with work-stealing, so they finish sooner.");
+        await beat(ep, "Write barriers and remembered sets are what make this safe: they record references created while the collector is running, so no live object is ever lost.");
+      },
+    },
+  ];
+
+  function buildIncrementalTrack() {
+    const t = $("incTrack");
+    if (t.childElementCount) return;
+    // alternating JS / small pause slices
+    let x = 0;
+    while (x < 100) {
+      const js = document.createElement("div");
+      js.className = "seg js"; js.style.left = x + "%"; js.style.width = "11%";
+      t.appendChild(js); x += 11;
+      if (x >= 100) break;
+      const p = document.createElement("div");
+      p.className = "seg pause"; p.style.left = x + "%"; p.style.width = "4%";
+      t.appendChild(p); x += 4;
+    }
+  }
+
+  // ============================================================
+  //  STEP CONTROLLER
+  // ============================================================
+  const tracker = $("tracker");
+  STEPS.forEach((_, i) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = i + 1;
+    b.setAttribute("aria-label", "Go to step " + (i + 1));
+    b.addEventListener("click", () => gotoStep(i));
+    li.appendChild(b);
+    tracker.appendChild(li);
+    if (i < STEPS.length - 1) {
+      const rung = document.createElement("li"); rung.className = "rung"; rung.setAttribute("aria-hidden", "true");
+      tracker.appendChild(rung);
+    }
+  });
+
+  function renderStepChrome(i) {
+    const s = STEPS[i];
+    $("kicker").textContent = `Step ${i + 1} / ${STEPS.length}`;
+    $("narrTitle").textContent = s.title;
+    $("narrBody").innerHTML = s.body;
+    $("stepNum").textContent = i + 1;
+    $("nextBtn").disabled = i >= STEPS.length - 1;
+    $("prevBtn").disabled = i <= 0;
+    // tracker current
+    [...tracker.querySelectorAll("li")].filter(li => !li.classList.contains("rung"))
+      .forEach((li, idx) => li.setAttribute("aria-current", idx === i ? "step" : "false"));
+    // view (heap vs orinoco)
+    stage.dataset.view = s.view || "heap";
+    if (s.view === "orinoco") buildIncrementalTrack();
+  }
+
+  // Only the heap-op buttons are disabled while a scripted step animates;
+  // navigation (prev/next/dots/replay/reset/keys) stays live and interrupts.
+  function setOps(on) {
+    ["allocBtn", "minorBtn", "majorBtn"].forEach(id => { const el = $(id); if (el) el.disabled = !on; });
+  }
+
+  async function gotoStep(i, opts = {}) {
+    const target = Math.max(0, Math.min(STEPS.length - 1, i));
+    const myNav = ++S.nav;   // supersedes any in-flight navigation
+    S.epoch++;               // cancels a running animation at its next await
+    if (S.beatResolver) { const r = S.beatResolver; S.beatResolver = null; r(); }
+    S.step = target;
+    renderStepChrome(target);
+    seedBaseline();          // fresh heap snapshot for every step
+    S.beatIdx = -1; S.stepDone = false; S.instant = false;
+    S.beatTarget = (opts.toBeat != null ? opts.toBeat : null);
+    S.beatTotal = STEPS[target].beats || 0;
+    setOps(false); S.busy = true; setAdvanceWaiting(false);
+    showBeat("Ready - press ▸ Advance to step through, or Play to autoplay.", true);
+    const s = STEPS[target];
+    focus(s.focus);
+    layout();
+    requestAnimationFrame(layout);   // re-measure once the new view has settled
+    const ep = S.epoch;
+    if (s.run) { try { await s.run(ep); } catch (e) { /* CANCELLED or benign */ } }
+    if (myNav !== S.nav) return;   // a newer navigation took over
+    // Remember how many beats this step actually has, so replays can show "N / total".
+    STEPS[target].beats = S.beatIdx + 1;
+    S.instant = false; S.busy = false; S.stepDone = true; setOps(true); setAdvanceWaiting(false);
+    if (S.playing && target < STEPS.length - 1) {
+      try { await wait(1200); } catch (e) { return; }
+      if (myNav === S.nav && S.playing) gotoStep(target + 1);
+    } else if (target >= STEPS.length - 1 && S.playing) {
+      stopPlay();
+    } else if (!S.playing) {
+      showBeat(target >= STEPS.length - 1
+        ? "End of the tour - use ← or the step dots to revisit any section."
+        : "Step complete - press ▸ Advance (or →) for the next section.", true);
+    }
+  }
+
+  function startPlay() {
+    if (S.playing) return;
+    S.playing = true;
+    $("playLabel").textContent = "Pause";
+    $("playIcon").innerHTML = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>';
+    if (S.beatResolver) { S.beatResolver(); return; }   // resume the paused beat in auto mode
+    if (S.stepDone) gotoStep(S.step >= STEPS.length - 1 ? 0 : S.step + 1);
+  }
+  function stopPlay() {
+    S.playing = false;
+    $("playLabel").textContent = "Play tour";
+    $("playIcon").innerHTML = '<path d="M7 5.5v13l11-6.5z"/>';
+  }
+
+  // advance / rewind the animation one beat within the current step
+  function advanceBeat() {
+    stopPlay();
+    if (S.beatResolver) { S.beatResolver(); return; }
+    if (S.stepDone) gotoStep(S.step + 1);
+  }
+  function backBeat() {
+    stopPlay();
+    if (S.beatIdx > 0) gotoStep(S.step, { toBeat: S.beatIdx - 1 });
+    else gotoStep(S.step - 1);
+  }
+  // free-simulator ops: run outside the beat system, swallowing cancellation
+  const runOp = (fn) => { stopPlay(); S.epoch++; Promise.resolve().then(fn).catch(() => {}); };
+
+  $("playBtn").addEventListener("click", () => S.playing ? stopPlay() : startPlay());
+  $("nextBtn").addEventListener("click", () => { stopPlay(); gotoStep(S.step + 1); });
+  $("prevBtn").addEventListener("click", () => { stopPlay(); gotoStep(S.step - 1); });
+  $("replayBtn").addEventListener("click", () => { stopPlay(); gotoStep(S.step); });
+  $("advBtn").addEventListener("click", advanceBeat);
+  $("allocBtn").addEventListener("click", () => runOp(() => { if (S.objects.length === 0) seedBaseline(); return runAllocate(5); }));
+  $("minorBtn").addEventListener("click", () => runOp(() => runScavenge()));
+  $("majorBtn").addEventListener("click", () => runOp(() => runMajor()));
+  $("resetBtn").addEventListener("click", () => {
+    stopPlay(); S.epoch++;
+    if (S.beatResolver) { const r = S.beatResolver; S.beatResolver = null; r(); }
+    S.busy = false; S.stepDone = true; S.instant = false; setOps(true); setAdvanceWaiting(false);
+    seedBaseline(); tick("Heap reset to baseline snapshot.", false);
+    showBeat("Heap reset. Use the heap ops, or ▸ Advance / Play to walk the tour.", true);
+  });
+
+  // ---------- keyboard navigation ----------
+  addEventListener("keydown", (e) => {
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    if (t && t.tagName === "BUTTON" && (e.key === " " || e.key === "Enter")) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case "ArrowDown": case "Enter": e.preventDefault(); advanceBeat(); break;
+      case "ArrowUp": e.preventDefault(); backBeat(); break;
+      case "ArrowRight": case "PageDown": e.preventDefault(); stopPlay(); gotoStep(S.step + 1); break;
+      case "ArrowLeft":  case "PageUp":   e.preventDefault(); stopPlay(); gotoStep(S.step - 1); break;
+      case "Home": e.preventDefault(); stopPlay(); gotoStep(0); break;
+      case "End":  e.preventDefault(); stopPlay(); gotoStep(STEPS.length - 1); break;
+      case " ": e.preventDefault(); S.playing ? stopPlay() : startPlay(); break;
+      case "r": case "R": e.preventDefault(); stopPlay(); gotoStep(S.step); break;
+    }
+  });
+
+  $("speed").addEventListener("input", (e) => {
+    S.speed = parseFloat(e.target.value);
+    $("speedVal").textContent = S.speed + "×";
+    setMoveDur();
+  });
+
+  // theme toggle
+  const themeBtn = $("themeBtn");
+  themeBtn.addEventListener("click", () => {
+    const root = document.documentElement;
+    const cur = root.getAttribute("data-theme")
+      || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    root.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+    requestAnimationFrame(layout);
+  });
+
+  // relayout on resize
+  let rt;
+  addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { layout(); clearWires(); }, 120); });
+
+  // Cells are absolutely positioned from measured region rects, so any reflow of a
+  // region (scroll containers settling, text wrapping, font load) must re-run layout.
+  // Safe from feedback loops: layout only sets transforms inside the absolute overlay.
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => layout());
+    ro.observe(heap);
+    Object.values(slotEls).forEach(el => ro.observe(el));
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => layout());
+
+  // ---------- boot ----------
+  setMoveDur();
+  seedBaseline();
+  renderStepChrome(0);
+  requestAnimationFrame(() => { layout(); gotoStep(0); });
+})();
+</script>
