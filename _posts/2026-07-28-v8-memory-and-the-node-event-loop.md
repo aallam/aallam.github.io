@@ -20,11 +20,17 @@ Keyboard in both: `↓`/`↑` step one beat, `←`/`→` jump sections, `Space` 
 
 ## The V8 heap
 
-<div style="position:relative; left:50%; transform:translateX(-50%); width:min(1480px,94vw); margin-block:1.6em;">
+<div class="interactive-explainer">
   <iframe src="{{ site.url }}/assets/files/v8-memory-and-the-node-event-loop/v8-memory.html"
           title="Interactive explainer: how V8 manages memory"
           loading="lazy"
-          style="width:100%; height:800px; border:1px solid #d4dae5; border-radius:10px;"></iframe>
+          allowfullscreen></iframe>
+  <div class="interactive-explainer-mobile">
+    <span class="interactive-explainer-mobile__eyebrow">Interactive diagram</span>
+    <strong>Explore how V8 manages memory</strong>
+    <span>Open the guided animation in a full-screen, mobile-friendly view.</span>
+    <a href="{{ site.url }}/assets/files/v8-memory-and-the-node-event-loop/v8-memory.html">Open interactive diagram <span aria-hidden="true">→</span></a>
+  </div>
 </div>
 
 The model in one paragraph. Most objects live in a heap split into spaces. A small **New space**, itself split into two equal halves, takes most fresh allocations via a bump pointer; anything above the large-object threshold, or covered by pretenuring, skips it. A large **Old space** holds whatever survived long enough to be promoted. Around them sit **Large-object** space for things too big to copy, **Code** space for JIT output, and an immortal **Read-only** space.
@@ -47,11 +53,17 @@ One heap per isolate. That fact is what makes the second half make sense.
 
 ## The Node event loop
 
-<div style="position:relative; left:50%; transform:translateX(-50%); width:min(1480px,94vw); margin-block:1.6em;">
+<div class="interactive-explainer">
   <iframe src="{{ site.url }}/assets/files/v8-memory-and-the-node-event-loop/node-concurrency.html"
           title="Interactive explainer: how Node.js runs your code"
           loading="lazy"
-          style="width:100%; height:800px; border:1px solid #d4dae5; border-radius:10px;"></iframe>
+          allowfullscreen></iframe>
+  <div class="interactive-explainer-mobile">
+    <span class="interactive-explainer-mobile__eyebrow">Interactive diagram</span>
+    <strong>Explore how Node.js runs your code</strong>
+    <span>Open the guided animation in a full-screen, mobile-friendly view.</span>
+    <a href="{{ site.url }}/assets/files/v8-memory-and-the-node-event-loop/node-concurrency.html">Open interactive diagram <span aria-hidden="true">→</span></a>
+  </div>
 </div>
 
 Node runs your JavaScript on one thread. Everything else is about how work reaches that thread.

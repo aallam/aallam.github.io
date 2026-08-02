@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>How V8 Manages Memory: An Interactive Explainer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <script>/*__defaultTheme*/document.documentElement.dataset.theme="light";</script>
 <style>
@@ -563,6 +564,24 @@
   @media (max-width: 1120px) {
     .heap-wrap { min-block-size: 520px; }
     .panel { order: 3; }
+  }
+
+  @media (max-width: 700px) {
+    .app { padding: 10px; gap: 10px; }
+    .topbar { gap: 10px; }
+    .brand { inline-size: 100%; }
+    .brand .glyph { inline-size: 36px; block-size: 36px; }
+    .topbar nav { max-inline-size: calc(100% - 50px); overflow-x: auto; scrollbar-width: thin; }
+    .tracker { min-inline-size: max-content; padding-block-end: 4px; }
+    .heap-wrap, .heap { min-block-size: 760px; }
+    .heap { grid-template-rows: auto; }
+    .lower-row { grid-template-columns: 1fr; }
+    .stage[data-view="orinoco"] { grid-template-columns: 1fr; }
+    .orinoco { padding: 14px; }
+    .lane { grid-template-columns: 1fr; gap: 7px; }
+    .transport { padding: 9px 10px; }
+    .transport .group { inline-size: 100%; }
+    .btn, .icon-btn { min-block-size: 44px; }
   }
 </style>
 
