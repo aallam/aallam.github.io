@@ -107,8 +107,7 @@ None of these choices is universally correct. The mistake is using one definitio
 
 For delivery purposes, the consumer set includes every workload that either uses the value or requires it to start. That includes web processes, workers, scheduled jobs, migration hooks, administrative commands, and sometimes sidecars. Short-lived jobs are easy to miss because they may not exist when the change is inspected, yet the next deployment can create them with stale wiring.
 
-The invariant is simple:
-
+> [!IMPORTANT]
 > For every workload that consumes or startup-validates a configuration field, there must be a complete delivery path from its declared source to activation in that workload.
 
 This is a graph property, not a check that a key appears somewhere in a repository.

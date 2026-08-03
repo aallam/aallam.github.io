@@ -133,6 +133,53 @@
             height: auto
             margin: 0 auto
 
+    > .markdown-alert
+        --markdown-alert-color: #{tokens.$color-accent}
+        margin: 3rem 0
+        padding: .6rem 1.6rem
+        border-left: .25em solid var(--markdown-alert-color)
+
+        &.markdown-alert-note
+            --markdown-alert-color: #0969da
+
+        &.markdown-alert-tip
+            --markdown-alert-color: #1a7f37
+
+        &.markdown-alert-important
+            --markdown-alert-color: #8250df
+
+        &.markdown-alert-warning
+            --markdown-alert-color: #9a6700
+
+        &.markdown-alert-caution
+            --markdown-alert-color: #cf222e
+
+        .markdown-alert-title
+            display: flex
+            align-items: center
+            gap: .8rem
+            margin: 0 0 .8rem
+            color: var(--markdown-alert-color)
+            font-family: tokens.$fontUi
+            font-size: 1.5rem
+            font-weight: 600
+            line-height: 1
+
+        .markdown-alert-icon
+            display: inline-block
+            width: 1.6rem
+            height: 1.6rem
+            flex: none
+            fill: currentColor
+            overflow: visible
+
+        > p
+            margin: .8rem 0
+            color: tokens.$color-prose
+            font-size: 1.7rem
+            line-height: 1.66
+            text-wrap: pretty
+
     > .interactive-explainer
         position: relative
         left: 50%
