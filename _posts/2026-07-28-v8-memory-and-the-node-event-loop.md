@@ -2,7 +2,7 @@
 title: "V8 Memory and the Node Event Loop"
 layout: post
 date: 2026-07-28 00:10
-description: "How V8 manages memory and how Node schedules work, with two interactive animations covering heap spaces, the Scavenger, Mark-Compact, the event loop phases, the libuv thread pool, workers and process isolation."
+description: "How V8 manages memory and how Node runs callbacks, with interactive guides to garbage collection, the event loop, the thread pool, workers, and processes."
 tag:
 - V8
 - Node.js
@@ -12,7 +12,7 @@ blog: true
 jemoji:
 ---
 
-Reference notes for myself on two things that turn out to be one thing: how V8 lays out memory and collects garbage, and how Node decides what runs next. They meet at a single point, which is that a garbage-collection pause and a blocked event loop are the same stall seen from two angles.
+Reference notes for myself on how V8 manages memory and how Node decides what runs next. The two meet on the JavaScript thread: a garbage-collection pause delays callbacks just as a long piece of synchronous code does. That pause is different from the event loop waiting for I/O when it has no callbacks ready to run.
 
 Two interactive animations do most of the explaining. Each has a guided tour you can step through beat by beat, plus a free mode where you fire operations and watch them move.
 
@@ -33,23 +33,27 @@ Keyboard in both: `↓`/`↑` step one beat, `←`/`→` jump sections, `Space` 
   </div>
 </div>
 
-The model in one paragraph. Most objects live in a heap split into spaces. A small **New space**, itself split into two equal halves, takes most fresh allocations via a bump pointer; anything above the large-object threshold, or covered by pretenuring, skips it. A large **Old space** holds whatever survived long enough to be promoted. Around them sit **Large-object** space for things too big to copy, **Code** space for JIT output, and an immortal **Read-only** space.
+The animation shows a simplified heap layout, using the Scavenger to collect young objects. V8 versions and build options can use other layouts or collectors.
+
+Most new objects start in **New space**, split into two halves. A **bump pointer** marks the next free position and advances as objects are added. Objects that survive collections can move to **Old space**. Large objects use separate spaces, while some allocation sites send objects straight to Old space, a choice called **pretenuring**. **Code space** holds generated machine code, and **Read-only space** holds fixed runtime data.
 
 The parts that are easiest to get wrong:
 
-**Not everything is on the heap.** Small integers are encoded directly in the value and never allocated at all. `ArrayBuffer` backing stores, including `Buffer` bytes, live outside V8's managed heap, which is why `--max-old-space-size` does not bound them. `process.memoryUsage().arrayBuffers` reports them specifically, counted within the broader `external` figure. This is the single most common surprise when diagnosing real memory growth.
+**Heap size is only part of memory use.** Small integers can be stored directly in a value, without a separate heap object. The bytes behind `ArrayBuffer` and Node `Buffer` objects live outside V8's managed heap, so `--max-old-space-size` does not limit them. `process.memoryUsage().arrayBuffers` reports those bytes as part of the broader `external` figure. Check them when process memory grows while the JavaScript heap stays steady.
 
-**Minor GC is cheap because of what it does not do.** The Scavenger copies live objects from one semi-space to the other, then flips their roles. Dead objects are never individually traced or copied; their half is reclaimed wholesale. Cost tracks the survivors, not the allocation volume. It is still a stop-the-world pause, just a short parallel one.
+**Minor GC copies the survivors.** The Scavenger finds live young objects through roots and recorded references from older objects. It copies survivors to the other half of New space or promotes them to Old space, then flips the halves. It does not copy dead objects. Copying work depends on how much survives; allocating more still fills the space sooner and causes more collections. JavaScript pauses during a scavenge, even when helper threads share the work.
 
-**Promotion is positional, not a counter.** The rule of thumb is that surviving a second scavenge promotes you to Old space. The mechanism is not a per-object counter, it is an age mark in the semi-space: a reachable survivor sitting below that mark is eligible for promotion. Copy or space pressure can promote survivors earlier, and allocation-site **pretenuring** is a different thing entirely, since it allocates straight into Old space and skips New space altogether. Treat "survives twice" as the common path, not a guarantee.
+**Surviving twice is a rule of thumb.** In this model, an object that survives a second scavenge usually moves to Old space. V8 uses an age mark to distinguish objects kept by the previous scavenge from newer allocations. It does not need a counter on each object. Space pressure can move survivors earlier. Pretenuring is different: it puts an object in Old space from the start.
 
-**Marking is transitive, which is the whole point.** Major GC is Mark-Compact. Objects start white, become grey when discovered, and turn black once their fields have been scanned. Scanning a grey object greys everything it references, so an object stays alive by being reachable at *any* depth, not by being named directly by a root. The invariant that no black object points to a white one is what guarantees nothing live is missed. The animation walks this one edge at a time, which is the part flat diagrams never show.
+**Marking follows chains of references.** V8's major collector, Mark-Compact, starts from roots such as references on the stack. In the three-color model, white means unseen, grey means found but not yet scanned, and black means scanned. Scanning follows references to other objects. If a root reaches A, A reaches B, and B reaches C, all three stay alive. The animation follows those links one at a time.
 
-**Sweep and compact are different phases.** Sweeping adds the gaps left by dead objects in the paged spaces to the free-lists. Unreachable large objects are reclaimed in that same phase, but by releasing their pages outright rather than through a free-list. Compaction is selective: V8 evacuates live objects off its most fragmented pages onto fresh ones. Large objects are never relocated, so they are freed in the sweep but are never part of compaction.
+**Sweeping frees space; compaction moves objects.** Sweeping makes dead objects' memory available for reuse. Compaction moves live objects from selected pages to reduce gaps. Large objects are not moved by this compaction step; when they become unreachable, their pages can be freed.
 
-**Orinoco shrinks pauses, it does not remove them.** Incremental marking splits work into small scheduled steps, concurrent marking runs on helper threads while JavaScript executes, and parallel collection uses several threads to finish the unavoidable pauses faster. V8's write-barrier machinery is what makes that safe, and it serves at least three purposes: recording old-to-young references in remembered sets for the minor GC, preserving the marking invariant so concurrent marking cannot miss an object that becomes reachable mid-flight, and recording old-to-old slots that will need their pointers updated after compaction moves things.
+**Orinoco reduces pauses.** V8 divides collection work in three ways: incremental marking takes small steps between JavaScript work; concurrent marking uses helper threads while JavaScript keeps running; parallel collection uses several threads during a pause. Some pauses remain.
 
-One heap per isolate. That fact is what makes the second half make sense.
+V8 tracks reference changes with **write barriers**, small checks made when code stores a reference. They record links from old objects to young ones, keep marking safe while JavaScript changes objects, and record references that need updating after objects move.
+
+An **isolate** is a separate V8 engine instance with its own JavaScript heap. That matters when we get to worker threads.
 
 ## The Node event loop
 
@@ -66,42 +70,50 @@ One heap per isolate. That fact is what makes the second half make sense.
   </div>
 </div>
 
-Node runs your JavaScript on one thread. Everything else is about how work reaches that thread.
+By default, Node runs your JavaScript on one main thread. The event loop decides which callback runs next; workers can run JavaScript on additional threads.
 
-**The phase order moved.** This is the one worth double-checking against whatever you already believe. Since **libuv 1.45**, which landed in **Node 20.3.0** (Node 20.0 through 20.2 still carried libuv 1.44.2 and ran timers first), a loop iteration runs:
+**Timers moved to the end of an iteration.** Starting with libuv 1.45, included in [Node 20.3.0](https://nodejs.org/en/blog/release/v20.3.0), the main phases run in this order:
 
     pending → idle/prepare → poll → check → close → timers
 
-Timers run at the *end* of an iteration, not the start, and a compatibility timer pass runs each time the loop is entered in default mode. Note also that `pending` gets a second turn right after poll, up to eight times, to avoid starving that queue.
+There is also a timer pass before entering the loop in default mode, kept for compatibility. Some pending callbacks get another turn right after poll. The [libuv source](https://github.com/libuv/libuv/blob/v1.45.0/src/unix/core.c) shows these extra steps.
 
-Most third-party diagrams still show timers first. Node's own guide has since been corrected and now documents the change explicitly, with timers appearing twice in its cycle diagram.
+The [Node event-loop guide](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick) explains the change. Do not read the phase list above as a timing guarantee: `setTimeout(fn, 0)` has a minimum delay of 1 ms and runs only once it is due. When scheduled together inside an I/O callback, `setImmediate` runs before that timer. In older versions, timers ran at the start of the next iteration, before another pass through poll.
 
-Drawn as an endless cycle the phase sequence looks unchanged, but do not read that as "nothing happens differently". The move is observable. A `setTimeout(0)` scheduled from inside an I/O callback used to wait for the next iteration's timers phase; now the timers phase is still ahead of it in the *same* iteration, so it can fire without another trip through poll. Node's guide says as much: the change can affect how timers and `setImmediate` interact.
+**Where the waiting happens.** Poll can wait for I/O when no callback is ready but work still keeps the loop alive. That includes referenced timers as well as sockets and requests. The next timer limits how long poll can wait; a queued `setImmediate` prevents that wait. Once nothing keeps the loop alive, it exits. Node can then end the process, unless a `beforeExit` handler schedules more work.
 
-**Where the waiting happens.** The loop can wait in the poll phase when nothing is immediately runnable but the loop is still *alive*, meaning it holds referenced handles or requests. Note that liveness is not only sockets: a pending timer is itself an active handle and will keep the loop waiting. The wait is bounded by the nearest timer deadline, or unbounded if no timer is armed. It does not wait at all if a `setImmediate` is queued, which Node arranges with an idle handle whose only job is to stop the loop blocking. If nothing referenced remains, the loop exits and the process ends.
+**Two queues run between callbacks.** At a normal callback boundary, Node runs queued `process.nextTick` callbacks, then V8 microtasks such as Promise callbacks. This also happens between individual timer and immediate callbacks. Work added to these queues can keep them running, so repeatedly scheduling more can delay I/O.
 
-The usual folk version of this is "it blocks when there is nothing to do". The empty-queue half is right; the "nothing to do" half is exactly wrong, because with no referenced work left the loop does not block, it exits.
+The names can mislead. `process.nextTick` does not wait for the next loop iteration. `setImmediate` runs in the check phase, which may still be ahead in the current iteration. There is also an exception to nextTick-first ordering: top-level ES module code runs as a microtask, so Promise callbacks scheduled there run before `nextTick` callbacks scheduled there.
 
-**Two queues sit outside the phases.** When a callback hands control back to Node, the `process.nextTick` queue drains completely, then V8's microtask queue drains completely, before the loop advances. Since Node 11 this happens between individual timer and immediate callbacks too, not only between phases.
+**What uses the thread pool.** Most async `fs` operations, `dns.lookup()`, async `zlib`, and async forms of crypto calls such as `pbkdf2`, `scrypt`, `randomBytes`, and key generation use it. Native addons can queue work there too. Socket I/O does not use the pool, and neither does `dns.resolve*()`, which makes its own network queries. But connecting by hostname usually calls `dns.lookup()` first, so that part can wait for the pool.
 
-Both names are traps. `process.nextTick` does **not** wait for the next iteration; it runs before the loop advances at all. `setImmediate` targets the **check** phase right after poll, which may still be ahead of you in the current iteration rather than the next one, depending on where you scheduled it. And the nextTick-before-promises rule holds at a CommonJS callback boundary but **inverts in top-level ESM**, where the module body is itself evaluated inside a microtask drain, so promise callbacks scheduled there run before `nextTick`.
+The pool defaults to 4 threads, with a maximum of 1024. Set `UV_THREADPOOL_SIZE` before starting the process to change it. Every event loop in the process shares this pool, including worker threads. Starting workers does not add pool capacity. When all pool threads are busy, more work has to wait.
 
-**What actually uses the thread pool.** Most async `fs`, `dns.lookup()`, async `zlib`, and specific crypto calls such as `pbkdf2`, `scrypt`, `randomBytes` and key generation. Native addons can queue work there too. Socket readiness does **not** use it, and neither does `dns.resolve*()`, which does its own network queries. This is why Node can hold tens of thousands of connections even though the pool has only four threads. Do not conclude that network code never touches the pool though: anything connecting by hostname usually goes through `dns.lookup()` first, so name resolution can contend for those same four threads.
+Keep three groups separate: V8's GC and compiler helpers, libuv's pool, and the worker threads you create. Of these, only worker threads run your JavaScript.
 
-The pool defaults to 4, is capped at 1024, and is set by `UV_THREADPOOL_SIZE` before the process starts. It is **process-global**: every event loop in the process, worker threads included, shares the same threads. Spawning workers does not multiply it. Fire more pool-backed work than there are threads and it queues, and one long task effectively shrinks the pool by one.
+**Workers have separate JavaScript heaps.** Each worker has its own V8 isolate, event loop, and callback queues. Sending a normal object with `postMessage` copies it using structured cloning. A transfer list can move a transferable `ArrayBuffer` without copying its bytes; the sender then loses access. Some buffers, including Node's internal Buffer pool, cannot be transferred. A `SharedArrayBuffer` lets workers access the same bytes, with `Atomics` available to coordinate access. Transfer lists can also move resources such as a `MessagePort` or `FileHandle`.
 
-**Three unrelated sets of threads** get conflated constantly: V8's own GC and JIT helpers, libuv's process-global pool of four, and any worker threads you spawn. Only the last runs your JavaScript.
+Workers share the process's risks. An uncaught exception stops that worker and emits `error` on its parent-side `Worker` object. Handle that event in the parent; otherwise it becomes an uncaught error there too. A native crash or process-wide out-of-memory failure can stop everything. `resourceLimits` limits selected V8 resources, not total worker memory, and excludes `ArrayBuffer` backing stores.
 
-**Workers are isolates, not processes.** Each worker gets its own V8 isolate, heap, event loop, and pair of queues, so ordinary objects can never be shared. For payload memory there are three choices: `postMessage` structured-clones a copy, a transfer list moves an `ArrayBuffer`'s ownership with no copy, and a `SharedArrayBuffer` maps the same bytes into both isolates with `Atomics` to coordinate. Transfer lists can also hand over resources such as a `MessagePort` or a `FileHandle`. Separate heaps also means separate GC, so a worker's collection does not pause the main thread.
-
-Workers are not a full isolation boundary though. An uncaught exception terminates that worker and emits `error` on its parent-side `Worker` object, and the parent survives *only if it handles that event*: an unhandled `error` on an `EventEmitter` is thrown and will take the process with it. A native fault or a global OOM takes everything down regardless. `resourceLimits` caps selected per-worker JS-engine resources rather than the worker's total memory, and notably excludes external data such as `ArrayBuffer` backing stores, which loops back to the external-memory point above.
-
-**Processes are the real boundary.** With `cluster`, a primary process forks however many workers you ask for, commonly one per `os.availableParallelism()`. Under the default off-Windows `SCHED_RR` policy the primary owns the listening socket and hands accepted connections to workers over IPC; Windows lets the OS distribute them instead. Each process gets its own isolate, heap, event loop and `--max-old-space-size` budget, so a GC pause in one never stalls another. They still share OS resources such as files, sockets and system limits, so the isolation is strong but not absolute.
+**Processes give stronger isolation.** With `cluster`, a primary process forks workers, often using `os.availableParallelism()` to choose how many. By default, the primary accepts and distributes connections on platforms other than Windows; on Windows, the workers normally accept from a shared listening socket. Each process has its own heap, event loop, and `--max-old-space-size` limit. A GC pause in one does not directly pause another, though they still compete for CPU and system memory.
 
 ## Where the two halves meet
 
-The reason to care about Orinoco is that in Node a stop-the-world GC pause lands on the event loop. Callbacks queued on *that isolate's* loop wait behind it, exactly as they would behind a synchronous `JSON.parse` of something enormous. Other worker isolates and other processes keep running, and concurrent marking is not itself a pause. Still, the list of things that block your loop is not just your own slow code; it includes the collector.
+When GC pauses an isolate's JavaScript thread, callbacks on its loop wait, just as they would during a large synchronous `JSON.parse`. Concurrent marking is different: JavaScript can keep running while helper threads mark objects. Memory use and allocation rate therefore matter when investigating slow callbacks, alongside the application code itself.
 
-Which also explains why the process-per-core shape is more than a throughput trick. N processes means N independent heaps, each collected on its own schedule, so one process pausing to collect does not stall the others. Worker threads give you the same separation of heaps inside a single process, at the cost of sharing that process's fate.
+Separate processes have independent heaps and collection schedules. Workers also give you separate JavaScript heaps within one process, but share the process's total memory use and failure risks. Neither removes competition for the machine's resources.
 
-One closing warning. The phase order is the detail most likely to be stale in your head, because the diagram everyone memorised outlived the implementation by several major versions. Widely repeated diagrams drift, and so do assumptions about which sources have caught up. Reading `uv_run()` settles it in about a minute.
+Check the docs for the Node version you run. Start with the event-loop guide; read `uv_run()` when the exact order matters. The animations are learning models, not a trace of every V8 or libuv detail.
+
+## References
+
+- [The Node.js event loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)
+- [Node 20.3.0 release notes](https://nodejs.org/en/blog/release/v20.3.0)
+- [libuv 1.45 event-loop implementation](https://github.com/libuv/libuv/blob/v1.45.0/src/unix/core.c)
+- [libuv thread pool](https://docs.libuv.org/en/v1.x/threadpool.html)
+- [Node worker threads and resource limits](https://nodejs.org/api/worker_threads.html)
+- [Node process memory usage](https://nodejs.org/api/process.html#processmemoryusage)
+- [Node cluster scheduling](https://nodejs.org/api/cluster.html#how-it-works)
+- [V8's Orinoco garbage collector](https://v8.dev/blog/trash-talk)
+- [Concurrent marking in V8](https://v8.dev/blog/concurrent-marking)

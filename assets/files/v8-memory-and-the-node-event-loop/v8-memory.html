@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
 <title>How V8 Manages Memory: An Interactive Explainer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
@@ -1109,7 +1110,7 @@
     S.counts.minor += 1;
     updateStats();
     focus(null);
-    await say(ep, "Finally the roles flip: To-space becomes the new From-space. Total cost was proportional to the survivors, not to how much was allocated.");
+    await say(ep, "Finally the roles flip: To-space becomes the new From-space. Copying work depended on how much survived. Allocating more still fills New space sooner and causes more collections.");
     if (!silent && ep == null) tick(`Scavenge complete. Semi-spaces flipped - To-space is now From-space. (${survivors.length} kept, ${dead.length} freed)`, false);
 
     // Promotions may have filled the old generation - a full old space is what triggers a major GC.
@@ -1286,7 +1287,7 @@
       body: `<p>Most JavaScript <strong>objects</strong> V8 creates live on the <strong>heap</strong>, which is divided into purpose-built <strong>spaces</strong>. Two things notably do <em>not</em>: small integers are encoded directly in the value itself and are never allocated, and <code>ArrayBuffer</code> / <code>Buffer</code> bytes live in <strong>external</strong> memory outside the heap (which is why <code>--max-old-space-size</code> does not bound them).</p>
         <p>The key split follows the <strong>generational hypothesis</strong>: <em>most objects die young</em>. So freshly-created objects go in a small <strong>New space</strong> (young generation) collected constantly and cheaply, while the rare survivors graduate to a large <strong>Old space</strong> collected far less often.</p>
         <p>Alongside them: <span style="color:var(--gen-large)">Large-object</span> space (objects bigger than ~half a page, never moved), <span style="color:var(--gen-code)">Code</span> space (JIT machine code), and immortal <span style="color:var(--gen-ro)">Read-only</span> space. <em>(A separate space for “Maps”, meaning V8's internal hidden classes rather than JavaScript's <code>Map</code>, was merged into Old space around 2022. Real V8 has roughly a dozen spaces today, including trusted and cross-isolate shared ones; these five carry the concepts.)</em></p>
-        <p><strong>Node.js</strong> embeds a version-specific build of this heap and collector, <strong>one heap per isolate</strong>. You tune it with flags like <code>--max-old-space-size</code> and <code>--max-semi-space-size</code>.</p>`,
+        <p>This animation shows a simplified heap layout, using the <strong>Scavenger</strong> to collect young objects. V8 versions and build options can use other layouts or collectors. <strong>Node.js</strong> embeds its own version of V8, with a separate JavaScript heap per isolate. Flags such as <code>--max-old-space-size</code> and <code>--max-semi-space-size</code> control parts of that heap.</p>`,
       run: async (ep) => {
         focus(null); allocPtr.classList.add("hidden");
         await beat(ep, "This is a snapshot of a live heap. Each square is one object, coloured by which space it lives in.");
@@ -1330,7 +1331,7 @@
       title: "Promotion - surviving twice",
       focus: ["new", "young-a", "young-b", "old"],
       body: `<p>An object that survives a <strong>second</strong> scavenge is <strong>promoted</strong>: instead of being copied within the young generation again, it's evacuated into <strong>Old space</strong>.</p>
-        <p>V8 doesn't keep a per-object counter for this. It marks a position in the semi-space (an <em>age mark</em>) and promotes whatever sits below it, meaning objects that were already there before the last scavenge. Allocation-site pretenuring and space pressure can promote things earlier, so treat "survives twice" as the common path rather than a hard rule.</p>
+        <p>V8 uses an <em>age mark</em> to distinguish objects kept by the previous scavenge from newer allocations, without a counter on each object. Space pressure can promote survivors earlier. <strong>Pretenuring</strong> is different: selected allocations go straight to Old space. Treat "survives twice" as a rule of thumb.</p>
         <p>This is the generational hypothesis paying off: the few objects that live long enough get moved out of the hot, frequently-collected nursery so scavenges stay cheap.</p>
         <p>Watch objects age (a pip appears after one survival) and jump to the <span style="color:var(--gen-old)">violet</span> Old space on the next.</p>`,
       run: async (ep) => {
@@ -1369,8 +1370,8 @@
         <p><strong>Write barriers</strong> are what make it safe, and they serve two distinct jobs: the <em>generational</em> barrier records old→young references in remembered sets for the minor GC, while the <em>marking</em> barrier records graph changes so concurrent marking cannot miss an object that becomes reachable mid-flight.</p>`,
       run: async (ep) => {
         await beat(ep, "Top lane: the naïve approach. One long stop-the-world pause - JavaScript is frozen for the entire collection, which users feel as jank.");
-        await beat(ep, "Incremental: the same marking work is sliced into many ~1 ms chunks, interleaved between JS turns, so no single pause is long.");
-        await beat(ep, "Concurrent: marking moves onto helper threads that run WHILE JavaScript keeps executing - cutting main-thread marking by roughly two-thirds.");
+        await beat(ep, "Incremental: marking work is split into small steps between JavaScript work. This reduces long pauses, but does not guarantee a fixed pause length.");
+        await beat(ep, "Concurrent: helper threads do marking work while JavaScript keeps running. How much this helps depends on the workload.");
         await beat(ep, "Parallel: the unavoidable short pauses (the Scavenger, compaction) are split across several threads with work-stealing, so they finish sooner.");
         await beat(ep, "Write barriers and remembered sets are what make this safe: they record references created while the collector is running, so no live object is ever lost.");
       },
