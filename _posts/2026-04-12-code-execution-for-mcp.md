@@ -9,6 +9,8 @@ tag:
 - AI Agents
 - Architecture
 blog: true
+unlisted: true
+noindex: true
 jemoji:
 ---
 
