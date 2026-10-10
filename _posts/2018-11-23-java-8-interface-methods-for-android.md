@@ -19,18 +19,18 @@ jemoji:
 
 Recently, I enjoyed reading a [blog post][1] by Jake Wharton about how Android supports Java 8 features using D8.
 
-The blog post goes through the following processes to understand how D8 works: 
-1. Write Java code. (.java) 
-2. Compile to ByteCode.(.class) 
-3. Compile to Dalvik Executable. (.dex) 
-4. Analysis of the generated files.
+The post follows four steps to show how D8 works:
+1. Write Java source (`.java`).
+2. Compile it to bytecode (`.class`).
+3. Compile the bytecode to a Dalvik executable (`.dex`).
+4. Inspect the generated files.
 
-In the blog post, the above process allows us to understand what happens under the hood when some Java 8 features (Lambdas and APIs) are desugared using D8.
+These steps show how D8 desugars Java 8 features such as lambdas and APIs.
 
-In this post, we will use the same process to understand how `default` methods and `static` methods in Java 8 interfaces are desugared using D8. To better understand this post, I heavily recommend reading Jake Wharton's post first.
+I use the same steps to examine `default` and `static` methods in Java 8 interfaces. I recommend reading Jake Wharton's post first.
 
 ## Compile Java 8 Code
-We will try to analyse the following code : 
+Consider this code:
 ```java
 class Java8 {
 
@@ -57,20 +57,20 @@ class Java8 {
   }
 }
 ```
-We compile the java code:
+Compile the Java code:
 ```
 $ javac *.java
 $ ls
 Java8.java  Java8.class  Java8$Logger.class
 ```
-Executing the above code gives the following output:
+Running it prints:
 ```
 $ java Java8
 Hello!
 hello from: default
 hello from static
 ```
-Then we compile the bytecode to dex using D8:
+Then compile the bytecode to dex with D8:
 ```
 $ $ANDROID_HOME/build-tools/28.0.2/d8 --release --lib $ANDROID_HOME/platforms/android-28/android.jar --output . *.class
 $ ls
@@ -79,14 +79,14 @@ Java8.java  Java8.class  Java8$Logger.class  classes.dex
 Our focus here is the `default` and `static` methods in the `Logger` interface.
 
 ## Dex Analysis
-To see how D8 desugared interface’s `static` and `default` methods, we will use `dexdump`:
+Use `dexdump` to inspect the interface methods:
 ```
 $ $ANDROID_HOME/build-tools/28.0.2/dexdump -d classes.dex
 ```
 We get a lot of output (the full output can be found [here][3]).
 
 ## Default Methods
-Firs, we find the following output:
+First, find this output:
 ```
 Class #0            -
   Class descriptor  : 'LJava8$Logger-CC;'
@@ -96,9 +96,9 @@ Class #0            -
   Static fields     -
   Instance fields   -
 ```
-A new class `Java8$Logger-CC` has been generated! (We know it’s generated because of the `SYNTHETIC` flag). This class has `Object` as superclass and doesn’t implement any interfaces and have no static or instance fields.
+D8 generated `Java8$Logger-CC`, as the `SYNTHETIC` flag shows. It extends `Object`, implements no interfaces, and has no fields.
 
-Now let’s check these class methods. The class has two methods, the first one is `$default$log`:
+Now inspect the class methods. The class has two methods, the first one is `$default$log`:
 ```
 Direct methods    -
     #0              : (in LJava8$Logger-CC;)
@@ -106,8 +106,7 @@ Direct methods    -
       type          : '(LJava8$Logger;Ljava/lang/String;Ljava/lang/String;)V'
       access        : 0x0009 (PUBLIC STATIC)
 ```
-We can read that this method is a `static` method and takes as arguments a `Logger` plus the same arguments as our default method in our `Logger` interface! 
-The content of the method is:
+This static method takes a `Logger` followed by the default method's arguments. Its body is:
 ```
 [000434] Java8.Logger-CC.$default$log:(LJava8$Logger;Ljava/lang/String;Ljava/lang/String;)V
 |0000: new-instance v0, Ljava/lang/StringBuilder; // type@000c
@@ -121,26 +120,23 @@ The content of the method is:
 |0014: invoke-interface {v1, v2}, LJava8$Logger;.log:(Ljava/lang/String;)V // method@0009
 |0017: return-void
 ```
-Even though the output looks complicated, the code here is actually simple and its logic is equivalent to the implementation of the `default` method in `Logger` interface!
-The equivalent Java code of the method can be the following :
+The bytecode performs the same work as the interface's default method. Equivalent Java code is:
 ```java
 public static void defaultLog(Logger logger, String tag, String s) {
-    logger.log(tag + ":" + s);
+    logger.log(tag + ": " + s);
 }
 ```
-We can conclude that the `default` method in interfaces are desugared to `static` methods in a newly generated utility class (`Loger-CC`).
+D8 moved the default method's body to a static method in the generated `Java8$Logger-CC` class.
 
 ## Static Method
-Based on what we already saw before, we can have a guess how `static` methods in interfaces are desugared! Let’s check!
-The generated class `Loger-CC` have a second `static` method! And without surprise, its name is `systemOut`:
+The generated `Java8$Logger-CC` class also contains the interface's static `systemOut` method:
 ```
 #1            : (in LJava8$Logger-CC;)
   name        : 'systemOut'
   type        : '()LJava8$Logger;'
   access      : 0x0009 (PUBLIC STATIC)
 ```
-The method `systemOut` in `Logger-CC` take no arguments and returns a `Logger` !
-The body of the method is:
+`systemOut` takes no arguments and returns a `Logger`. Its body is:
 ```
 |[00040c] Java8.Logger-CC.systemOut:()LJava8$Logger;
 |0000: sget-object v0, Ljava/lang/System;.out:Ljava/io/PrintStream; // field@0002
@@ -149,9 +145,9 @@ The body of the method is:
 |0007: invoke-direct {v1, v0}, L-$$Lambda$teOjDu261Kz9uXGt1wlPvIP5S04;.<init>:(Ljava/io/PrintStream;)V // method@0004
 |000a: return-object v1
 ```
-Without surprise, the code is equivalent to our implementation of the `static` method in `systemOut` in the interface `Logger` (`$Lambda$teOjDu261Kz9uXGt1wlPvIP5S04` is a class that corresponds to the lambda `System.out::println` in our implementation).
+This code implements `Logger.systemOut()`. The generated lambda class represents the `System.out::println` method reference.
 
-The equivalent java code can be:
+Equivalent Java code is:
 ```java
 public static Logger systemOut() {
     return new Lambda(System.out); //System.out::println
@@ -160,7 +156,7 @@ public static Logger systemOut() {
 
 ## Conclusion
 
-The following Java code is an equivalent of our `Java8` class above (PS: I changed some methods/classes names for clarity) :
+This Java code models the transformed class. I changed some names for clarity:
 ```java
 import java.io.PrintStream;
 
@@ -174,7 +170,7 @@ class Java8Desugared {
   public static final class LoggerCC {
 
     public static void defaultLog(Logger logger, String tag, String s) {
-      logger.log(tag + ":" + s);
+      logger.log(tag + ": " + s);
     }
 
     public static Logger systemOut() {
@@ -232,7 +228,7 @@ Compiling and running the above code gives the same output as our `Java8` class:
 $ javac Java8Desugared.java
 $ java Java8Desugared
 Hello!
-hello from:default
+hello from: default
 hello from static
 ```
 

@@ -1284,9 +1284,9 @@
     {
       title: "The V8 heap is split into spaces",
       focus: null,
-      body: `<p>Most JavaScript <strong>objects</strong> V8 creates live on the <strong>heap</strong>, which is divided into purpose-built <strong>spaces</strong>. Two things notably do <em>not</em>: small integers are encoded directly in the value itself and are never allocated, and <code>ArrayBuffer</code> / <code>Buffer</code> bytes live in <strong>external</strong> memory outside the heap (which is why <code>--max-old-space-size</code> does not bound them).</p>
-        <p>The key split follows the <strong>generational hypothesis</strong>: <em>most objects die young</em>. So freshly-created objects go in a small <strong>New space</strong> (young generation) collected constantly and cheaply, while the rare survivors graduate to a large <strong>Old space</strong> collected far less often.</p>
-        <p>Alongside them: <span style="color:var(--gen-large)">Large-object</span> space (objects bigger than ~half a page, never moved), <span style="color:var(--gen-code)">Code</span> space (JIT machine code), and immortal <span style="color:var(--gen-ro)">Read-only</span> space. <em>(A separate space for “Maps”, meaning V8's internal hidden classes rather than JavaScript's <code>Map</code>, was merged into Old space around 2022. Real V8 has roughly a dozen spaces today, including trusted and cross-isolate shared ones; these five carry the concepts.)</em></p>
+      body: `<p>Most JavaScript <strong>objects</strong> live on V8's <strong>heap</strong>. The heap has separate <strong>spaces</strong>. Small integers can live directly in values. <code>ArrayBuffer</code> and <code>Buffer</code> bytes live outside the managed heap. <code>--max-old-space-size</code> does not limit those bytes.</p>
+        <p>The <strong>generational hypothesis</strong> says most objects die young. New objects usually enter <strong>New space</strong>. Survivors can move to <strong>Old space</strong>, which is collected less often.</p>
+        <p>The model also shows <span style="color:var(--gen-large)">Large-object</span>, <span style="color:var(--gen-code)">Code</span>, and <span style="color:var(--gen-ro)">Read-only</span> spaces. Real V8 has more spaces. These five show the main ideas.</p>
         <p>This animation shows a simplified heap layout, using the <strong>Scavenger</strong> to collect young objects. V8 versions and build options can use other layouts or collectors. <strong>Node.js</strong> embeds its own version of V8, with a separate JavaScript heap per isolate. Flags such as <code>--max-old-space-size</code> and <code>--max-semi-space-size</code> control parts of that heap.</p>`,
       run: async (ep) => {
         focus(null); allocPtr.classList.add("hidden");
@@ -1294,33 +1294,33 @@
         focus(["new", "young-a", "young-b"]);
         await beat(ep, "New space (the young generation) is small and split into two equal halves - From-space and To-space. Almost all objects are born here.");
         focus(["old"]);
-        await beat(ep, "Old space is much larger and holds the few objects that survived long enough to be promoted. It's collected far less often.");
+        await beat(ep, "Old space holds objects that survived long enough for promotion. V8 collects it less often.");
         focus(["large", "code", "ro"]);
         await beat(ep, "Then the specialised spaces: Large-object (too big to copy), Code (JIT machine code), and Read-only (immortal shared data).");
         focus(null);
-        await beat(ep, "Two collectors run over this heap: a Minor GC that collects the young generation, and a Major GC that traces the whole heap while concentrating its sweeping and compaction in Old space. Let's see how objects get here first.");
+        await beat(ep, "Minor GC collects young objects. Major GC traces the live heap and concentrates sweeping and compaction in Old space. First, watch allocation.");
       },
     },
     {
       title: "Allocation is a bump pointer",
       focus: ["new", "young-a"],
-      body: `<p>New objects are placed in the active semi-space (<strong>From-space</strong>) using a <strong>bump pointer</strong>: allocation is just “advance a pointer by the object's size.” Objects that have not yet survived a collection are the <strong>nursery</strong>; those that survived one become <strong>intermediate</strong>.</p>
+      body: `<p>New objects are placed in the active semi-space (<strong>From-space</strong>) using a <strong>bump pointer</strong>: allocation is just “advance a pointer by the object's size.” New objects belong to the <strong>nursery</strong>. Objects that survive one collection become <strong>intermediate</strong>.</p>
         <p>That is only a few machine instructions - which is exactly <em>why</em> a young-generation heap can be collected so affordably. When the bump pointer hits the end of the space, a <strong>Minor GC</strong> fires automatically.</p>
         <p>Watch the <span style="color:var(--gen-young)">cyan cells</span> stream in behind the moving <code>▸ alloc</code> pointer.</p>`,
       run: async (ep) => {
         allocPtr.classList.remove("hidden"); focus(["new", youngFrom()]);
         await beat(ep, "The ▸ alloc marker is the bump pointer: it sits at the boundary between used and free memory in From-space.");
         await runAllocate(4, { silent: true, ep: null });
-        await beat(ep, "Each new object is placed at the pointer, then the pointer advances by that object's size - only a few machine instructions. No free-list search.");
+        await beat(ep, "V8 places the object at the pointer, then advances it by the object's size.");
         await runAllocate(4, { silent: true, ep: null });
-        await beat(ep, "Because allocation is this cheap, V8 can afford to allocate constantly - and to collect this space very frequently. When the pointer reaches the end, a Minor GC fires.");
+        await beat(ep, "Bump-pointer allocation is cheap. When New space fills, a Minor GC runs.");
       },
     },
     {
       title: "Minor GC - the Scavenger",
       focus: ["new", "young-a", "young-b"],
       body: `<p>The young generation is collected by the <strong>Scavenger</strong>, using <strong>semi-space copying</strong> in the Cheney tradition. New space is two halves: <strong>From-space</strong> and <strong>To-space</strong>. (V8's implementation is parallel, driven by worklists with work-stealing, rather than Cheney's original to-space scan queue.)</p>
-        <p>On a scavenge, live objects are <strong>copied</strong> (evacuated) from From-space into To-space, and a forwarding pointer redirects old references. <strong>Dead objects are never individually traced or copied</strong>; their half is reclaimed in bulk when the roles <strong>flip</strong>.</p>
+        <p>On a scavenge, live objects are <strong>copied</strong> (evacuated) from From-space into To-space, and a forwarding pointer redirects old references. The collector does not copy dead objects. It reclaims their half when the roles <strong>flip</strong>.</p>
         <p>Live young objects are found from the <strong>roots</strong> plus a <strong>remembered set</strong> of old→young pointers (kept by a write barrier), so the Scavenger never traces the whole old-generation object graph. The copying cost is proportional to the <em>survivors</em> rather than to everything allocated, and most objects are dead, so it's fast. It is still a brief <strong>stop-the-world</strong> pause, just a parallel one.</p>`,
       run: async (ep) => {
         if (countIn(youngFrom()) < 5) await runAllocate(7, { silent: true });
@@ -1330,26 +1330,26 @@
     {
       title: "Promotion - surviving twice",
       focus: ["new", "young-a", "young-b", "old"],
-      body: `<p>An object that survives a <strong>second</strong> scavenge is <strong>promoted</strong>: instead of being copied within the young generation again, it's evacuated into <strong>Old space</strong>.</p>
+      body: `<p>An object that survives a <strong>second</strong> scavenge is <strong>promoted</strong>: instead of another young-space copy, it moves into <strong>Old space</strong>.</p>
         <p>V8 uses an <em>age mark</em> to distinguish objects kept by the previous scavenge from newer allocations, without a counter on each object. Space pressure can promote survivors earlier. <strong>Pretenuring</strong> is different: selected allocations go straight to Old space. Treat "survives twice" as a rule of thumb.</p>
         <p>This is the generational hypothesis paying off: the few objects that live long enough get moved out of the hot, frequently-collected nursery so scavenges stay cheap.</p>
         <p>Watch objects age (a pip appears after one survival) and jump to the <span style="color:var(--gen-old)">violet</span> Old space on the next.</p>`,
       run: async (ep) => {
         if (countIn(youngFrom()) < 5) await runAllocate(7, { silent: true });
-        await beat(ep, "Here's a fresh nursery. V8 distinguishes objects that were already here before the last scavenge using an age mark in the semi-space.");
+        await beat(ep, "Here is a fresh nursery. An age mark identifies objects kept by the previous scavenge.");
         await runScavenge({ silent: true });
-        await beat(ep, "After one scavenge the survivors turned amber - age 1, the “intermediate” generation. They're still in New space, just in the other semi-space.");
+        await beat(ep, "After one scavenge, survivors turn amber. They remain in New space, in the other half.");
         if (countIn(youngFrom()) < 3) await runAllocate(4, { silent: true });
-        await beat(ep, "Now a second scavenge runs. Anything that survives this one has proven it's long-lived…");
+        await beat(ep, "Now a second scavenge runs. This model now promotes the survivors.");
         await runScavenge({ silent: true });
-        await beat(ep, "…so instead of being copied inside New space again, it's promoted into Old space (violet). This keeps the nursery small, which is what keeps scavenges cheap.");
+        await beat(ep, "Survivors move to Old space (violet). This leaves more room for new objects.");
       },
     },
     {
       title: "Major GC - Mark-Compact",
       focus: ["old"],
-      body: `<p>Old space is collected by <strong>Mark-Compact</strong> (older material calls it Mark-Sweep-Compact). A major GC is a <em>full</em> collection that traces the whole live heap; its heavy lifting is in Old space, which is what's shown here. It runs in three phases:</p>
-        <p><strong>Mark</strong>: starting from the roots, V8 does a <strong>tri-color</strong> traversal: objects are <span style="border-bottom:1.5px dashed var(--accent)">white</span> (unseen), <span style="color:var(--mark-grey)">grey</span> (queued on the worklist), or <strong>black</strong> (fully scanned). Crucially this is <em>transitive</em>: scanning a grey object greys everything it references, so objects stay alive by being reachable at any depth, not just by being named by a root. The invariant <em>“no black points to white”</em> guarantees nothing live is missed.</p>
+      body: `<p>Old space is collected by <strong>Mark-Compact</strong> (older material calls it Mark-Sweep-Compact). A major GC traces the live heap. This model shows its main work in Old space. It runs in three phases:</p>
+        <p><strong>Mark</strong>: V8 starts at the roots and traces objects. In the <strong>tri-color</strong> model, objects are <span style="border-bottom:1.5px dashed var(--accent)">white</span> (unseen), <span style="color:var(--mark-grey)">grey</span> (queued on the worklist), or <strong>black</strong> (fully scanned). Tracing is transitive. Scanning a grey object finds the objects it references, even several links from a root. The invariant <em>“no black points to white”</em> guarantees nothing live is missed.</p>
         <p><strong>Sweep</strong>: whatever is still white is dead, and its memory returns to the free-lists. This is also where unreachable <strong>large objects</strong> are reclaimed. <strong>Compact</strong>: to fight fragmentation V8 evacuates the live objects off its most fragmented pages onto fresh ones. Large objects are never part of that, because they are never relocated.</p>`,
       run: async (ep) => {
         if (S.objects.filter(o => o.gen === "old").length < 8) {
@@ -1373,7 +1373,7 @@
         await beat(ep, "Incremental: marking work is split into small steps between JavaScript work. This reduces long pauses, but does not guarantee a fixed pause length.");
         await beat(ep, "Concurrent: helper threads do marking work while JavaScript keeps running. How much this helps depends on the workload.");
         await beat(ep, "Parallel: the unavoidable short pauses (the Scavenger, compaction) are split across several threads with work-stealing, so they finish sooner.");
-        await beat(ep, "Write barriers and remembered sets are what make this safe: they record references created while the collector is running, so no live object is ever lost.");
+        await beat(ep, "Write barriers record changed references. Remembered sets help Minor GC find old-to-young references.");
       },
     },
   ];

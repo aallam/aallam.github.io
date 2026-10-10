@@ -15,154 +15,141 @@ jemoji:
 ![Java][0]{:width="50%"}
 </div>
 
-Java source codes are compiled into an intermediate state called **bytecode** (i.e. **.class** file) using the Java compiler (**javac**). The Java Virtual Machine a.k.a **JVM** interprets the bytecode (without further recompilations) into native machine language. Therefore, bytecode acts as a **platform-independent** intermediary state which is **portable** among any JVM regardless of underlying OS and hardware architecture.
+This article describes the Java 8 JVM specification and the Java 8 HotSpot implementation. Other JVMs can make different implementation choices.
 
-_**The JVM is a specification**_. Vendors are free to customize, innovate, and improve its performance during the implementation.
+Java source files become portable bytecode when `javac` compiles them. A JVM loads the resulting `.class` files and executes their instructions. HotSpot can interpret bytecode or compile frequently used code into native machine code.
+
+The [JVM specification](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html) defines an abstract machine. It leaves memory layout, garbage collection, and native-code optimization to implementations.
 
 <div class="text-center" markdown="1">
 ![JVM Architecture][1]{:width="75%"}
-<figcaption class="caption">Java Virtual Machine Architecture</figcaption>
+<figcaption class="caption">Java 8 JVM architecture overview. The diagram illustrates an implementation. The specification does not require this layout.</figcaption>
 </div>
 
 ## 1. Class Loader Subsystem
-The **JVM resides on the RAM**. During execution, using the Class Loader subsystem, the class files are brought on to the RAM. This is called Java’s **dynamic class loading** functionality. It loads, links, and initializes the class file (`.class`) when it refers to a class for the first time at runtime (not compile time).
+
+A class must be loaded, linked, and initialized before certain uses. These stages are distinct. Loading can also happen before a class is first used.
 
 ### 1.1. Loading
-* **Bootstrap Class Loader** loads standard JDK classes such as core Java API classes (e.g. `java.lang.*` package classes) from `$JAVA_HOME/jre/rt.jar`. The class loader acts as parent of all class loaders in Java;
-* **Extension Class Loader** delegates class loading request to its parent, Bootstrap and if unsuccessful, loads classes from the extensions directories (e.g. security extension functions) in extension path  `$JAVA_HOME/jre/lib/ext` or any other directory specified by the `java.ext.dirs` system property;
-* **System/Application Class Loader** loads application specific classes from system class path, that can be set while invoking a program using `-cp` or `-classpath` command line options.
+
+In Java 8 HotSpot, class loaders find class definitions and create their runtime representation:
+
+* The **bootstrap loader** loads core Java classes, commonly from `rt.jar` in a Java 8 installation.
+* The **extension loader** searches extension directories after delegating to its parent.
+* The **application loader** searches the application class path after delegating to its parent.
+
+You can also define a custom class loader. Parent delegation is the usual pattern, but custom loaders can choose different behavior.
 
 <div class="text-center" markdown="1">
 ![Java Class Loaders][3]
+<figcaption class="caption">Typical Java 8 HotSpot class-loader hierarchy.</figcaption>
 </div>
 
-Note: It is possible to directly create a _User-defined Class Loader_ on the code itself.
-
 ### 1.2. Linking
-Linking is to verify and prepare a loaded class or interface, its direct superclasses and superinterfaces, and its element type as necessary, while following the below properties:
 
-* **Verification**: ensure the correctness of `.class` file, If verification fails, it throws runtime errors (`java.lang.VerifyError`). For instance, the following checks are performed:
-	* consistent and correctly formatted symbol table;
-	* final methods / classes not overridden;
-	* methods respect access control keywords;
-	* methods have correct number and type of parameters;
-	* bytecode doesn’t manipulate stack incorrectly;
-	* variables are initialized before being read;
-	* variables are a value of the correct type.
-* **Preparation**: allocate memory for static storage and any data structures used by the JVM such as method tables. Static fields are created and initialized to their default values, however, no initializers or code is executed at this stage;
-* **Resolution**: replace symbolic references from the type with direct references. It is done by searching into method area to locate the referenced entity.
+**Verification** checks that a class file follows the format and bytecode rules. Invalid bytecode can cause a `VerifyError`.
+
+**Preparation** creates static fields with default values. It does not execute their Java initializers.
+
+**Resolution** turns symbolic references into runtime references. A JVM may resolve a reference when it first needs it, rather than resolving every reference during initial linking.
 
 ### 1.3. Initialization
-The initialization logic of each loaded class or interface will be executed (e.g. calling the constructor of a class). Since JVM is multi-threaded, initialization of a class or interface should happen very carefully (i.e. make it **thread safe**).
+
+Initialization runs the class or interface initialization method, named `<clinit>` in bytecode. The compiler combines static field initializers and `static` blocks into this method. For example, `static int count = 42;` assigns `42` during initialization, after preparation first assigns `0`.
+
+Creating an instance, invoking a static method, or reading or writing a nonconstant static field can trigger class initialization. A class is initialized before its first instance is constructed. Instance field initializers and constructors run for each new object. `<clinit>` runs once per class initialization. Compile-time constant reads can avoid initialization.
+
+The JVM coordinates initialization across threads. See the [initialization rules](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-5.html#jvms-5.5) for precise triggers and ordering.
 
 ## 2. Runtime Data Areas
-Runtime Data Areas are the memory areas assigned when the JVM program runs on the OS.  
-In addition to reading `.class` files, the Class Loader subsystem generates corresponding binary data and save the following information in the Method area for each class separately:
-* fully qualified class name (FQCN) of the loaded class and its immediate parent class;
-* whether `.class` file is related to a Class, Interface or Enum;
-* modifiers, static variables, and method information etc.
 
-For every loaded `.class` file, it creates exactly one **Class** object to represent the file in the Heap memory. This **Class** object can be used to read class level information (class name, parent name, methods, variable information, static variables etc.) later in the code.
+The specification defines shared and per-thread data areas. It does not prescribe their physical layout.
 
 ### 2.1 Method Area (Shared)
-This is a _**shared resource**_ (only 1 method area per JVM). All JVM threads share this same method area, which means the access to the method data and the process of dynamic linking must be **thread safe**.  
-Method area stores **class level data** (including **static variables**) such as:
-* ClassLoader reference;
-* runtime constant pool;
-* field data;
-* method data;
-* method code.
+
+The method area holds per-class structures, including the runtime constant pool, field and method data, and method code. All JVM threads share it.
+
+**Metaspace** is HotSpot's Java 8 implementation choice for much class metadata. It uses native memory. Do not treat Metaspace as a second method area required by the specification. The exact placement of static field values is an implementation detail.
 
 ### 2.2 Heap Area (Shared)
-This is also a **shared resource** (only 1 heap area per JVM). Information of all **objects** and their corresponding **instance variables and arrays** are stored in the Heap area. Heap area is a great target for GC.
+
+The heap holds class instances and arrays. All JVM threads share it. Each instance has its own instance fields. A class has one set of static fields.
 
 ### 2.3. Stack Area (Per thread)
-This is not a shared resource _(thread safe)_. Every JVM thread has a separate **runtime stack** to store **method calls**. For every such method call, one entry will be created and added (pushed) into the top of runtime stack and such entry it is called a **Stack Frame**.
+
+Each JVM thread has its own JVM stack. A method call creates a frame with local variables, an operand stack, and information needed for return and dynamic linking. The frame disappears when the call completes normally or abruptly.
 
 <div class="text-center" markdown="1">
 ![JVM Stack Configuration][2]
 </div>
 
-A Stack Frame is divided into three sub-entities:
-* **Local Variable Array**: contains local variables and their values;
-* **Operand Stack**: this acts as a runtime workspace to perform any intermediate operation. Each method exchanges data between the Operand stack and the local variable array, and pushes or pops other method invoke results;
-* **Frame Data**: all symbols related to the method are stored here. For exceptions, the catch block information will also be maintained in the frame data.
-
-The frame is removed (popped) when the method returns normally or if an uncaught exception is thrown during the method invocation.
-Since these are runtime stack frames, after a thread terminates, its stack frame will also be destroyed by JVM.
-
-The stack frame is size fixed, however, the stack itself can be a dynamic or fixed size. If a thread requires a larger stack than allowed a `StackOverflowError` is thrown. If a thread requires a new frame and there isn’t enough memory to allocate it then an `OutOfMemoryError` is thrown. 
+A stack can have a fixed or dynamic size. Excessive call depth can cause `StackOverflowError`. A JVM can throw `OutOfMemoryError` if it cannot create or expand a stack.
 
 ### 2.4. PC Registers  (Per thread)
-For each JVM thread, when the thread starts, a separate PC (_Program Counter_) Register gets created in order to hold the address of currently-executing instruction (memory address in the method area). If the current method is native then the PC is undefined. Once the execution finishes, the PC register gets updated with the address of next instruction.
+
+Each JVM thread has a program-counter register. For a nonnative method, it identifies the current JVM instruction. Its value is undefined while the thread executes a native method.
 
 ### 2.5. Native Method Stack (Per thread)
-There is a direct mapping between a Java thread and a native operating system thread. After preparing all the state for a Java thread, a separate native stack also gets created in order to store native method information invoked through JNI (Java Native Interface).
 
-Once the native thread has been created and initialized, it invokes the `run()` method in the Java thread. When the thread terminates, all resources for both the native and Java threads are released.
-The native thread is reclaimed once the Java thread terminates. The operating system is therefore responsible for scheduling all threads and dispatching them to any available CPU.
+An implementation can use native method stacks for native calls. The specification does not require one operating-system thread or one separate native stack for every Java thread. Java 8 HotSpot commonly maps Java threads to native threads.
 
 ## 3. Execution Engine
-Execution Engine executes the instructions in the bytecode line-by-line by reading the data assigned to Runtime Data Areas.
+
+The JVM executes bytecode instructions using these runtime data areas. The specification defines instruction behavior, while HotSpot chooses how to run it.
 
 ### 3.1. Interpreter
-The interpreter _interprets_ the _bytecode_ and executes the instructions one-by-one. Hence, it can interpret one bytecode line quickly, but executing the interpreted result is a slower task. The disadvantage is that when one method is called multiple times, each time a new interpretation and a slower execution are required.
+
+HotSpot can interpret bytecode as a method runs. Interpretation avoids an initial compilation cost, but repeated execution can benefit from compiled code.
 
 ### 3.2. Just-In-Time (JIT) Compiler
-The JIT compiler, compiles the bytecode to native code. Then for repeated method calls, it directly provides the native code. 
 
-However, even for JIT compiler, it takes more time for compiling than for the interpreter to interpret. For a code segment that executes just once, it is better to interpret it instead of compiling. Also the native code is stored in the cache, which is an expensive resource. With these circumstances, JIT compiler internally checks the frequency of each method call and decides to compile each only when the selected method has occurred more than a certain level of times. This idea of **adaptive compiling** has been used in Oracle Hotspot VMs.
+HotSpot profiles running code and compiles selected methods or loops into native code. Compilation has a cost, so HotSpot makes adaptive decisions based on observed execution. Compiled code can later be replaced or deoptimized when assumptions change.
 
-Execution Engine qualifies to become a key subsystem when introducing performance optimizations by JVM vendors. Among such efforts, the following 4 components can largely improve its performance:
-* **Intermediate Code Generator** produces **intermediate code**;
-* **Code Optimizer** is responsible for optimizing the intermediate code generated;
-* **Target Code Generator** is responsible for generating **Native Code** (i.e.**Machine Code**);
-* **Profiler** is a special component, responsible for finding performance bottlenecks a.k.a.**hotspots**.
+This is an implementation strategy, not a requirement that every JVM use a JIT compiler. Interpretation and compilation have different startup and steady-state costs. Neither makes Java inherently slow.
 
 ### 3.3. Garbage Collector
-As long as an object is being referenced, the JVM considers it alive. Once an object is no longer referenced and therefore is not reachable by the application code, the garbage collector removes it and reclaims the unused memory.
+
+A garbage collector traces references from roots, such as live stack references and static fields. It can reclaim an object when no root can reach it. Two objects that refer only to each other can both be reclaimed if no root reaches their cycle.
+
+The JVM specification leaves the collection algorithm to the implementation. HotSpot's collectors differ in pause times, throughput, and memory use.
 
 ## 4. Java Native Interface (JNI)
-This interface is used to interact with Native Method Libraries. This enables JVM to call C/C++ libraries and to be called by C/C++ libraries which may be specific to hardware.
+
+JNI lets Java code call native libraries and lets native code interact with the JVM. Native code can have platform-specific behavior and needs its own safety checks.
 
 ## 5. Native Method Libraries
-This is a collection of C/C++ Native Libraries which is required for the Execution Engine and can be accessed through the provided Native Interface.
+
+Native libraries contain platform-specific functions, often written in C or C++. JNI is one way to call them from Java.
 
 ## 6. JVM Threads
-The JVM concurrently runs multiple threads, some of these threads carry the programming logic and are created by the program (**application threads**), while the rest is created by JVM itself to undertake background tasks in the system (**system threads**).
 
-The major application thread is the **main thread** which is created as part of invoking `public static void main(String[])` and all other application threads are created by this main thread. Application threads perform tasks such as executing instructions starting with `main()` method, creating objects in Heap area if it finds `new` keyword in any method logic etc.
+Application threads execute Java code. The `main` thread starts the program's `main` method, but other application threads need not be created directly by it. A thread pool worker, for example, can create another thread.
 
-The major system threads are as follows:
-* **Compiler threads**: At runtime, compilation of bytecode to native code is undertaken by these threads;
-* **GC threads**: All the GC related activities are carried out by these threads;
-* **Periodic task thread**: The timer events (i.e. interrupts) to schedule execution of periodic operations are performed by this thread;
-* **Signal dispatcher thread**: This thread receives signals sent to the JVM process and handle them inside the JVM by calling the appropriate JVM methods;
-* **VM thread**: This thread waits for operations to appear that require the JVM to reach a safe-point where modifications to the heap can not occur. The type of operations performed by this thread are “stop-the-world” garbage collections, thread stack dumps, thread suspension and biased locking revocation.
+Java 8 HotSpot also uses internal threads for work such as compilation and garbage collection. Its exact thread names and counts depend on configuration and collector. The JVM specification does not require the same internal threads in every implementation.
 
 ## 7. Conclusion
-Java is considered as both compiled (high-level java code into bytecode) and interpreted (bytecode into native machine code). By design, Java is slow due to dynamic linking and run-time interpreting, however, JIT compiler compensate for the disadvantages of the interpreter for repeating operations by keeping a native code instead of bytecode.
+
+`javac` compiles source into bytecode. A Java 8 JVM loads and verifies that bytecode, manages runtime data, and executes instructions. HotSpot combines interpretation, JIT compilation, and garbage collection to balance startup, throughput, pauses, and memory use.
 
 ## 8. Useful Commands
-* `javac`: Java compiler;
-* `javap`: Dump `.class` data;
-* `-XX:+PrintCompilation`: Log every time a method is compiled to native code;
-* `-XX:+PrintInlining`: Display a tree how methods has been inlined;
-* `-XX:+PrintAssembly`: Look at the native code that JVM is outputting;
-* `jps`: lists running  Java processes;
-* `jcmd`: used to send diagnostic command requests to the JVM
-	* `jcmd` (without any parameters): list all JVM processes;
-	* `jcmd [PID] help`: show available commands;
-	* `jcmd [PID] GC.heap_dump [PATH]`: heap dump;
-	* `jcmd [PID] Thread.print`: Thread dump.
+
+* `javac`: compile Java source files.
+* `javap -c ClassName`: inspect bytecode instructions.
+* `jps`: list Java processes visible to the tool.
+* `jcmd`: list visible Java processes and send diagnostic commands.
+* `jcmd [PID] help`: list commands supported by that JVM.
+* `jcmd [PID] GC.heap_dump [PATH]`: write a heap dump.
+* `jcmd [PID] Thread.print`: print thread stacks.
+* `-XX:+PrintCompilation`: log HotSpot compilation activity.
+* `-XX:+PrintInlining`: log HotSpot inlining decisions when diagnostic options permit it.
+
+These commands and `-XX` options describe the Java 8 HotSpot toolchain. Availability can vary by JDK build.
 
 ## 9. Sources
+
+* [Java 8 JVM specification: runtime data areas](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html#jvms-2.5)
+* [Java 8 JVM specification: loading, linking, and initialization](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-5.html)
 * [JVM Internals](http://blog.jamesdbloom.com/JVMInternals.html)
-* [Understanding JVM Internals](https://www.cubrid.org/blog/understanding-jvm-internals/)
-* [JVM Explained](https://javatutorial.net/jvm-explained) 
-* [Java Virtual Machine Architecture in Java](https://javainterviewpoint.com/java-virtual-machine-architecture-in-java/)
-* [How JVM Works - JVM Architecture](https://www.geeksforgeeks.org/jvm-works-jvm-architecture/)
-* [Java Virtual Machine (JVM) & its Architecture](https://www.guru99.com/java-virtual-machine-jvm.html)
 
 [0]: {{ site.url }}/assets/images/blog/JVM.png
 [1]: {{ site.url }}/assets/images/blog/JVM_Architecture.png

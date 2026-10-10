@@ -991,7 +991,7 @@
         <p>Each phase handles its own category of ready work, generally until its queue is empty or an internal limit makes the loop advance.</p>
         <p>Since <strong>libuv 1.45</strong> (Node 20.3.0), timers run at the <strong>end</strong> of an iteration. The real loop also has a timer pass before entering in default mode and an extra turn for pending callbacks after poll. This animation shows the main phases.</p>`,
       run: async (ep) => {
-        await beat(ep, "The event loop runs in iterations. Each one visits fixed phases in order, so let's walk a single iteration.");
+        await beat(ep, "The event loop runs in iterations. Each one visits fixed phases in order. Now follow one iteration.");
         setActivePhase("pending"); await beat(ep, "1. pending callbacks - a few deferred system callbacks, such as a TCP socket reporting ECONNREFUSED.");
         setActivePhase("idle"); await beat(ep, "2. idle / prepare - libuv's own internal bookkeeping. Nothing of yours runs here.");
         setActivePhase("poll"); await beat(ep, "3. poll - the heart of the loop: it runs I/O callbacks, and this is where the loop waits when there is nothing ready.");
@@ -1003,22 +1003,22 @@
     {
       title: "Non-blocking I/O - offloading",
       view: "viz",
-      body: `<p>"Single-threaded" is about <em>your JS</em>, not I/O. When you call something slow, Node <strong>registers a callback and returns immediately</strong>, delegating the waiting elsewhere:</p>
+      body: `<p>"Single-threaded" is about <em>your JS</em>, not I/O. Many async APIs register work and return before it completes. The work follows different paths:</p>
         <p>• <strong>Sockets</strong> (TCP/HTTP) → the <strong>OS</strong> readiness mechanism (<code>epoll</code>/<code>kqueue</code>/<code>IOCP</code>). No pool thread is tied up per socket.<br>
         • <strong>Files</strong>, <code>dns.lookup()</code>, <strong>async zlib</strong> and certain <strong>crypto</strong> calls → libuv's <strong>thread pool</strong>.</p>
-        <p>When the work finishes, its callback is queued into the <strong>poll</strong> phase and runs back on the main thread. Watch <code>fs.readFile</code> and <code>https.get</code> leave, then return.</p>`,
+        <p>When work completes, Node arranges for its callback to run on the main thread. Its exact scheduling depends on the API. Watch <code>fs.readFile</code> and <code>https.get</code> leave, then return.</p>`,
       run: async (ep) => { focusZones(["pool","kernel"]);
-        await beat(ep, "Two slow calls are made. Node doesn't wait: it registers callbacks and offloads the work, returning immediately.");
+        await beat(ep, "Start two asynchronous calls. Node registers their work and returns to JavaScript.");
         opFs("fs.readFile"); await beat(ep, "fs.readFile goes to the libuv thread pool, because file I/O has no portable async kernel API.");
         opNet("https.get"); await beat(ep, "https.get is driven by the OS readiness mechanism instead, so no pool thread is occupied by the socket. (Resolving the hostname via dns.lookup would still use the pool.)");
         await beat(ep, "Meanwhile the JS thread has nothing to do for either call. Now we let the work finish…");
-        await sIdle(ep); focusZones([]); await beat(ep, "Each completion queued its callback into the poll phase, where it ran on the main thread. No JavaScript ever blocked waiting."); },
+        await sIdle(ep); focusZones([]); await beat(ep, "The callbacks run on the main thread after their work completes. JavaScript did not wait synchronously for either result."); },
     },
     {
       title: "The libuv thread pool",
       view: "viz",
-      body: `<p>The thread pool is a small set of <strong>C/C++ worker threads</strong> (default <strong>4</strong>, set by <code>UV_THREADPOOL_SIZE</code>, max 1024) for work with no portable async kernel API: most async <strong>fs</strong>, <code>dns.lookup()</code>, async <strong>zlib</strong>, and specific <strong>crypto</strong> calls such as <code>pbkdf2</code>, <code>scrypt</code>, <code>randomBytes</code> and key generation. Native addons can queue work here too.</p>
-        <p><strong>Socket I/O does NOT use it</strong>, and neither does <code>dns.resolve*()</code>, which does its own network queries. This is why Node holds tens of thousands of sockets with just 4 pool threads.</p>
+      body: `<p>The thread pool defaults to <strong>4 C/C++ threads</strong> and has a maximum of 1024. Set <code>UV_THREADPOOL_SIZE</code> before startup to change its size. It handles most async <strong>fs</strong>, <code>dns.lookup()</code>, async <strong>zlib</strong>, and specific <strong>crypto</strong> calls. Native addons can queue work here too.</p>
+        <p><strong>Socket I/O does not use the pool</strong>, and neither does <code>dns.resolve*()</code>, which does its own network queries. Socket readiness does not need one pool thread per connection.</p>
         <p>The pool is <strong>process-global</strong>: every event loop in the process, including worker threads, shares the same 4 threads. Spawning workers does not multiply it.</p>
         <p>The gotcha: fire more pool-backed tasks than threads and they <strong>queue</strong>. Watch 6 <code>fs</code> reads: only 4 run at once, two wait for a free thread.</p>`,
       run: async (ep) => { focusZones(["pool"]);
@@ -1031,7 +1031,7 @@
     {
       title: "Scheduling: timers vs setImmediate",
       view: "viz",
-      body: `<p><code>setTimeout(fn, 0)</code> lands in the <strong>timers</strong> phase; <code>setImmediate(fn)</code> lands in <strong>check</strong>. Their order depends on <em>where you schedule them</em>:</p>
+      body: `<p><code>setTimeout(fn, 0)</code> runs in the <strong>timers</strong> phase. <code>setImmediate(fn)</code> runs in <strong>check</strong>. Their order depends on <em>where you schedule them</em>:</p>
         <p>• In the <strong>main module</strong>: order is <strong>non-deterministic</strong>. <code>setTimeout(fn, 0)</code> is clamped to <strong>1 ms</strong>, so it is a race on whether that millisecond has elapsed by the time the loop first looks at timers.<br>
         • <strong>Inside an I/O callback</strong>: <strong>deterministic</strong>, <code>setImmediate</code> always wins, because you are already in <strong>poll</strong> and <strong>check</strong> is the very next phase.</p>
         <p>About waiting: when the <strong>poll</strong> queue is empty but referenced I/O is still outstanding, the loop <em>waits</em> here, bounded by the nearest due timer. It does not wait at all if a <code>setImmediate</code> is queued, and if no referenced work remains the loop <strong>exits</strong> instead.</p>
@@ -1045,7 +1045,7 @@
     {
       title: "Microtasks: nextTick & Promises",
       view: "viz",
-      body: `<p>Two queues sit <em>outside</em> the phases. Whenever a callback hands control back to Node, both are drained before the loop moves on (since Node 11 that happens between individual timer/immediate callbacks too, not just between phases):</p>
+      body: `<p>Two queues sit <em>outside</em> the phases. At a normal callback boundary, Node drains both queues before the loop advances. This also happens between timer and immediate callbacks:</p>
         <p><strong>1. The <code>process.nextTick</code> queue</strong> - Node's own queue, drained first and completely.<br>
         <strong>2. The V8 microtask queue</strong> (<code>.then</code>, <code>await</code>, <code>queueMicrotask</code>) - drained second, also completely.</p>
         <p><em>Beware the name:</em> <code>process.nextTick</code> does <strong>not</strong> wait for the next loop iteration. It runs before the loop advances. <code>setImmediate</code> runs in the check phase, which may still be ahead in the current iteration.</p>
@@ -1061,25 +1061,25 @@
       title: "Worker threads - real parallelism",
       view: "viz",
       body: `<p>To run heavy JavaScript work on another thread, use <code>worker_threads</code>. Each worker is a <strong>separate V8 isolate</strong> with its own heap, event loop, and nextTick and microtask queues.</p>
-        <p><code>postMessage</code> copies normal objects using <strong>structured cloning</strong>. A <strong>transfer list</strong> can move a transferable <code>ArrayBuffer</code> without copying its bytes; the sender then loses access. Some buffers, including Node's internal Buffer pool, cannot be transferred. A <strong>SharedArrayBuffer</strong> shares bytes between isolates, and <code>Atomics</code> can coordinate access.</p>
+        <p><code>postMessage</code> copies normal objects using <strong>structured cloning</strong>. A <strong>transfer list</strong> moves a transferable <code>ArrayBuffer</code> without copying its bytes. The sender loses access. Some buffers, including Node's internal Buffer pool, cannot be transferred. A <strong>SharedArrayBuffer</strong> shares bytes. <code>Atomics</code> can coordinate access.</p>
         <p>Each worker has its own heap, so it is also GC'd independently: a worker's collection does not pause the main thread. But they share the <strong>process-global</strong> libuv pool.</p>
         <p>Watch a message travel to a worker, get computed, and the reply return to the main loop.</p>`,
       run: async (ep) => { focusZones(["worker"]);
         await beat(ep, "The main thread posts a message to a worker - a separate V8 isolate with its own heap and event loop.");
         opWorker("compute(msg)");
-        await beat(ep, "The worker runs the CPU-heavy work in parallel while the main thread stays responsive. This message was structured-cloned; a transfer list would move an ArrayBuffer with no copy, and a SharedArrayBuffer would share the bytes outright.");
-        await sIdle(ep); focusZones([]); await beat(ep, "The worker posts its result back; the reply is delivered to the main loop's poll phase and handled there."); },
+        await beat(ep, "The worker runs CPU work in parallel. This message was copied by structured cloning. Transfer and shared memory are separate options.");
+        await sIdle(ep); focusZones([]); await beat(ep, "The worker posts its result back. The main loop handles the reply."); },
     },
     {
       title: "Processes & cluster - stronger isolation",
       view: "procs",
-      body: `<p>An uncaught exception stops a worker and emits <code>'error'</code> on the parent-side Worker object. Handle that event in the parent; otherwise it becomes an uncaught error there too. A native crash or process-wide out-of-memory failure can stop all workers. <code>resourceLimits</code> only limits selected V8 resources; it excludes external memory such as <code>ArrayBuffer</code> storage and cannot prevent every process-wide memory failure.</p>
+      body: `<p>An uncaught exception stops a worker and emits <code>'error'</code> on the parent-side Worker object. Handle that event in the parent. Otherwise, it becomes an uncaught error there too. A native crash or process-wide out-of-memory failure can stop all workers. <code>resourceLimits</code> limits selected V8 resources. It excludes external <code>ArrayBuffer</code> storage and cannot prevent every process-wide memory failure.</p>
         <p>For a stronger boundary and multi-core scaling of a server, run <strong>separate processes</strong> with <code>child_process</code> / <code>cluster</code>. A <strong>primary</strong> process (<code>cluster.isPrimary</code>, renamed from <code>isMaster</code> in Node 16) forks however many workers you ask for, commonly one per <code>os.availableParallelism()</code>.</p>
         <p>Under the default off-Windows <code>SCHED_RR</code> policy the primary owns the listening socket and passes accepted connections to workers over <strong>IPC</strong>, round-robin. Windows defaults to letting the OS distribute them instead.</p>
         <p>Each process gets its own V8 isolate, heap, event loop, and <code>--max-old-space-size</code> budget. A GC pause in one does not directly pause another, but they still compete for CPU and system memory.</p>`,
       run: async (ep) => {
-        await beat(ep, "The primary process listens on the port and forks worker processes; you choose how many, commonly one per os.availableParallelism().");
-        await beat(ep, "Each worker is a separate Node instance with its own V8 isolate, heap, and event loop, in its own memory space, and its own independent GC.");
+        await beat(ep, "The primary process listens and forks workers. You choose their number, often using os.availableParallelism().");
+        await beat(ep, "Each worker process has its own memory, V8 heap, event loop, and GC.");
         await beat(ep, "Under the default round-robin policy the primary accepts connections and hands them to workers over IPC. A crashed worker can be replaced without taking the others down, though they still share OS-level resources."); },
     },
   ];

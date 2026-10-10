@@ -13,9 +13,11 @@ jemoji:
 
 Writing a library starts with code, but maintaining one is mostly about contracts.
 
-Every public function, type, default value, error message, dependency, and example becomes something users can build on. Once they do, a change can force work on people trying to keep their own systems running.
+Users can build on every public function, type, default value, error message, dependency, and example. A change to any of them can force users to update their systems.
 
-That is the part that took me time to appreciate. A library can be small, elegant, and well-tested, but the moment it has users, its shape matters beyond its implementation. The API becomes a promise. The docs become a promise. The release process becomes a promise. Even the things you choose not to expose become part of how users understand the library.
+That took me time to appreciate. A library can be small and well tested. Once people use it, its design matters beyond its implementation. The API becomes a promise. The docs become a promise. The release process becomes a promise.
+
+Even private parts shape what users expect the library to provide.
 
 I have felt this while maintaining [`openai-kotlin`](https://github.com/aallam/openai-kotlin), smaller Kotlin libraries, and [`execbox`](https://github.com/aallam/execbox), which runs JavaScript with access to tools chosen by the host. The projects differ in size and purpose, but each has users whose code needs to keep working.
 
@@ -42,7 +44,7 @@ Users learn those details from your implementation, docs, examples, and tests. I
 
 This changes how you maintain the code. Within an application, you can often update an internal function and its callers together. With a library, you do not control the callers. They live in other repositories and follow other release schedules. You may only hear about them when something breaks.
 
-The harder part is that users rarely depend on your API exactly the way you imagined. They will compose it with frameworks you do not use, run it on platforms you do not test every day, and rely on edge cases because those edge cases solve real problems for them.
+Users rarely depend on your API exactly as you imagined. They combine it with unfamiliar frameworks and run it on platforms you may not test. They also rely on edge cases that solve real problems for them.
 
 That does not mean every behavior must be frozen forever. It means public behavior should be intentional. If something is not meant to be stable, do not expose it casually. If something is stable, test it like a contract.
 
@@ -58,7 +60,7 @@ A library can keep plenty of code private. That code can be renamed, split, opti
 
 This matters most when a project is young. You may not yet know whether users need a small building block or a complete workflow. Publishing too much too early turns guesses into promises you have to keep.
 
-I saw this while preparing `execbox` for a stable API. Experimental runtime packages had grown around the core idea, so I removed them before 1.0. That left `@execbox/core` for the execution API and tool-provider interfaces, and `@execbox/quickjs` for running code in QuickJS. The cleanup caused some short-term disruption, but it left less for users to learn and for me to support.
+I saw this while preparing `execbox` for a stable API. Experimental runtime packages had grown around the core idea, so I removed them before 1.0. I kept `@execbox/core` for execution and tool-provider interfaces. I kept `@execbox/quickjs` for running code in QuickJS. The cleanup caused short-term disruption. It reduced what users must learn and what I must support.
 
 Start with the smallest useful API, then add to it when real usage shows a need. When users keep working around the API, find out why. An internal option does not need to become public just because it already exists.
 
@@ -68,7 +70,7 @@ Small surfaces also make documentation and examples better. A library that can b
 
 Documentation is not a decoration around the library. For many users, it is the library.
 
-The first example teaches them what the maintainers consider normal. The getting-started page defines the happy path. The advanced guide tells them which use cases are expected. The upgrade guide tells them whether changes are predictable. Missing docs tell them where the contract is weak.
+The first example teaches them what the maintainers consider normal. The getting-started page shows the usual setup and first successful call. The advanced guide tells them which use cases are expected. The upgrade guide tells them whether changes are predictable. Missing docs tell them where the contract is weak.
 
 This is why examples matter so much. Users copy them. They build habits from them. If the example skips error handling, people will skip error handling. If it uses an unstable internal helper, people will use that helper. If it shows a pattern that only works in a narrow environment, users will assume the library failed when it does not work elsewhere.
 
@@ -106,7 +108,7 @@ When users install your library, they also inherit its required runtime dependen
 
 That does not mean libraries should have no dependencies. Good dependencies can reduce bugs, improve standards compliance, and let maintainers focus on the library's actual purpose. But dependencies carry costs that are different in a library than in an application.
 
-An application chooses its own runtime, deployment target, bundle size, dependency policy, and upgrade schedule. A library is pulled into environments it does not control. A transitive dependency can affect build time, binary size, cold start, platform support, security reviews, licensing, and version resolution.
+An application chooses its own runtime, deployment target, bundle size, dependency policy, and upgrade schedule. A library runs in environments its maintainer does not control. A transitive dependency can affect build time, binary size, cold start, platform support, security reviews, licensing, and version resolution.
 
 Ask whether the benefit is worth the cost to users. Sometimes it is. In other cases, an optional integration, a separate package, or a little more local code can spare users a dependency they do not need.
 
@@ -116,7 +118,7 @@ Dependencies also shape maintenance. An API client may need generated types to k
 
 Maintaining a library includes helping people adopt, understand, upgrade, and debug it. Issues, pull requests, release notes, examples, CI, package metadata, and error messages are all part of that work.
 
-That means choosing clear names, keeping releases small enough to understand, and sometimes turning down a feature that would make the API harder for everyone else to use.
+That means choosing clear names and keeping releases easy to understand. Sometimes I turn down a feature that would make the API harder to use.
 
 A maintainer has to balance different kinds of pressure:
 
@@ -128,7 +130,7 @@ A maintainer has to balance different kinds of pressure:
 
 Those goals can conflict. Decide which uses the library supports best, and make that choice clear.
 
-For me, this is the hard part of maintaining libraries: carrying old decisions long enough for users to move, while leaving room to improve the design.
+For me, this is the hard part of maintaining libraries. I must support old decisions while users migrate, yet leave room to improve the design.
 
 Users should know what the API does, what an upgrade asks of them, and where to look when something fails. A small API, clear docs, and well-explained releases make that possible.
 

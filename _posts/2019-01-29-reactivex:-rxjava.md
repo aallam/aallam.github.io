@@ -19,24 +19,25 @@ jemoji:
 </div>
 <br/>
 
-> **Update Note**: This RxJava series was written for RxJava 2.x (2019). RxJava 3.x introduced breaking changes and improvements. Core concepts remain the same, but some APIs have changed. Refer to the [RxJava 3.x migration guide](https://github.com/ReactiveX/RxJava/wiki/What's-different-in-3.0) for differences.
+> **Update note:** I wrote this series for RxJava 2.x in 2019. RxJava 3.x changed some APIs. See the [RxJava 3.x migration guide](https://github.com/ReactiveX/RxJava/wiki/What's-different-in-3.0) when using that version.
 
-Interested in Reactive Extensions and RxJava, I enjoyed reading the excellent book: [Learning RxJava][1] by Thomas Nield, and the following are my notes.
+I enjoyed Thomas Nield's [Learning RxJava][1]. These are my notes on RxJava 2.
 
 ## Why RxJava?
-* Concurrency, event handling, obsolete data states, and exception recovery.
-* Maintainable, reusable, and evolvable.
-* Allows applications to be tactical and evolvable while maintaining stability in production.
+* Combine events from several sources into one stream.
+* Move work to a scheduler and deliver results to a chosen thread.
+* Transform values, stop subscriptions, and recover from errors with operators.
 
 ## Quickstart
-In ReactiveX, the core type is the `Observable` which essentially pushes things. A given `Observable<T>` pushes things of type `T` through a series of operators until it arrives at an `Observer` that consumes the items.
-The following is an example of an `Observable<String>` that pushes three `String` objects:
+In RxJava 2, an `Observable<T>` emits values of type `T` to a subscriber. Operators can transform those values before the subscriber receives them.
+
+This `Observable<String>` contains three strings:
 ```kotlin
 fun main() {
     val observable = Observable.just("Hello", "world", "!")
 }
 ```
-Running this `main` method isn't doing anything other than declare a `Observable<String>`. To make this `Observable` actually emit these three strings, an `Observer` need to _subscribe_ to it and receive the items:
+This method creates an observable but does not subscribe. Add a subscriber to print its values:
 ```kotlin
 fun main() {
     val observable = Observable.just("Hello", "world", "!")
@@ -47,24 +48,24 @@ fun main() {
 ```
 This time, the output is the following:
 ```
-Hello world! 
+Hello world !␠
 ```
-What happened here is that `Observable<String>` pushed each `String` object once at a time to the `Observer` lambda.
+The subscriber prints each string followed by a space. In the output above, ␠ marks the final space.
 
-It’s possible to use several operators between `Observable` and `Observer` to transform each pushed item or manipulate them, the following is an example of `map()`:
+Use `map()` to transform each string before printing it:
 ```kotlin
 fun main() {
     val observable = Observable.just("Hello", "world", "!")
     observable.map { it.uppercase() }.subscribe { print("$it ") }
 }
 ```
-The output should be:
+The output uses the same spacing:
 ```
-HELLO WORLD!
+HELLO WORLD !␠
 ```
 
 ## RxJava vs Java 8 streams
-How `Observable` is any different from Java 8 _Streams_ or Kotlin _sequences_? The key difference is that `Observable` _pushes_ the items while Streams and sequences _pull_ the items.
+An `Observable` emits items to subscribers. Java streams and Kotlin sequences yield items when consumers request them. RxJava also supplies operators for asynchronous events and scheduler control.
 
 ## RxJava Series Guide
 
@@ -113,7 +114,7 @@ This is a comprehensive guide to RxJava organized by topic. Follow the links bel
 * [RxJava Github][3]
 * [RxMarbles][4]
 
-_Note: code examples in this article are written in Kotlin to showcase the interoperability between Java and Kotlin, however, for Kotlin projects, it is most likely better to use [RxKotlin][5]._
+_These Kotlin examples use RxJava directly. [RxKotlin][5] offers Kotlin-specific extensions._
 
 [0]: {{ site.url }}/assets/images/blog/reactivex.png
 [1]: https://www.amazon.com/Learning-RxJava-Thomas-Nield/dp/1787120422
