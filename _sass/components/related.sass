@@ -1,2 +1,15 @@
+@use "../base/variables" as tokens
+
 .related
     margin: 10rem 0 0rem
+
+.reading-navigation
+    margin: tokens.$space-7 0 0
+
+    > a
+        display: inline-flex
+        align-items: center
+        min-height: 44px
+
+        &:focus-visible
+            outline-color: tokens.$color-accent
