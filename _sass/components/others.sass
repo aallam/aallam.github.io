@@ -38,6 +38,37 @@
     margin-top: 35px
     text-align: center
 
+    > .lissajous
+        display: block
+        margin-inline: auto
+        color: tokens.$color-accent
+        fill: none
+        stroke: currentColor
+        stroke-width: 1.25
+        stroke-linecap: round
+        stroke-linejoin: round
+
+        > .lissajous-guide
+            opacity: 0.12
+
+        > .lissajous-trace
+            stroke-dasharray: 1
+            stroke-dashoffset: 0
+
+        @media (prefers-reduced-motion: no-preference)
+            &[data-animate] > .lissajous-trace
+                animation: lissajous-draw 2.4s cubic-bezier(0.3, 0, 0.2, 1) backwards
+
+                @media print
+                    animation: none
+
+@keyframes lissajous-draw
+    from
+        stroke-dashoffset: 0.985
+
+    to
+        stroke-dashoffset: 0
+
 .bigger-image
     min-width: 130%
     margin: 5rem 0 5rem -15%

@@ -159,51 +159,5 @@
     :where(a):focus-visible
         outline-color: tokens.$color-accent
 
-    @media (prefers-reduced-motion: no-preference)
-        > .header-home.animated
-            animation: none
-
-            > .link,
-            > .title,
-            > .social-links
-                animation: home-editorial-arrive 760ms cubic-bezier(0.16, 1, 0.3, 1) backwards
-
-            > .link
-                --entrance-offset: -0.8rem
-
-            > .title
-                --entrance-offset: 1.4rem
-                animation-name: home-editorial-title
-                animation-delay: 70ms
-
-            > .social-links
-                --entrance-offset: 0.8rem
-                animation-delay: 140ms
-
-            + .nav-home
-                --entrance-offset: 0.4rem
-                animation: home-editorial-arrive 760ms 210ms cubic-bezier(0.16, 1, 0.3, 1) backwards
-
-            &:focus-within > *,
-            + .nav-home:focus-within
-                animation: none
-
-@keyframes home-editorial-arrive
-    from
-        opacity: 0.6
-        transform: translateY(var(--entrance-offset))
-
-    to
-        opacity: 1
-        transform: translateY(0)
-
-@keyframes home-editorial-title
-    from
-        opacity: 0.5
-        transform: translateY(var(--entrance-offset))
-        clip-path: inset(0 0 18% 0)
-
-    to
-        opacity: 1
-        transform: translateY(0)
-        clip-path: inset(0)
+    > .header-home.animated
+        animation: none
