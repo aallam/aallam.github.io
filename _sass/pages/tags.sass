@@ -65,9 +65,16 @@
         font-family: tokens.$fontDisplay
         font-weight: 500
         transition: all ease-in-out .2s
-        font-size: 3.4rem
-        line-height: 1
+        font-size: 3.3rem
+        line-height: 1.15
         letter-spacing: -0.04em
+
+        @media #{tokens.$tablet}
+            font-size: 3rem
+
+        @media #{tokens.$mobile}
+            width: 100%
+            font-size: 2.8rem
 
     > .item:hover > .url > .title
         color: tokens.$color-accent
@@ -91,9 +98,16 @@
         color: tokens.$color-text-muted
         text-align: right
         transition: all ease-in-out .2s
-        font-size: 1.1rem
+        font-size: 1.2rem
+        font-variant-numeric: tabular-nums
         letter-spacing: 0.12em
         text-transform: uppercase
+
+        @media #{tokens.$mobile}
+            width: 100%
+            float: none
+            text-align: left
+            margin-bottom: 0.8rem
 
     .item:hover .url .date
         color: tokens.$color-text-subtle

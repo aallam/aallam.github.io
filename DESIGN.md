@@ -6,7 +6,7 @@ colors:
   ink-heading: "#222"
   ink-body: "#666"
   ink-meta: "#6b6b6b"
-  ink-prose: "#4f4b45"
+  ink-prose: "#3f3b36"
   rule: "#ededed"
   paper: "#fff"
   status-paper: "#f7f0e2"
@@ -21,10 +21,10 @@ typography:
     letterSpacing: "-0.06em"
   article-display:
     fontFamily: 'Newsreader, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif'
-    fontSize: "7rem"
+    fontSize: "5.6rem"
     fontWeight: 500
-    lineHeight: 0.94
-    letterSpacing: "-0.05em"
+    lineHeight: 1.1
+    letterSpacing: "-0.025em"
   headline:
     fontFamily: 'Newsreader, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif'
     fontSize: "3.6rem"
@@ -35,7 +35,7 @@ typography:
     fontFamily: 'Newsreader, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif'
     fontSize: "3.3rem"
     fontWeight: 500
-    lineHeight: 1.02
+    lineHeight: 1.15
     letterSpacing: "-0.04em"
   body:
     fontFamily: '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
@@ -43,10 +43,10 @@ typography:
     fontWeight: 400
     lineHeight: 1.68
   article-body:
-    fontFamily: '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-    fontSize: "1.7rem"
+    fontFamily: 'Newsreader, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif'
+    fontSize: "2rem"
     fontWeight: 400
-    lineHeight: 1.66
+    lineHeight: 1.65
   label:
     fontFamily: '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
     fontSize: "1.28rem"
@@ -55,9 +55,9 @@ typography:
     letterSpacing: "0.08em"
   code:
     fontFamily: '"JetBrains Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace'
-    fontSize: "1.3rem"
+    fontSize: "1.5rem"
     fontWeight: 400
-    lineHeight: "2.1rem"
+    lineHeight: 1.6
 rounded:
   code: "2px"
   image: "4px"
@@ -153,29 +153,33 @@ The sidecar's tonal ramps are synthesized preview aids, not additional implement
 
 ## Typography
 
-Newsreader is the display and heading family, Source Sans 3 is the body and interface family, and JetBrains Mono is reserved for code and the existing explainer label. Full fallback stacks are in the frontmatter. The shared layout loads these fonts from Google Fonts.
+Newsreader is the heading and prose family across articles and content pages, including About. Source Sans 3 is the interface family, and JetBrains Mono is reserved for code and the existing explainer label. Prose uses regular Newsreader with optical sizing, real italic, and semibold emphasis. Full fallback stacks are in the frontmatter. The shared layout loads these fonts from Google Fonts.
 
 The root font size is 62.5%: at the browser's default 16px setting, 1rem is 10px. Preserve that context when reading the rem values; sidecar snippets use equivalent pixel sizes so they render correctly outside this root.
 
 | Role | Existing treatment |
 | --- | --- |
 | Site name | `display`; 5rem at mobile, 5.8rem at tablet, 6.8rem above tablet. |
-| Article title | `article-display`; centered, at most 11ch wide; 5.2rem at mobile, 6rem at tablet, 7rem above tablet. |
-| Page title | 6.2rem, line height 0.96, tracking -0.05em; 4.8rem at mobile. |
-| Section headings | `headline` for h2; h3 is 2.9rem and h4 is 2.2rem, with the shared 1.08 line height. |
-| Article-list title | `title`; 2.8rem at mobile and 3rem at tablet. |
-| Body | `body`; generic paragraphs use line height 1.72; article paragraphs and list items use `article-body`. About-page paragraphs are 1.8rem. |
+| Article title | `article-display`; centered, at most 22ch wide within the reading column; fluid 3.6–5.6rem, with 1.1 line height and -0.025em tracking. |
+| Page title | 6.2rem, line height 1.02, tracking -0.04em; 4.8rem at mobile. |
+| Section headings | `headline` for h2; h3 is 2.9rem and h4 is 2.2rem, with 1.18 line height inside articles and 1.08 elsewhere. |
+| Article-list title | `title` in the archive and tags; 2.8rem at mobile and 3rem at tablet, with 1.15 line height. |
+| Body | Articles and content pages share the `reading.prose` mixin: Newsreader at 2rem/1.65, reduced to 1.9rem on mobile, with the same paragraph, list, and heading rhythm. Interface text retains `body` sans-serif. |
 | Navigation | `label` on internal pages; home links are 1.48rem above tablet. Uppercase, with weight 600 for the current page. |
-| Metadata and tags | Uppercase sans; article metadata is 1.2rem with 0.14em tracking; tags are 1.1rem with 0.08em tracking. |
-| Code | `code` for blocks; inline code uses the same family and size with a 20px line height. |
+| Metadata and tags | Article dates use 1.4rem sentence-case sans-serif with 0.02em tracking; article tags use 1.2rem with the same tracking. List dates remain 1.2rem uppercase with tabular numerals. |
+| Code | `code` for blocks at 1.5rem/1.6; inline code is 0.8em of its surrounding text, with a faint warm background and baseline alignment. |
+
+Headings use balanced wrapping; prose and list items use pretty wrapping where supported. Long technical terms and URLs can wrap without causing horizontal page scrolling. Source Sans 3 includes regular italic, JetBrains Mono includes bold and italic styles for syntax highlighting, and Newsreader loads optical sizes 6–72 at weights 400, 500, and 600 with reading italics. All families retain fallback stacks and `display=swap`. Font metric adjustment stays scoped to the existing home display; it is not inherited across different font families.
 
 ## Layout
 
 **The Reading Column Rule.** Keep ordinary site content in the centered reading wrapper. The active large wrapper is capped at 810px; a 560px normal variant also exists. Both are 96% wide above tablet and 88% wide through tablet.
 
-The source media ranges are mobile at at most 400px, tablet from 400px through 1050px, and a separate 780px split for embedded explainers. The tablet rules follow mobile title rules in several files, so the tablet values win at exactly 400px where both queries match.
+Article content is capped at the smaller of 66ch and 66rem, 660px at the default browser font size. About prose uses the same 66rem maximum while preserving the portrait layout. Both use 1.65 line height and 1em paragraph separation.
 
-Main page content starts 125px below the top. Article lists occupy 95% of the wrapper; rows devote 75% to the title and 25% to the right-aligned date. At mobile sizes, blog-row dates move above full-width titles. Section headings in articles gain 4.2rem above them; paragraph spacing is tighter within a section. The frontmatter records the source spacing scale, alongside these existing component-specific measurements.
+The source media ranges are mobile at at most 400px, tablet from 400px through 1050px, and a separate 780px split for embedded explainers. Article titles use a continuous fluid scale; list-title mobile rules follow tablet rules so their mobile sizes win at exactly 400px.
+
+Main page content starts 125px below the top. On mobile, article navigation stays in document flow with 8rem before the title so enlarged text can wrap without overlapping the article. Article lists occupy 95% of the wrapper; rows devote 75% to the title and 25% to the right-aligned date. At mobile sizes, blog-row dates move above full-width titles. Section headings in articles gain 4.2rem above them; paragraph spacing is tighter within a section. The frontmatter records the source spacing scale, alongside these existing component-specific measurements.
 
 The explainer embed is a deliberate exception: above 780px it can extend to `min(1480px, 94vw)` around the reading column. At 780px and below, the iframe is hidden and a compact panel links to the standalone explainer. Wider article images have their own source-defined breakout treatment.
 
@@ -209,7 +213,7 @@ Tags are compact pale-gray pills with uppercase labels. Tag-index labels use wid
 
 Article prose links stay underlined and use the surrounding prose color until hover or focus. The shared link focus outline is 2px indigo at 24% opacity with a 0.25rem offset; navigation overrides its opacity and offset.
 
-Blockquotes use a 2px warm-gray left rule, 2rem left padding, and 1.9rem quoted text. Code blocks sit on paper with a 1px pale border, small corners, and horizontal overflow. Preserve the existing syntax colors rather than recoloring code as decorative branding.
+Blockquotes use a 2px warm-gray left rule, 2rem left padding, and the surrounding reading size. Code blocks sit on paper with a 1px pale border, small corners, and horizontal overflow. Inline code has a faint warm background, light padding, and cloned background fragments when it wraps. The `inline_code_breaks` filter inserts invisible break opportunities after identifier punctuation; it preserves code text and leaves code blocks untouched. Emergency wrapping still handles a single token wider than the column. Preserve the syntax palette rather than recoloring code as decorative branding.
 
 ### Explainers and alerts
 

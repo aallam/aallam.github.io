@@ -10,16 +10,16 @@ body, html
   --color-accent: #{tokens.$color-accent}
   --color-rule: #{tokens.$color-border}
   --color-paper: #fff
-  --code-comment: #999988
-  --code-heading: #999999
-  --code-output: #888888
+  --code-comment: #706f63
+  --code-heading: #686868
+  --code-output: #686868
   --code-prompt: #555555
   --code-name: #333333
   --code-name-accent: teal
-  --code-name-builtins: #0086b3
+  --code-name-builtins: #006f94
   --code-keyword-accent: #800080
   --code-type: #445588
-  --code-number: #009999
+  --code-number: #007b7b
   --code-string: #dd1144
   --code-string-symbol: #990073
   --code-function: #990000
@@ -56,6 +56,8 @@ h1, h2, h3, h4
   font-weight: 500
   letter-spacing: -0.03em
   line-height: 1.08
+  text-wrap: balance
+  overflow-wrap: anywhere
 
 h1
   font-size: 4.8rem
@@ -88,6 +90,8 @@ p
   color: tokens.$color-prose
   font-weight: 400
   margin-bottom: 1.95rem
+  text-wrap: pretty
+  overflow-wrap: anywhere
 
 strong
   font-weight: 600
@@ -102,6 +106,8 @@ ol
     line-height: 1.72
     font-weight: 400
     color: tokens.$color-prose
+    text-wrap: pretty
+    overflow-wrap: anywhere
 
 img,
 pre,
@@ -153,13 +159,28 @@ figure.highlight
 
 code,
 tt
-  padding: 1px 0
   font-family: tokens.$fontMonospace
-  font-size: 1.3rem
-  line-height: 20px
-  background: #fff
-  border-radius: 2px
-  border-radius: 2px
+  font-size: 1.4rem
+  line-height: 1.6
+
+:not(pre) > code,
+tt
+  font-size: 0.8em
+  font-size-adjust: from-font
+  font-weight: 400
+  font-style: normal
+  font-variant-ligatures: none
+  line-height: 1
+  color: tokens.$color-text-strong
+  background: #f5f4f2
+  padding: 0.1em 0.22em
+  border-radius: 3px
+  -webkit-box-decoration-break: clone
+  box-decoration-break: clone
+  white-space: normal
+  overflow-wrap: anywhere
+  word-break: normal
+  hyphens: none
 
 pre
   box-sizing: border-box
@@ -167,8 +188,8 @@ pre
   width: 100%
   padding: 0.8rem 1.2rem
   font-family: tokens.$fontMonospace
-  font-size: 1.3rem
-  line-height: 2.1rem
+  font-size: 1.5rem
+  line-height: 1.6
   overflow: auto
   background: #fff
   border: 1px solid tokens.$color-border

@@ -1,34 +1,48 @@
 @use "../base/variables" as tokens
+@use "../base/reading"
 
 .post
+    @include reading.prose
     margin-top: 125px
+    margin-inline: auto
+    max-width: min(66ch, 66rem)
+
+    @media #{tokens.$mobile}
+        margin-top: 1.6rem
+
+        > .nav
+            position: static
+            max-width: none
+            margin-bottom: 8rem
+            text-align: right
+
+            > .list
+                max-width: 100%
+
+        .share
+            flex-wrap: wrap
 
     > .title
         text-align: center
         margin: 0 auto 2rem
-        max-width: 11ch
-        font-size: 7rem
-        line-height: 0.94
-        letter-spacing: -0.05em
+        max-width: 22ch
+        font-size: clamp(3.6rem, calc(2.4rem + 3vw), 5.6rem)
+        line-height: 1.1
+        letter-spacing: -0.025em
         font-weight: 500
-
-        @media #{tokens.$mobile}
-            font-size: 5.2rem
-
-        @media #{tokens.$tablet}
-            font-size: 6rem
 
     > .date,
     > .post-tags
         color: tokens.$color-text-muted
         font-family: tokens.$fontUi
         font-weight: 500
-        font-size: 1.2rem
-        text-transform: uppercase
+        font-size: 1.4rem
+        line-height: 1.5
+        text-transform: none
         text-align: center
         display: block
         margin-bottom: 6rem
-        letter-spacing: 0.14em
+        letter-spacing: 0.02em
         -webkit-font-smoothing: antialiased
         text-rendering: optimizeLegibility
 
@@ -51,11 +65,11 @@
         padding: 4px 10px
         border-radius: 999px
         font-family: tokens.$fontUi
-        font-size: 1.1rem
+        font-size: 1.2rem
         font-weight: 500
         background: tokens.$color-border
         color: tokens.$color-text-subtle
-        letter-spacing: 0.08em
+        letter-spacing: 0.02em
         margin: 3px 1px
         text-decoration: none
         display: inline-block
@@ -78,22 +92,15 @@
     > h2,
     > h3,
     > h4
-        margin-top: 4.2rem
-
         a
             text-decoration: none
 
-    > p
-        line-height: 1.66
-        margin-bottom: 1.7rem
+    pre code
+        font-size: inherit
 
-    > ul,
-    > ol
-        margin-bottom: 1.75rem
-
-    > ul li,
-    > ol li
-        line-height: 1.66
+    > .reading-navigation
+        font-family: tokens.$fontUi
+        font-size: 1.6rem
 
     > p a,
     > ul a,
@@ -176,8 +183,8 @@
         > p
             margin: .8rem 0
             color: tokens.$color-prose
-            font-size: 1.7rem
-            line-height: 1.66
+            font-size: inherit
+            line-height: 1.65
             text-wrap: pretty
 
     > .interactive-explainer
