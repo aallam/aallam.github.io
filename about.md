@@ -5,7 +5,7 @@ description: "About Mouaad Aallam, a software engineer working on architecture, 
 ---
 
 <figure class="about-portrait">
-  <img class="about-selfie" src="{{ site.url }}/{{ site.picture }}" alt="Profile Image" />
+  <img class="about-selfie" width="320" height="320" src="{{ site.url }}/{{ site.picture }}" alt="Profile Image" />
   <figcaption class="caption">Mouaad Aallam</figcaption>
 </figure>
 

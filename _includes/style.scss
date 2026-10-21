@@ -1,3 +1,5 @@
 @use "base/index" as base;
 @use "pages/index" as pages;
 @use "components/index" as components;
+
+{% include fonts.scss %}

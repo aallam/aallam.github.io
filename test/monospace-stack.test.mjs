@@ -9,13 +9,13 @@ function readBuiltFile(relativePath) {
   return fs.readFileSync(path.join(rootDir, "_site", relativePath), "utf8");
 }
 
-test("built pages load JetBrains Mono from Google Fonts", () => {
+test("built pages serve JetBrains Mono locally", () => {
   const html = readBuiltFile(path.join("index.html"));
 
   assert.match(
     html,
-    /fonts\.googleapis\.com\/css2\?[^"]*family=JetBrains\+Mono/,
-    "expected built HTML to request JetBrains Mono from Google Fonts",
+    /src:url\(["']?\/assets\/fonts\/jetbrains-mono-[^)]*\.woff2/,
+    "expected built CSS to declare the locally served JetBrains Mono font",
   );
 });
 

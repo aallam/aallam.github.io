@@ -153,7 +153,7 @@ The sidecar's tonal ramps are synthesized preview aids, not additional implement
 
 ## Typography
 
-Newsreader is the heading and prose family across articles and content pages, including About. Source Sans 3 is the interface family, and JetBrains Mono is reserved for code and the existing explainer label. Prose uses regular Newsreader with optical sizing, real italic, and semibold emphasis. Full fallback stacks are in the frontmatter. The shared layout loads these fonts from Google Fonts.
+Newsreader is the heading and prose family across articles and content pages, including About. Source Sans 3 is the interface family, and JetBrains Mono is reserved for code and the existing explainer label. Prose uses regular Newsreader with optical sizing, real italic, and semibold emphasis. Full fallback stacks are in the frontmatter. The shared layout serves the existing WOFF2 fonts locally, preserving all language subsets. Normal Latin Newsreader and Source Sans 3 are preloaded; other faces load only when used.
 
 The root font size is 62.5%: at the browser's default 16px setting, 1rem is 10px. Preserve that context when reading the rem values; sidecar snippets use equivalent pixel sizes so they render correctly outside this root.
 
@@ -169,7 +169,7 @@ The root font size is 62.5%: at the browser's default 16px setting, 1rem is 10px
 | Metadata and tags | Article dates use 1.4rem sentence-case sans-serif with 0.02em tracking; article tags use 1.2rem with the same tracking. List dates remain 1.2rem uppercase with tabular numerals. |
 | Code | `code` for blocks at 1.5rem/1.6; inline code is 0.8em of its surrounding text, with a faint warm background and baseline alignment. |
 
-Headings use balanced wrapping; prose and list items use pretty wrapping where supported. Long technical terms and URLs can wrap without causing horizontal page scrolling. Source Sans 3 includes regular italic, JetBrains Mono includes bold and italic styles for syntax highlighting, and Newsreader loads optical sizes 6–72 at weights 400, 500, and 600 with reading italics. All families retain fallback stacks and `display=swap`. Font metric adjustment stays scoped to the existing home display; it is not inherited across different font families.
+Headings use balanced wrapping; prose and list items use pretty wrapping where supported. Long technical terms and URLs can wrap without causing horizontal page scrolling. Source Sans 3 includes regular italic, JetBrains Mono includes bold and italic styles for syntax highlighting, and Newsreader loads optical sizes 6–72 at weights 400, 500, and 600 with reading italics. All families retain fallback stacks and `font-display: swap`. Font metric adjustment stays scoped to the existing home display; it is not inherited across different font families.
 
 ## Layout
 
@@ -223,7 +223,7 @@ Markdown alerts use a colored title and left rule for their semantic variant. Me
 
 ### Portrait, icons, and motion
 
-The header portrait is circular (125px wide); the About portrait is proportional to the reading column. Social links use inline SVG icons and change from heading ink to indigo on hover or focus. Hover labels use a dark small-corner tooltip.
+The header portrait is circular (125px wide); the About portrait is proportional to the reading column. The shared 320px WebP portrait has explicit dimensions to reserve its aspect ratio, and the author portrait at the end of articles loads lazily. Social links use inline SVG icons and change from heading ink to indigo on hover or focus. Hover labels use a dark small-corner tooltip.
 
 Navigation transitions run for 180ms; article rows and portrait interactions use 200ms; social tooltip opacity and movement use 150ms. The header entrance lasts 600ms after a 300ms delay and runs only when reduced motion is not requested. Other transitions retain their existing source behavior; this record does not claim universal motion suppression.
 

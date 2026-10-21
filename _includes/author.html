@@ -3,7 +3,7 @@
     {% capture share_text %}{{ page.title }} {{ share_url }}{% endcapture %}
     <div class="identity">
         <div class="toleft">
-            <img class="selfie" src="{% if site.external-image == true %}{{ site.picture }}{% else %}{{ site.url }}/{{ site.picture }}{% endif %}" alt="{{ site.name }}">
+            <img class="selfie" width="320" height="320" loading="lazy" src="{% if site.external-image == true %}{{ site.picture }}{% else %}{{ site.url }}/{{ site.picture }}{% endif %}" alt="{{ site.name }}">
         </div>
 
         <div class="details">
